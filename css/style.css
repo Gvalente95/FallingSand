@@ -1,0 +1,150 @@
+body {
+    margin: 0;
+    min-height: 100vh; /* Ensure body takes full viewport height */
+    position: relative; /* Positioning context for absolute children */
+    overflow: auto; /* Allow scrolling if needed */
+	background-color: rgb(23, 14, 23);
+}
+
+.button {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  height: 40px;
+  padding: 0 10px;
+	background: var(--btn-bg, linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%), linear-gradient(180deg, #ff4d4d, #c31212));
+  color: #fff;
+  text-align: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  letter-spacing: .5px;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  cursor: pointer;
+  z-index: 1000;
+  border: 2px solid #000;
+  border-radius: 10px;
+  box-sizing: border-box;
+  user-select: none;
+  box-shadow:
+    0 3px 0 #5a0000,
+    inset 0 0 0 2px rgba(255,255,255,.08),
+    inset 0 -6px 10px rgba(0,0,0,.25);
+  transition: transform .06s ease, box-shadow .06s ease, filter .15s ease, background .15s ease;
+}
+
+.button:hover {
+  filter: brightness(1.08);
+}
+
+.button:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 1px 0 #5a0000,
+    inset 0 0 0 2px rgba(0,0,0,.35),
+    inset 0 -3px 6px rgba(0,0,0,.4);
+}
+
+.button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.button[disabled],
+.button.is-disabled {
+  pointer-events: none;
+  filter: grayscale(80%) brightness(.8);
+  box-shadow: none;
+}
+
+/* Variantes */
+.button--primary {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%),
+    linear-gradient(180deg, #4da3ff, #125ac3);
+  box-shadow:
+    0 3px 0 #0a2a66,
+    inset 0 0 0 2px rgba(255,255,255,.08),
+    inset 0 -6px 10px rgba(0,0,0,.25);
+}
+
+.button--success {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%),
+    linear-gradient(180deg, #46d66f, #1e8a3f);
+  box-shadow:
+    0 3px 0 #0e5125,
+    inset 0 0 0 2px rgba(255,255,255,.08),
+    inset 0 -6px 10px rgba(0,0,0,.25);
+}
+
+.button--warning {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%),
+    linear-gradient(180deg, #ffd24d, #c38612);
+  box-shadow:
+    0 3px 0 #66450a,
+    inset 0 0 0 2px rgba(255,255,255,.08),
+    inset 0 -6px 10px rgba(0,0,0,.25);
+}
+
+.button--ghost {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0) 60%),
+    linear-gradient(180deg, #303030, #1a1a1a);
+  border-color: #000;
+  color: #eaeaea;
+  box-shadow:
+    0 3px 0 #000,
+    inset 0 0 0 2px rgba(255,255,255,.06),
+    inset 0 -6px 10px rgba(0,0,0,.3);
+}
+
+.button.activeButton{
+	border: 4px solid rgba(255, 255, 255, 1);
+	color: rgba(255, 255, 255, 1);
+}
+
+.button.clicked{
+	transform: scale(.6);
+    transition: transform 0.3s ease-in-out;
+	border-color: rgb(145, 145, 145)
+}
+
+.uiHeader {
+	background-color: rgba(0, 0, 0, 1);
+	position: absolute;
+	height: 5%;
+	width: 100%;
+}
+
+.button:hover{
+	z-index: 5000;
+	transform: scale(1);
+}
+
+.infoText{
+	color:white;
+	text-align: center;
+	font-family: 'Press Start 2P', monospace;
+	font-size: 14px;
+	text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    line-height: 30px;
+    z-index: 1000;
+	user-select: none;
+}
+
+.button:hover {
+    background-color: darkred; /* Visual feedback on hover */
+}
+
+#input[type="range"] {
+  appearance: none;
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  outline: none;
+  cursor: grab;
+  transition: background 0.3s;
+}
