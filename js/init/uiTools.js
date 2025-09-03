@@ -365,6 +365,7 @@ function switchPick(newActive) { PICKACTIVE = newActive; if (newActive) { BRUSHC
 
 function setNewPixelSize(newPixelSize)
 {
+	BRUSHSIZE = clamp(Math.round(BRUSHSIZE * (PIXELSIZE / newPixelSize)), 1, MAXBRUSHSIZE);
 	PIXELSIZE = newPixelSize;
 	GRIDW = Math.floor(CANVW / PIXELSIZE);
 	GRIDH = Math.floor(CANVH / PIXELSIZE);

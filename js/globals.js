@@ -10,6 +10,7 @@ const isMobile = isMobileDevice();
 // PARAMS
 PIXELSIZE = 4;
 BRUSHSIZE = 8;
+MAXBRUSHSIZE = 40;
 BRUSHCUT = false;
 PICKACTIVE = false;
 XDRAG = .1;

@@ -23,6 +23,7 @@ function initInfoHeader(yPos, color = 'black', height)
 	sliders.push(createVerticalPressSlider("Px SIZE", x, y, 1, 19, 1, PIXELSIZE, setNewPixelSize));
 	sliders.push(createVerticalPressSlider("GRAVITY", x + sldSpread, y, -1, 1, .1, GRAVITY, setNewGravity));
 	sliders.push(createVerticalPressSlider("SPEED", x + sldSpread * 2, y, .2, 2.2, .2, SIMSPEED, setNewSpeed));
+	sliders.push(createVerticalPressSlider("SPEED", x + sldSpread * 3, y, 1, MAXBRUSHSIZE, 1, BRUSHSIZE, setNewBrushSize));
 	sliders.forEach(slider => document.body.appendChild(slider));
 	return (yPos + height);
 }

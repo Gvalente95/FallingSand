@@ -73,7 +73,7 @@ window.addEventListener('resize', () => {
 canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
     const delta = e.deltaY;
-    BRUSHSIZE = clamp(BRUSHSIZE - delta * 0.1, 1, 80);
+    BRUSHSIZE = clamp(BRUSHSIZE - delta * 0.1, 1, MAXBRUSHSIZE);
 });
 
 
