@@ -24,10 +24,10 @@ window.addEventListener('mousemove', (e) => {
 	let gridY = Math.floor(MOUSEY / PIXELSIZE);
 	MOUSEGRIDX = clamp(gridX, 0, GRIDW - 1);
 	MOUSEGRIDY = clamp(gridY, 0, GRIDH - 1);
-	pxAtMouse = getPxlAtPos(MOUSEGRIDX, MOUSEGRIDY);
 });
 
 window.addEventListener('keydown', (e) => {
+	if (isInInputField) return;
 	KEYS[e.key] = true;
 	let xScroll = ((KEYS['a'] || KEYS['ArrowLeft']) ? -1 : 0) + ((KEYS['d'] || KEYS['ArrowRight']) ? 1 : 0);
 	let yScroll = ((KEYS['w'] || KEYS['ArrowUp']) ? -1 : 0) + ((KEYS['s'] || KEYS['ArrowDown']) ? 1 : 0);
@@ -75,9 +75,6 @@ canvas.addEventListener('wheel', (e) => {
     const delta = e.deltaY;
     BRUSHSIZE = clamp(BRUSHSIZE - delta * 0.1, 1, 80);
 });
-
-
-
 
 
 function simulateMouseEvent(touchEvent, mouseEventType) {

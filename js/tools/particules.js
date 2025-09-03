@@ -1,6 +1,7 @@
 function isOutOfBorder(x, y) { return (x < 0 || x > GRIDW - 1 || y < 0 || y > GRIDH - 1);}
 
 function deleteParticules(x = MOUSEX, y = MOUSEY, radius = 10, type = null, isDisc = true) {
+	console.warn(isDisc);
     const radiusSquared = radius * radius;
     for (let posY = -radius; posY <= radius; posY++) {
         for (let posX = -radius; posX <= radius; posX++) {
@@ -32,12 +33,13 @@ function launchParticules(type = PARTICLE_TYPES.SAND, x = MOUSEX, y = MOUSEY, ra
 				if (!useMouseDx) continue;
 				newP.velX += MOUSEDX * (newP.solType == SOLID_TYPES.LIQUID ? .05 : .02);
 				newP.velY += MOUSEDY * (newP.solType == SOLID_TYPES.LIQUID ? .05 : .02);
+				if (radius <= 1) return;
             }
         }
 	}
 }
 
-function deleteParticulesAtMouse(){deleteParticules(MOUSEGRIDX - BRUSHSIZE / 2, MOUSEGRIDXY - BRUSHSIZE / 2, BRUSHSIZE, BRUSHTYPE == BRUSHTYPES.DISC);}
+function deleteParticulesAtMouse(){deleteParticules(MOUSEGRIDX - BRUSHSIZE / 2, MOUSEGRIDXY - BRUSHSIZE / 2, BRUSHSIZE, null, BRUSHTYPE == BRUSHTYPES.DISC);}
 
 function deleteAllParticules(type = null)
 {

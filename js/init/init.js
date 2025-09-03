@@ -47,28 +47,37 @@ function inituiPagesHeader(y, color = 'grey', height = 40)
 {
 	let header = addHeader(y, color, height, null);
 	let buttonSpread = 65;
-	let uiPAGENAMES = solidKeys;
-	let uiPageColors = ['rgba(46, 113, 207, 1)', 'rgba(129, 127, 23, 1)', 'rgba(115, 144, 118, 1)', 'rgba(33, 169, 117, 1)', 'grey', 'black'];
-	for (let i = 0; i < uiPAGENAMES.length + 1; i++)
+	let uiPAGENAMES = [];
+	for (let i = 0; i < solidKeys.length; i++) uiPAGENAMES.push(solidKeys[i]);
+	uiPAGENAMES.push("ALL");
+	uiPAGENAMES.push("CUSTOM");
+	let uiPageColors = ['rgba(115, 144, 118, 1)', 'rgba(46, 113, 207, 1)', 'rgba(129, 127, 23, 1)', 'rgba(33, 169, 117, 1)', 'grey', 'white', 'black'];
+	for (let i = 0; i < uiPAGENAMES.length; i++)
 	{
-		let name = i >= uiPAGENAMES.length ? 'all': uiPAGENAMES[i];
+		let name = uiPAGENAMES[i];
 		let yPos = y;
 		let buttonHeight = 45;
-		let pageButton = initButton(name, 5 + i * buttonSpread, yPos,uiPageColors[i],switchUiPage, i);
+		let pageButton = initButton(name, 5 + i * buttonSpread, yPos,uiPageColors[i], switchUiPage, i);
+		let curType = solidKeys[i];
+		let xp = 0;
 		pageButton.sliders = [];
 		pageButton.buttons = [];
 		pageButton.label = name;
-		let curType = solidKeys[i];
-		if (name == 'all') curType = 'all';
-		let xp = 0;
+		if (name === 'ALL' || name === 'CUSTOM') curType = name;
+		if (curType === 'CUSTOM') {
+			pageButton.buttons.push(initButton(
+				'MAKE', -(5 + i * buttonSpread) + (xp++) * buttonSpread, buttonHeight,
+				'rgb(0,0,0)',
+				createNewType, -1, pageButton));
+		}
 		for (let v = 0; v < particleKeys.length; v++)
 		{
-			if (curType == 'all' || PARTICLE_PROPERTIES[particleKeys[v]].solType == curType)
+			if (curType === 'ALL' || PARTICLE_PROPERTIES[particleKeys[v]].solType == curType)
 			{
 				let newBut = initButton(
-				particleKeys[v], 5 + (xp++) * buttonSpread, yPos + buttonHeight,
-				PARTICLE_PROPERTIES[PARTICLE_TYPES[particleKeys[v]]].color,
-				setNewType, v);
+					particleKeys[v], -(i * buttonSpread) + (xp++) * buttonSpread, buttonHeight,
+					PARTICLE_PROPERTIES[particleKeys[v]].color,
+					setNewType, v, pageButton);
 				pageButton.buttons.push(newBut);
 			}
 		}

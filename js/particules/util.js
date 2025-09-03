@@ -38,6 +38,7 @@ p.setType = function(newType)
 	this.solType = this.properties.solType;
 	this.lifeTime = this.properties.lifeTime * f_range(.5, 1.5);
 	this.flammability = this.properties.flammability;
+	this.burner = this.properties.burner;
 	this.density = this.properties.density;
 	this.spreadAmount = this.properties.spread;
 	this.updType = this.properties.updType;

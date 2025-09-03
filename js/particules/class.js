@@ -77,11 +77,11 @@ class Particle{
 		for (let i = 0; i < steps; i++) {
 			curX += xStep; curY += yStep;
 			let realX = Math.round(curX); let realY = Math.round(curY);
-			if (isOutOfBorder(realX, realY)){ curX = lastValidx; curY = lastValidy; break; }
+			if (isOutOfBorder(realX, realY)) { curX = lastValidx; curY = lastValidy; break; }
 			let pxAtPos = getPxlAtPos(realX, realY, this);
 			if (!pxAtPos){ lastValidx = curX; lastValidy = curY; continue; }
-			if (this.douse && pxAtPos.setWet(100, this.type)) {  }
-			if (shouldBurn(this, pxAtPos)) pxAtPos.setToFire();
+			if (this.douse) pxAtPos.setWet(100, this.type);
+			if (shouldBurn(this, pxAtPos)) {pxAtPos.setToFire();}
 			if (shouldBurn(pxAtPos, this)) this.setToFire();
 			else if (this.solType === 'LIQUID' && pxAtPos.solType === 'LIQUID') {
 				const a = this.type, b = pxAtPos.type;
@@ -236,11 +236,14 @@ class Particle{
 				}
 		}
 	}
+	updateLightning() {
+		
+	}
 
 	updateType() {
-		if (this.updType === 'STATIC') return;
+		if (this.type === 'WOOD') return;
 		if (this.type == 'CLOUD') return this.updateCloud();
-		if (this.type == 'STEAM' && this.y < 50 && dice(5))
+		else if (this.type == 'STEAM' && this.y < 50 && dice(5))
 			{ launchParticules('CLOUD', this.x * PIXELSIZE, this.y * PIXELSIZE, 10, true); this.toRemove(); }
 		if (this.solType != 'STATIC') {
 			this.ground = getPxlAtPos(this.x, this.y + (this.solType == 'GAS' ? -1 : 1), this);
@@ -250,7 +253,7 @@ class Particle{
 		}
 		if (this.type == 'TORCH' && dice(10))
 			new Particle(this.x, this.y - 1, 'FIRE');
-		if (this.type == 'FIRE') this.FireEffect(this.newX, this.newY);
+		if (this.type == 'FIRE' || this.type === 'TORCH') this.FireEffect(this.newX, this.newY);
 		else if (this.type == 'MAGMA') this.MagmaEffect(this.newX, this.newY);
 		else if (this.type == 'LAVA') this.LavaEffect(this.newX, this.newY);
 		else if (this.type == 'BLOB') this.updateBlob(this.newX, this.newY);

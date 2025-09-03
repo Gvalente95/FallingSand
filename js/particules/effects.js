@@ -44,7 +44,7 @@ p.updateLiquid = function(curX, curY, spreadAm = this.spreadAmount) {
 
 p.FireEffect = function (curX, curY)
 {
-	let depth = 4;
+	let depth = 2;
 	for (let y = -depth; y < depth; y++)
 	{
 		for (let x = -depth; x < depth; x++) {

@@ -130,7 +130,7 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
     div.addEventListener("mousedown", activate);
     div.setAttribute("tabindex", "0");
 
-	if (keyToggle) {window.addEventListener("keydown", (e) => { if (e.code === keyToggle || e.key == keyToggle) activate(); });}
+	if (keyToggle) {window.addEventListener("keydown", (e) => { if (!isInInputField && (e.code === keyToggle || e.key == keyToggle)) activate(); });}
     parent.appendChild(div);
 
     function activate() {

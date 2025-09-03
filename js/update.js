@@ -10,16 +10,17 @@ function updateInput()
 		}
 	}
 	if (MOUSEPRESSED) {
-		if (KEYS['Shift']) deleteParticules(MOUSEX - BRUSHSIZE / 2, MOUSEY - BRUSHSIZE / 2, BRUSHSIZE);
+		if (KEYS['Shift']) deleteParticules(MOUSEX - BRUSHSIZE / 2, MOUSEY - BRUSHSIZE / 2, BRUSHSIZE, null, BRUSHTYPE == 'DISC');
 		else launchParticules(particleKeys[TYPEINDEX]);
 	}
 	if (KEYS['u']) explodeRadius(MOUSEX, MOUSEY, BRUSHSIZE, PARTICLE_TYPES.TNT, 100);
-	if (KEYS['Backspace']) deleteParticules(MOUSEX - BRUSHSIZE / 2, MOUSEY - BRUSHSIZE / 2, BRUSHSIZE, ((KEYS['Shift'] == true) ? particleKeys[TYPEINDEX] : null));
+	if (KEYS['Backspace']) deleteParticules(MOUSEX - BRUSHSIZE / 2, MOUSEY - BRUSHSIZE / 2, BRUSHSIZE, ((KEYS['Shift'] == true) ? particleKeys[TYPEINDEX] : null), BRUSHTYPE == 'DISC');
 	if (KEYS['x'])
 	{
 		let px = getPxlAtPos(MOUSEGRIDX, MOUSEGRIDY);
 		if (px) deleteAllParticules(px.type);
 	}
+	pxAtMouse = getPxlAtPos(MOUSEGRIDX, MOUSEGRIDY);
 }
 
 function flushDestroyedParticles()
@@ -35,6 +36,7 @@ let ticks = 0;
 let time = 0;
 let pxAtMouse = null;
 function update(loop = !inPause) {
+	if (isInInputField) return (requestAnimationFrame(update));
 	now = performance.now();
 	ticks++;
 	if (now - prvNow > 1000)
@@ -46,9 +48,7 @@ function update(loop = !inPause) {
 	infoHeader.text.textContent = `x${MOUSEX},y${MOUSEY} ${'   '}	Pxls: ${activeParticles.length} Tm:${time} Fps:${fps}`;
 	infoHeader.rightText.textContent = pxAtMouse ?
 		`Elem: ${pxAtMouse.type} - 
-		TimeAlive: ${Number(pxAtMouse.timeAlive / 1000).toFixed(1)} - 
-		Wet: ${pxAtMouse.wet} -
-		WetType: ${pxAtMouse.wetType}` : '';
+		TimeAlive: ${Number(pxAtMouse.timeAlive / 1000).toFixed(1)}` : '';
 	updateInput();
 	if (inPause && loop)
 	{
