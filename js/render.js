@@ -18,7 +18,7 @@ function render() {
 		else ctx.fillStyle = particle.color;
 		ctx.fillRect(particle.x * PIXELSIZE, particle.y * PIXELSIZE, PIXELSIZE, PIXELSIZE);
 	}
-	if ((!MOUSEPRESSED || isTwoFingerTouch) && MOUSEX && MOUSEY) {
+	if (((!isMobile || isTwoFingerTouch) && !MOUSEPRESSED) && MOUSEX && MOUSEY) {
 		let px = isTwoFingerTouch ? CANVW / 2 : MOUSEX; py = isTwoFingerTouch ? CANVH / 2 : MOUSEY;
 		let rad = BRUSHSIZE * PIXELSIZE;
 		if (BRUSHTYPE == BRUSHTYPES.DISC)
