@@ -22,12 +22,7 @@ BRUSHTYPE = BRUSHTYPES.RECT;
 const BrushKeys = Object.keys(BRUSHTYPES);
 
 if (isMobile) {
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-		window.scrollTo(0, 1);
-		PIXELSIZE = 2;
-    }, 0);
-  });
+	PIXELSIZE = 2;
 }
 
 //	CANVAS
