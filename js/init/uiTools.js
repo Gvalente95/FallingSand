@@ -12,7 +12,7 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
   label.textContent = labelText;
   label.style.color = "white";
   label.style.fontFamily = "'Press Start 2P', monospace";
-  label.style.fontSize = "10px";
+  label.style.fontSize = "12px";
   label.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
   label.style.cursor = "ns-resize";
 
@@ -76,9 +76,9 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
   minLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
 
 	const curLabel = document.createElement("span");
-	curLabel.textContent = "0";
+	curLabel.textContent = "Hello";
 	curLabel.style.position = "absolute";
-	curLabel.style.top = y + "px";
+	curLabel.style.top = 0 + "px";
 	curLabel.style.right = "-40px";
 	curLabel.style.color = "#fff";
 	curLabel.style.fontFamily = "'Press Start 2P', monospace";
@@ -140,7 +140,8 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
 
   function pointerUp() {
     pointerActive = false;
-    hidePopup();
+	  hidePopup();
+	curLabel.style.top = 0 + "px";
     window.removeEventListener("mousemove", pointerMove);
     window.removeEventListener("touchmove", pointerMove);
   }
@@ -243,7 +244,7 @@ function createSlider(labelText, x, y, min, max, step, value, onChange, height =
             selectRectAtPosition(e.clientX);
         }
     });
-    document.addEventListener("mouseup", () => {isDragging = false;});
+	document.addEventListener("mouseup", () =>{isDragging = false;});
 
     const valueDisplay = document.createElement("span");
     valueDisplay.textContent = String(value);
