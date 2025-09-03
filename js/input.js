@@ -105,7 +105,6 @@ let lastY = null;
 let isTwoFingerTouch = false;
 let lastTouchTime = 0;
 let isDoubleTouch = false;
-
 document.addEventListener('touchstart', (e) => {
     e.preventDefault();
     const now = Date.now();

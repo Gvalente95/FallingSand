@@ -18,12 +18,13 @@ function render() {
 		else ctx.fillStyle = particle.color;
 		ctx.fillRect(particle.x * PIXELSIZE, particle.y * PIXELSIZE, PIXELSIZE, PIXELSIZE);
 	}
-	if (!MOUSEPRESSED && MOUSEX && MOUSEY) {
+	if ((!MOUSEPRESSED || isTwoFingerTouch) && MOUSEX && MOUSEY) {
+		let px = isTwoFingerTouch ? CANVW / 2 : MOUSEX; py = isTwoFingerTouch ? CANVH / 2 : MOUSEY;
 		let rad = BRUSHSIZE * PIXELSIZE;
 		if (BRUSHTYPE == BRUSHTYPES.DISC)
-			drawCircle(MOUSEX, MOUSEY, rad / 4, null, "#575757b0", 2);
+			drawCircle(px, py, rad / 4, null, "#575757b0", 2);
 		else if (BRUSHTYPE == BRUSHTYPES.RECT)
-			drawRect(MOUSEX - rad, MOUSEY - rad, rad * 2, rad * 2, null, "#575757b0",2);
+			drawRect(px - rad, py - rad, rad * 2, rad * 2, null, "#575757b0",2);
 	}
 	if (gridMode) {ctx.drawImage(gridLayer, 0, 0);}
 }
