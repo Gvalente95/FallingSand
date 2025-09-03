@@ -3,11 +3,11 @@ function updateInput()
 	pxAtMouse = getPxlAtPos(MOUSEGRIDX, MOUSEGRIDY);
 	if (MOUSEPRESSED && !isTwoFingerTouch) {
 		if (PICKACTIVE && pxAtMouse) setNewType(getCurTypeIndex(pxAtMouse.type));
-		if (KEYS['Shift']) deleteParticules(MOUSEX - BRUSHSIZE / 2, MOUSEY - BRUSHSIZE / 2, BRUSHSIZE, null, BRUSHTYPE == 'DISC');
+		else if (BRUSHCUT || KEYS['Shift']) deleteParticulesAtMouse();
 		else launchParticules(particleKeys[TYPEINDEX]);
 	}
 	if (KEYS['u']) explodeRadius(MOUSEX, MOUSEY, BRUSHSIZE, PARTICLE_TYPES.TNT, 100);
-	if (KEYS['Backspace']) deleteParticules(MOUSEX - BRUSHSIZE / 2, MOUSEY - BRUSHSIZE / 2, BRUSHSIZE, ((KEYS['Shift'] == true) ? particleKeys[TYPEINDEX] : null), BRUSHTYPE == 'DISC');
+	if (KEYS['Backspace']) deleteParticulesAtMouse();
 	if (KEYS['x'])
 	{
 		let px = getPxlAtPos(MOUSEGRIDX, MOUSEGRIDY);

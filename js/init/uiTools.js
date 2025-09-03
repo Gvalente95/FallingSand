@@ -202,7 +202,8 @@ function setNewBrushSize(newBrushSize) { BRUSHSIZE = newBrushSize; }
 function setNewBrushType(newType) { BRUSHTYPE = BRUSHTYPE == 'RECT' ? 'DISC' : 'RECT'; }
 function setNewGravity(newGravity) { GRAVITY = newGravity;}
 function setNewSpeed(newSpeed) { SIMSPEED = newSpeed; }
-function switchGridMode(newGridMode) { gridMode = newGridMode;}
+function switchGridMode(newGridMode) { gridMode = newGridMode; }
+function switchCut(newCut) { BRUSHCUT = newCut;}
 function setRainIntensity(newIntensity) { RAININTENSITY = (newIntensity / (PIXELSIZE));}
 function goToNextFrame() { switchPause(true); update(false); };
 function switchRain(newActive) { ISRAINING = newActive; }
