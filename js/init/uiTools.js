@@ -1,201 +1,211 @@
 function createVerticalPressSlider(labelText, x, y, min, max, step, value, onChange, totalHeight = 180, width = 90) {
-  const container = document.createElement("div");
-  container.style.position = "absolute";
-  container.style.left = x + "px";
-  container.style.top = y + "px";
-  container.style.display = "inline-flex";
-  container.style.alignItems = "center";
-  container.style.userSelect = "none";
-  container.style.gap = "8px";
+	const sldWidth = "30px";
+	const container = document.createElement("div");
+	container.style.position = "absolute";
+	container.style.left = x + "px";
+	container.style.top = y + "px";
+	container.style.display = "inline-flex";
+	container.style.alignItems = "center";
+	container.style.userSelect = "none";
+	container.style.gap = "8px";
 	container.style.zIndex = "9999";
-	
-let sldWidth = "30px";
 
-  const hotzone = document.createElement("div");
-  hotzone.style.display = "flex";
-  hotzone.style.alignItems = "center";
-  hotzone.style.justifyContent = "center";
-  hotzone.style.width = width + "px";
-  hotzone.style.height = "32px";
-  hotzone.style.border = "2px solid #303030ff";
-  hotzone.style.background = "linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%), rgba(0,0,0,.6)";
-  hotzone.style.cursor = "ns-resize";
+	let isInverted = min > max;
+	if (isInverted) {
+		let tmp = min;
+		min = max;
+		max = tmp;
+	}
 
-  const label = document.createElement("span");
-  label.textContent = labelText;
-  label.style.color = "white";
-  label.style.fontFamily = "'Press Start 2P', monospace";
-  label.style.fontSize = "12px";
-  label.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
+	const hotzone = document.createElement("div");
+	hotzone.style.display = "flex";
+	hotzone.style.alignItems = "center";
+	hotzone.style.justifyContent = "center";
+	hotzone.style.width = width + "px";
+	hotzone.style.height = "32px";
+	hotzone.style.border = "2px solid #303030ff";
+	hotzone.style.background = "linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%), rgba(0,0,0,.6)";
+	hotzone.style.cursor = "ns-resize";
 
-  const popup = document.createElement("div");
-  popup.style.position = "absolute";
-  popup.style.left = "50%";
-  popup.style.top = "50%";
-  popup.style.transform = "translate(-50%, -50%)";
-  popup.style.padding = "8px";
-  popup.style.background = "rgba(0,0,0,.73)";
-  popup.style.border = "2px solid #000";
-  popup.style.borderRadius = "10px";
-  popup.style.boxShadow = "0 3px 0 #5a0000, inset 0 0 0 2px rgba(255,255,255,.08), inset 0 -6px 10px rgba(0,0,0,.25)";
-  popup.style.display = "none";
-  popup.style.zIndex = "2000";
+	const label = document.createElement("span");
+	label.textContent = labelText;
+	label.style.color = "white";
+	label.style.fontFamily = "'Press Start 2P', monospace";
+	label.style.fontSize = "12px";
+	label.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
 
-  const trackWrapper = document.createElement("div");
-  trackWrapper.style.position = "relative";
-  trackWrapper.style.display = "flex";
-  trackWrapper.style.alignItems = "center";
-  trackWrapper.style.justifyContent = "center";
+	const popup = document.createElement("div");
+	popup.style.position = "absolute";
+	popup.style.left = "50%";
+	popup.style.top = "50%";
+	popup.style.transform = "translate(-50%, -50%)";
+	popup.style.padding = "8px";
+	popup.style.background = "rgba(0,0,0,.73)";
+	popup.style.border = "2px solid #000";
+	popup.style.borderRadius = "10px";
+	popup.style.boxShadow = "0 3px 0 #5a0000, inset 0 0 0 2px rgba(255,255,255,.08), inset 0 -6px 10px rgba(0,0,0,.25)";
+	popup.style.display = "none";
+	popup.style.zIndex = "2000";
 
-  const track = document.createElement("div");
-  track.style.position = "relative";
-  track.style.height = totalHeight + "px";
-  track.style.width = sldWidth;
-  track.style.display = "flex";
-  track.style.flexDirection = "column";
-  track.style.alignItems = "center";
-  track.style.justifyContent = "center";
-  track.style.cursor = "ns-resize";
-  track.style.padding = "6px 0";
+	const trackWrapper = document.createElement("div");
+	trackWrapper.style.position = "relative";
+	trackWrapper.style.display = "flex";
+	trackWrapper.style.alignItems = "center";
+	trackWrapper.style.justifyContent = "center";
 
-  const steps = Math.floor((max - min) / step) + 1;
-  const rects = [];
-  const minRectH = 4;
-  const rectM = 2;
-  const usableHeight = totalHeight - 12;
-  const maxRectsByHeight = Math.max(2, Math.floor(usableHeight / (minRectH + rectM * 2)));
-  const visualCount = Math.min(steps, maxRectsByHeight);
-  const rectH = Math.max(minRectH, Math.floor((usableHeight - rectM * 2 * visualCount) / visualCount));
+	const track = document.createElement("div");
+	track.style.position = "relative";
+	track.style.height = totalHeight + "px";
+	track.style.width = sldWidth;
+	track.style.display = "flex";
+	track.style.flexDirection = "column";
+	track.style.alignItems = "center";
+	track.style.justifyContent = "center";
+	track.style.cursor = "ns-resize";
+	track.style.padding = "6px 0";
 
-  const centerValue = (min + max) / 2;
-  const centerIndex = Math.round((centerValue - min) / step);
-  let currentIndex = Math.max(0, Math.min(steps - 1, Math.round((value - min) / step)));
-  let pointerActive = false;
-  let startIndex = currentIndex;
-  let startClientY = 0;
+	const steps = Math.floor((max - min) / step) + 1;
+	const rects = [];
+	const minRectH = 4;
+	const rectM = 2;
+	const usableHeight = totalHeight - 12;
+	const maxRectsByHeight = Math.max(2, Math.floor(usableHeight / (minRectH + rectM * 2)));
+	const visualCount = Math.min(steps, maxRectsByHeight);
+	const rectH = Math.max(minRectH, Math.floor((usableHeight - rectM * 2 * visualCount) / visualCount));
 
-  const maxLabel = document.createElement("span");
-  maxLabel.textContent = max;
-  maxLabel.style.position = "absolute";
-  maxLabel.style.top = "-2px";
-  maxLabel.style.color = "#fff";
-  maxLabel.style.fontFamily = "'Press Start 2P', monospace";
-  maxLabel.style.fontSize = "12px";
-  maxLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
+	const centerValue = (min + max) / 2;
+	const centerIndex = Math.round((centerValue - min) / step);
+	let currentIndex = Math.max(0, Math.min(steps - 1, Math.round((value - min) / step)));
+	let pointerActive = false;
+	let startIndex = currentIndex;
+	let startClientY = 0;
 
-  const minLabel = document.createElement("span");
-  minLabel.textContent = min;
-  minLabel.style.position = "absolute";
-  minLabel.style.bottom = "0px";
-  minLabel.style.color = "#fff";
-  minLabel.style.fontFamily = "'Press Start 2P', monospace";
-  minLabel.style.fontSize = "12px";
-  minLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
+	const maxLabel = document.createElement("span");
+	maxLabel.textContent = max;
+	maxLabel.style.position = "absolute";
+	maxLabel.style.top = "-2px";
+	maxLabel.style.color = "#fff";
+	maxLabel.style.fontFamily = "'Press Start 2P', monospace";
+	maxLabel.style.fontSize = "12px";
+	maxLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
 
-  const curLabel = document.createElement("span");
-  curLabel.textContent = (min + currentIndex * step).toFixed(1);
-  curLabel.style.position = "absolute";
-  curLabel.style.right = "-80px";
-  curLabel.style.top = "50%";
-  curLabel.style.transform = "translateY(-50%)";
-  curLabel.style.color = "#fff";
-  curLabel.style.zIndex = 9999;
-  curLabel.style.fontFamily = "'Press Start 2P', monospace";
-  curLabel.style.fontSize = "20px";
-  curLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
-  curLabel.style.display = "none";
+	const minLabel = document.createElement("span");
+	minLabel.textContent = min;
+	minLabel.style.position = "absolute";
+	minLabel.style.bottom = "0px";
+	minLabel.style.color = "#fff";
+	minLabel.style.fontFamily = "'Press Start 2P', monospace";
+	minLabel.style.fontSize = "12px";
+	minLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
 
-  for (let i = visualCount - 1; i >= 0; i--) {
-    const r = document.createElement("div");
-	  r.style.width = "10px";
-    r.style.height = rectH + "px";
-    r.style.margin = rectM + "px 0";
-    r.style.backgroundColor = "rgba(255,255,255,.3)";
-    r.style.boxShadow = "inset 0 0 0 1px #000";
-    r.style.borderRadius = "2px";
-    track.appendChild(r);
-    rects.push(r);
-  }
+	const curLabel = document.createElement("span");
+	curLabel.textContent = (min + currentIndex * step).toFixed(1);
+	curLabel.style.position = "absolute";
+	curLabel.style.right = "-80px";
+	curLabel.style.top = "50%";
+	curLabel.style.transform = "translateY(-50%)";
+	curLabel.style.color = "#fff";
+	curLabel.style.zIndex = 99999;
+	curLabel.style.fontFamily = "'Press Start 2P', monospace";
+	curLabel.style.fontSize = "20px";
+	curLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
+	curLabel.style.display = "none";
 
-  function clampIndex(i) { return Math.max(0, Math.min(steps - 1, i)); }
-  function indexToVisual(i) {
-    if (visualCount <= 1 || steps <= 1) return 0;
-    return Math.round((i / (steps - 1)) * (visualCount - 1));
-  }
-  function paintIndex(i) {
-    const vi = indexToVisual(i);
-    for (let k = 0; k < rects.length; k++) rects[k].style.backgroundColor = "rgba(255,255,255,.3)";
-    rects[visualCount - 1 - vi].style.backgroundColor = "rgba(255,255,255,.9)";
-  }
-  function positionCurLabelFromIndex(i) {
-    const r = track.getBoundingClientRect();
-    const t = 1 - (i / (steps - 1));
-    const ypx = t * r.height;
-    curLabel.style.top = ypx + "px";
-    curLabel.style.transform = "translateY(-50%)";
-  }
-  function applyIndex(i) {
-    currentIndex = clampIndex(i);
-    const val = min + currentIndex * step;
-    curLabel.textContent = val.toFixed(1);
-    paintIndex(currentIndex);
-    if (onChange) onChange(val);
-  }
-  function indexFromClientYRelative(clientY) {
-    const r = track.getBoundingClientRect();
-    const dy = clientY - startClientY;
-    const stepsPerPx = (steps - 1) / r.height;
-    return startIndex + Math.round(-dy * stepsPerPx);
-  }
-  function showPopup() { popup.style.display = "block"; }
-  function hidePopup() { popup.style.display = "none"; }
+	for (let i = visualCount - 1; i >= 0; i--) {
+		const r = document.createElement("div");
+		r.style.width = "10px";
+		r.style.height = rectH + "px";
+		r.style.margin = rectM + "px 0";
+		r.style.backgroundColor = "rgba(255,255,255,.3)";
+		r.style.boxShadow = "inset 0 0 0 1px #000";
+		r.style.borderRadius = "2px";
+		track.appendChild(r);
+		rects.push(r);
+	}
 
-  function pointerDown(e) {
-    pointerActive = true;
-    startIndex = currentIndex;
-    startClientY = e.touches ? e.touches[0].clientY : e.clientY;
-    showPopup();
-    curLabel.style.display = "block";
-    positionCurLabelFromIndex(currentIndex);
-    window.addEventListener("mousemove", pointerMove, { passive: false });
-    window.addEventListener("touchmove", pointerMove, { passive: false });
-    window.addEventListener("mouseup", pointerUp, { once: true });
-    window.addEventListener("touchend", pointerUp, { once: true });
-  }
-  function pointerMove(e) {
-    if (!pointerActive) return;
-    if (e.cancelable) e.preventDefault();
-    const cY = e.touches ? e.touches[0].clientY : e.clientY;
-    const idx = clampIndex(indexFromClientYRelative(cY));
-    applyIndex(idx);
-    positionCurLabelFromIndex(idx);
-  }
+	function clampIndex(i) { return Math.max(0, Math.min(steps - 1, i)); }
+	function indexToVisual(i) {
+		if (visualCount <= 1 || steps <= 1) return 0;
+		return Math.round((i / (steps - 1)) * (visualCount - 1));
+	}
+	function paintIndex(i) {
+		const vi = indexToVisual(i);
+		for (let k = 0; k < rects.length; k++) rects[k].style.backgroundColor = "rgba(255,255,255,.3)";
+		rects[visualCount - 1 - vi].style.backgroundColor = "rgba(255,255,255,.9)";
+	}
+	function positionCurLabelFromIndex(i) {
+		const r = track.getBoundingClientRect();
+		const t = 1 - (i / (steps - 1));
+		const ypx = t * r.height;
+		curLabel.style.top = ypx + "px";
+		curLabel.style.transform = "translateY(-50%)";
+	}
+	function applyIndex(i) {
+		let prvIndex = currentIndex;
+		currentIndex = clampIndex(i);
+		if (prvIndex != currentIndex) {
+			const val = min + currentIndex * step;
+			curLabel.textContent = val.toFixed(1);
+			paintIndex(currentIndex);
+			if (onChange) onChange(val);
+			au.playSound(au.click);
+		}
+	}
+	function indexFromClientYRelative(clientY) {
+		const r = track.getBoundingClientRect();
+		const dy = clientY - startClientY;
+		const stepsPerPx = (steps - 1) / r.height;
+		return startIndex + Math.round(-dy * stepsPerPx);
+	}
+	function showPopup() { popup.style.display = "block"; }
+	function hidePopup() { popup.style.display = "none"; }
+
+	function pointerDown(e) {
+		pointerActive = true;
+		startIndex = currentIndex;
+		startClientY = e.touches ? e.touches[0].clientY : e.clientY;
+		showPopup();
+		curLabel.style.display = "block";
+		positionCurLabelFromIndex(currentIndex);
+		window.addEventListener("mousemove", pointerMove, { passive: false });
+		window.addEventListener("touchmove", pointerMove, { passive: false });
+		window.addEventListener("mouseup", pointerUp, { once: true });
+		window.addEventListener("touchend", pointerUp, { once: true });
+	}
+	function pointerMove(e) {
+		if (!pointerActive) return;
+		if (e.cancelable) e.preventDefault();
+		const cY = e.touches ? e.touches[0].clientY : e.clientY;
+		const idx = clampIndex(indexFromClientYRelative(cY));
+		applyIndex(idx);
+		positionCurLabelFromIndex(idx);
+	}
 	function pointerUp() {
-	settingBrushSize = false;
-    pointerActive = false;
-    hidePopup();
-    curLabel.style.display = "none";
-    window.removeEventListener("mousemove", pointerMove);
-    window.removeEventListener("touchmove", pointerMove);
-  }
-  function jumpToCenter() { applyIndex(centerIndex); positionCurLabelFromIndex(centerIndex); }
+		settingBrushSize = false;
+		pointerActive = false;
+		hidePopup();
+		curLabel.style.display = "none";
+		window.removeEventListener("mousemove", pointerMove);
+		window.removeEventListener("touchmove", pointerMove);
+	}
+	function jumpToCenter() { applyIndex(centerIndex); positionCurLabelFromIndex(centerIndex); }
 
-  hotzone.addEventListener("mousedown", pointerDown);
-  hotzone.addEventListener("touchstart", pointerDown, { passive: true });
-  hotzone.addEventListener("dblclick", jumpToCenter);
+	hotzone.addEventListener("mousedown", pointerDown);
+	hotzone.addEventListener("touchstart", pointerDown, { passive: true });
+	hotzone.addEventListener("dblclick", jumpToCenter);
 
-  hotzone.appendChild(label);
-  trackWrapper.appendChild(track);
-  trackWrapper.appendChild(maxLabel);
-  trackWrapper.appendChild(minLabel);
-  trackWrapper.appendChild(curLabel);
+	hotzone.appendChild(label);
+	trackWrapper.appendChild(track);
+	trackWrapper.appendChild(maxLabel);
+	trackWrapper.appendChild(minLabel);
+	trackWrapper.appendChild(curLabel);
 
-  container.appendChild(hotzone);
-  popup.appendChild(trackWrapper);
-  container.appendChild(popup);
+	container.appendChild(hotzone);
+	popup.appendChild(trackWrapper);
+	container.appendChild(popup);
 
-  paintIndex(currentIndex);
-  return container;
+	paintIndex(currentIndex);
+	return container;
 }
 
 
@@ -324,6 +334,7 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
             if (onChange) { onChange(div.value != null ? value : div.active); }
         } else if (onChange) onChange(value);
 		updateUi();
+		au.playSound(au.tuk);
 		div.classList.add("clicked");
 		setTimeout(() => { div.classList.remove("clicked"); }, 100);
     }
@@ -363,6 +374,7 @@ function updateUi()
 		if (uiPagesButtons[uiPageIndex].label === 'BRUSH') isOpen = b.value == BRUSHTYPE;
 		b.style.border = isOpen ? openColor : "1px solid rgba(0, 0, 0, 1)"
 		b.style.color = isOpen ? 'rgba(255, 255, 255, 1)' : 'rgba(213, 213, 213, 1)';
+		b.classList.toggle("open", isOpen);
 	}
 }
 

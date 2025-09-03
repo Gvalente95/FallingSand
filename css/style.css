@@ -12,7 +12,6 @@ body {
 	height: 40px;
 	padding: 10px 10px;
 	background: var(--btn-bg, linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%), linear-gradient(180deg, #ff4d4d, #c31212));
-
 	color: #fff;
 	text-align: center;
 	font-family: 'Press Start 2P', monospace;
@@ -22,13 +21,12 @@ body {
 	cursor: pointer;
 	z-index: 1000;
 	border: 2px solid #000;
-	border-radius: 10px;
 	box-sizing: border-box;
 	user-select: none;
-	box-shadow:
+	/* box-shadow:
 	0 3px 0 #5a0000,
 	inset 0 0 0 2px rgba(255,255,255,.08),
-	inset 0 -6px 10px rgba(0,0,0,.25);
+	inset 0 -6px 10px rgba(0,0,0,.25); */
 	transition: transform .06s ease, box-shadow .06s ease, filter .15s ease, background .15s ease;
 }
 
@@ -44,58 +42,18 @@ body {
     inset 0 -3px 6px rgba(0,0,0,.4);
 }
 
-.button:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
+.button .dark-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .15);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    border-radius: inherit;
 }
 
-.button[disabled],
-.button.is-disabled {
-  pointer-events: none;
-  filter: grayscale(80%) brightness(.8);
-  box-shadow: none;
-}
-
-.button--primary {
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%),
-    linear-gradient(180deg, #4da3ff, #125ac3);
-  box-shadow:
-    0 3px 0 #0a2a66,
-    inset 0 0 0 2px rgba(255,255,255,.08),
-    inset 0 -6px 10px rgba(0,0,0,.25);
-}
-
-.button--success {
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%),
-    linear-gradient(180deg, #46d66f, #1e8a3f);
-  box-shadow:
-    0 3px 0 #0e5125,
-    inset 0 0 0 2px rgba(255,255,255,.08),
-    inset 0 -6px 10px rgba(0,0,0,.25);
-}
-
-.button--warning {
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%),
-    linear-gradient(180deg, #ffd24d, #c38612);
-  box-shadow:
-    0 3px 0 #66450a,
-    inset 0 0 0 2px rgba(255,255,255,.08),
-    inset 0 -6px 10px rgba(0,0,0,.25);
-}
-
-.button--ghost {
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0) 60%),
-    linear-gradient(180deg, #303030, #1a1a1a);
-  border-color: #000;
-  color: #eaeaea;
-  box-shadow:
-    0 3px 0 #000,
-    inset 0 0 0 2px rgba(255,255,255,.06),
-    inset 0 -6px 10px rgba(0,0,0,.3);
+.button.open .dark-overlay {
+    opacity: 1;
 }
 
 .button.activeButton{

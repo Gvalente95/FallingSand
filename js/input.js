@@ -4,13 +4,13 @@ canvas.addEventListener('mousedown', (e) => {
 	MOUSEX = e.clientX;
 	MOUSEY = e.clientY;
 	if (PICKACTIVE && pxAtMouse) setNewType(getCurTypeIndex(pxAtMouse.type));
-	if (BRUSHCUT && pxAtMouse) SHOULCUT = true;
+	if (BRUSHCUT) { let pxs = getPxlsInRadius(MOUSEGRIDX, MOUSEGRIDY, BRUSHSIZE * 2); SHOULDCUT = pxs.length > 0};
 	setTimeout(() => { MOUSECLICKED = false }, 50);
 });
 
 canvas.addEventListener('mouseup', () => {
 	MOUSEPRESSED = false;
-	SHOULCUT = false;
+	SHOULDCUT = false;
 });
 
 window.addEventListener('mousemove', (e) => {

@@ -9,7 +9,6 @@ class AudioManager {
 		this.audioQueue = [];
 		this.buttonOk = new Audio(audioPath + "buttonOk.mp3");
 		this.gameOn = new Audio(audioPath + "gameOn.mp3");
-		this.soundMove = new Audio(audioPath + "Move.mp3");
 		this.dig = new Audio(audioPath + "dig.mp3");
 		this.tuk = new Audio(audioPath + "tuk.mp3");
 		this.click = new Audio(audioPath + "click.mp3");
