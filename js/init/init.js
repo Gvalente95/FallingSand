@@ -36,13 +36,13 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	initButton("Brush", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", setNewBrushType, null, actionHeader, true, 'b');
 	initButton("Emitter", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", spawnEmitterAtMouse, null, actionHeader, null, 'l');
 
-	let sldSpread = 300;
+	let sldSpread = 100;
 	let x = 0;
 	let y = yPos - 25;
 	let sliders = [];
-	sliders.push(createSlider("PARTICLE SIZE", x, y, 1, 14, 1, PIXELSIZE, setNewPixelSize));
-	sliders.push(createSlider("GRAVITY", x + sldSpread, y, -1, 1, .1, GRAVITY, setNewGravity));
-	sliders.push(createSlider("SPEED", x + sldSpread * 2, y, .2, 2, .2, SIMSPEED, setNewSpeed));
+	sliders.push(createVerticalPressSlider("Px SIZE", x, y, 1, 19, 1, PIXELSIZE, setNewPixelSize));
+	sliders.push(createVerticalPressSlider("GRAVITY", x + sldSpread, y, -1, 1, .1, GRAVITY, setNewGravity));
+	sliders.push(createVerticalPressSlider("SPEED", x + sldSpread * 2, y, .2, 2.2, .2, SIMSPEED, setNewSpeed));
 	sliders.forEach(slider => document.body.appendChild(slider));
 	return (yPos + height);
 }

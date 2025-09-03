@@ -1,3 +1,170 @@
+function createVerticalPressSlider(labelText, x, y, min, max, step, value, onChange, totalHeight = 180, width = 8) {
+  const container = document.createElement("div");
+  container.style.position = "absolute";
+  container.style.left = x + "px";
+  container.style.top = y + "px";
+  container.style.display = "inline-flex";
+  container.style.alignItems = "center";
+  container.style.userSelect = "none";
+  container.style.gap = "8px";
+
+  const label = document.createElement("span");
+  label.textContent = labelText;
+  label.style.color = "white";
+  label.style.fontFamily = "'Press Start 2P', monospace";
+  label.style.fontSize = "10px";
+  label.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
+  label.style.cursor = "ns-resize";
+
+  const popup = document.createElement("div");
+  popup.style.position = "absolute";
+  popup.style.left = "50%";
+  popup.style.top = "50%";
+  popup.style.transform = "translate(-50%, -50%)";
+  popup.style.padding = "8px";
+  popup.style.background = "rgba(0,0,0,.73)";
+  popup.style.border = "2px solid #000";
+  popup.style.borderRadius = "10px";
+  popup.style.boxShadow = "0 3px 0 #5a0000, inset 0 0 0 2px rgba(255,255,255,.08), inset 0 -6px 10px rgba(0,0,0,.25)";
+  popup.style.display = "none";
+  popup.style.zIndex = "2000";
+
+  const trackWrapper = document.createElement("div");
+  trackWrapper.style.position = "relative";
+  trackWrapper.style.display = "flex";
+  trackWrapper.style.alignItems = "center";
+  trackWrapper.style.justifyContent = "center";
+
+  const track = document.createElement("div");
+  track.style.position = "relative";
+  track.style.height = totalHeight + "px";
+  track.style.width = Math.max(24, width * 3) + "px";
+  track.style.display = "flex";
+  track.style.flexDirection = "column";
+  track.style.alignItems = "center";
+  track.style.justifyContent = "center";
+  track.style.cursor = "ns-resize";
+  track.style.padding = "6px 0";
+
+  const steps = Math.floor((max - min) / step) + 1;
+  const rects = [];
+  const rectH = steps > 20 ? 6 : 10;
+  const rectM = steps > 20 ? 2 : 3;
+
+  const centerValue = (min + max) / 2;
+  const centerIndex = Math.round((centerValue - min) / step);
+  let currentIndex = Math.round((value - min) / step);
+  currentIndex = Math.max(0, Math.min(steps - 1, currentIndex));
+  let pointerActive = false;
+
+  const maxLabel = document.createElement("span");
+  maxLabel.textContent = max;
+  maxLabel.style.position = "absolute";
+  maxLabel.style.top = "-2px";
+  maxLabel.style.color = "#fff";
+  maxLabel.style.fontFamily = "'Press Start 2P', monospace";
+  maxLabel.style.fontSize = "12px";
+  maxLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
+
+  const minLabel = document.createElement("span");
+  minLabel.textContent = min;
+  minLabel.style.position = "absolute";
+  minLabel.style.bottom = "0px";
+  minLabel.style.color = "#fff";
+  minLabel.style.fontFamily = "'Press Start 2P', monospace";
+  minLabel.style.fontSize = "12px";
+  minLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
+
+	const curLabel = document.createElement("span");
+	curLabel.textContent = "0";
+	curLabel.style.position = "absolute";
+	curLabel.style.top = y + "px";
+	curLabel.style.right = "-40px";
+	curLabel.style.color = "#fff";
+	curLabel.style.fontFamily = "'Press Start 2P', monospace";
+	curLabel.style.fontSize = "12px";
+	curLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
+	// curLabel.style.display = "none";
+
+	for (let i = steps - 1; i >= 0; i--) {
+    const r = document.createElement("div");
+    r.style.width = width + "px";
+    r.style.height = rectH + "px";
+    r.style.margin = rectM + "px 0";
+    r.style.backgroundColor = i === currentIndex ? "rgba(255,255,255,.9)" : "rgba(255,255,255,.3)";
+    r.style.boxShadow = "inset 0 0 0 1px #000";
+    r.style.borderRadius = "2px";
+    track.appendChild(r);
+    rects.push(r);
+  }
+
+  function applyIndex(i) {
+    i = Math.max(0, Math.min(steps - 1, i));
+    currentIndex = i;
+	  const val = min + currentIndex * step;
+	  curLabel.textContent = val.toFixed(1);
+	  curLabel.style.top = (MOUSEY - y) + "px";
+    for (let k = 0; k < rects.length; k++) rects[k].style.backgroundColor = "rgba(255,255,255,.3)";
+    rects[steps - 1 - currentIndex].style.backgroundColor = "rgba(255,255,255,.9)";
+    if (onChange) onChange(val);
+  }
+
+  function indexFromClientY(clientY) {
+    const r = track.getBoundingClientRect();
+    const y = clientY - r.top;
+    const t = 1 - y / r.height;
+    const i = Math.round(t * (steps - 1));
+    return i;
+  }
+
+  function showPopup() { popup.style.display = "block"; }
+  function hidePopup() { popup.style.display = "none"; }
+
+	function pointerDown(e) {
+    pointerActive = true;
+    showPopup();
+    const cY = e.touches ? e.touches[0].clientY : e.clientY;
+    applyIndex(indexFromClientY(cY));
+    window.addEventListener("mousemove", pointerMove, { passive: false });
+    window.addEventListener("touchmove", pointerMove, { passive: false });
+    window.addEventListener("mouseup", pointerUp, { once: true });
+    window.addEventListener("touchend", pointerUp, { once: true });
+  }
+
+  function pointerMove(e) {
+    if (!pointerActive) return;
+    if (e.cancelable) e.preventDefault();
+    const cY = e.touches ? e.touches[0].clientY : e.clientY;
+    applyIndex(indexFromClientY(cY));
+  }
+
+  function pointerUp() {
+    pointerActive = false;
+    hidePopup();
+    window.removeEventListener("mousemove", pointerMove);
+    window.removeEventListener("touchmove", pointerMove);
+  }
+
+  function jumpToCenter() { applyIndex(centerIndex); }
+
+  label.addEventListener("mousedown", pointerDown);
+  label.addEventListener("touchstart", pointerDown, { passive: true });
+  label.addEventListener("dblclick", jumpToCenter);
+
+  trackWrapper.appendChild(track);
+  trackWrapper.appendChild(maxLabel);
+  trackWrapper.appendChild(minLabel);
+  container.appendChild(curLabel);
+
+  container.appendChild(label);
+  popup.appendChild(trackWrapper);
+  container.appendChild(popup);
+
+  applyIndex(currentIndex);
+  return container;
+}
+
+
 function createSlider(labelText, x, y, min, max, step, value, onChange, height = 16, width = 5) {
     const container = document.createElement("label");
     container.style.position = "absolute";
@@ -46,17 +213,6 @@ function createSlider(labelText, x, y, min, max, step, value, onChange, height =
     rect.style.margin = "0 " + rectMargin + "px";
     rect.style.boxShadow = "inset 0 0 0 1px rgb(0, 0, 0)";
     rect.style.display = "inline-block";
-
-    // rect.addEventListener("click", (e) => {
-    //     e.stopPropagation(); // Prevent triggering container drag
-    //     currentValue = Math.max(0.01, Number(stepValue.toFixed(2))); // Ensure min 0.01 and 2 decimals
-    //     valueDisplay.textContent = currentValue.toFixed(2); // Limit to 2 decimal places
-    //     rects.forEach(r => r.style.backgroundColor = "rgba(255, 255, 255, 0.3)");
-    //     rect.style.backgroundColor = "rgba(255, 255, 255, 0.9)"; // Highlight selected
-    //     if (onChange) onChange(currentValue);
-    //     rect.scrollIntoView({ inline: "center", behavior: "smooth" });
-    // });
-
     rects.push(rect);
     sliderContainer.appendChild(rect);
 }
@@ -80,19 +236,13 @@ function createSlider(labelText, x, y, min, max, step, value, onChange, height =
   }
 }
 
-    sliderContainer.addEventListener("mousedown", (e) => {
-        isDragging = true;
-        selectRectAtPosition(e.clientX);
-        e.preventDefault();
-    });
-
-    sliderContainer.addEventListener("mousemove", (e) => {
-        if (isDragging) {
-            selectRectAtPosition(e.clientX);
+    sliderContainer.addEventListener("mousedown", (e) => {isDragging = true; selectRectAtPosition(e.clientX);});
+	sliderContainer.addEventListener("mousemove", (e) => {
+		if (isDragging) {
             e.preventDefault();
+            selectRectAtPosition(e.clientX);
         }
     });
-
     document.addEventListener("mouseup", () => {isDragging = false;});
 
     const valueDisplay = document.createElement("span");
@@ -110,7 +260,6 @@ function createSlider(labelText, x, y, min, max, step, value, onChange, height =
 
     const initialRect = rects.find(r => r.style.backgroundColor === "rgba(255, 255, 255, 0.9)");
     if (initialRect) initialRect.scrollIntoView({ inline: "center", behavior: "auto" });
-
     return container;
 }
 
