@@ -1,15 +1,8 @@
 function updateInput()
 {
-	for (let x = 1; x < particleKeys.length + 1; x++)
-	{
-		if (KEYS[x])
-		{
-			setNewType(x - 1);
-			TYPEINDEX = x - 1;
-			launchParticules(particleKeys[TYPEINDEX]);
-		}
-	}
+	pxAtMouse = getPxlAtPos(MOUSEGRIDX, MOUSEGRIDY);
 	if (MOUSEPRESSED) {
+		if (pxAtMouse) setNewType(getCurTypeIndex(pxAtMouse.type));
 		if (KEYS['Shift']) deleteParticules(MOUSEX - BRUSHSIZE / 2, MOUSEY - BRUSHSIZE / 2, BRUSHSIZE, null, BRUSHTYPE == 'DISC');
 		else launchParticules(particleKeys[TYPEINDEX]);
 	}
@@ -20,7 +13,6 @@ function updateInput()
 		let px = getPxlAtPos(MOUSEGRIDX, MOUSEGRIDY);
 		if (px) deleteAllParticules(px.type);
 	}
-	pxAtMouse = getPxlAtPos(MOUSEGRIDX, MOUSEGRIDY);
 }
 
 function flushDestroyedParticles()

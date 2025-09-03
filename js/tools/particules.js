@@ -39,7 +39,7 @@ function launchParticules(type = PARTICLE_TYPES.SAND, x = MOUSEX, y = MOUSEY, ra
 	}
 }
 
-function deleteParticulesAtMouse(){deleteParticules(MOUSEGRIDX - BRUSHSIZE / 2, MOUSEGRIDXY - BRUSHSIZE / 2, BRUSHSIZE, null, BRUSHTYPE == BRUSHTYPES.DISC);}
+function deleteParticulesAtMouse(){deleteParticules(MOUSEGRIDX - BRUSHSIZE / 2, MOUSEGRIDY - BRUSHSIZE / 2, BRUSHSIZE, null, BRUSHTYPE == BRUSHTYPES.DISC);}
 
 function deleteAllParticules(type = null)
 {
