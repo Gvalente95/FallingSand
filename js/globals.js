@@ -6,13 +6,6 @@ MOUSEDX = MOUSEDY = 0;
 MOUSEGRIDX = MOUSEGRIDY = 0;
 MOUSEMOVED = false;
 const isMobile = isMobileDevice();
-if (isMobile) {
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      window.scrollTo(0, 1); // Scroll 1px to hide address bar
-    }, 0);
-  });
-}
 
 // PARAMS
 PIXELSIZE = 4;
@@ -27,6 +20,15 @@ RAININTENSITY = 100;
 const BRUSHTYPES = Object.freeze({ DISC: 'DISC', RECT: 'RECT', LOSANGE: 'LOSANGE', RAND: 'RAND', })
 BRUSHTYPE = BRUSHTYPES.RECT;
 const BrushKeys = Object.keys(BRUSHTYPES);
+
+if (isMobile) {
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+		window.scrollTo(0, 1);
+		PIXELSIZE = 2;
+    }, 0);
+  });
+}
 
 //	CANVAS
 CANVW = window.innerWidth;
