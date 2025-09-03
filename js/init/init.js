@@ -20,10 +20,10 @@ function initInfoHeader(yPos, color = 'black', height)
 	let x = 10;
 	let y = yPos + 10;
 	let sliders = [];
-	sliders.push(createVerticalPressSlider("Px SIZE", x, y, 1, 19, 1, PIXELSIZE, setNewPixelSize));
-	sliders.push(createVerticalPressSlider("GRAVITY", x + sldSpread, y, -1, 1, .1, GRAVITY, setNewGravity));
-	sliders.push(createVerticalPressSlider("SPEED", x + sldSpread * 2, y, .2, 2.2, .2, SIMSPEED, setNewSpeed));
-	sliders.push(createVerticalPressSlider("SPEED", x + sldSpread * 3, y, 1, MAXBRUSHSIZE, 1, BRUSHSIZE, setNewBrushSize));
+	sliders.push(createVerticalPressSlider("Px Size", x, y, 1, 19, 1, PIXELSIZE, setNewPixelSize));
+	sliders.push(createVerticalPressSlider("Gravity", x + sldSpread, y, -1, 1, .1, GRAVITY, setNewGravity));
+	sliders.push(createVerticalPressSlider("Speed", x + sldSpread * 2, y, .2, 2.2, .2, SIMSPEED, setNewSpeed));
+	sliders.push(createVerticalPressSlider("Brush Sz", x + sldSpread * 3, y, 1, MAXBRUSHSIZE, 1, BRUSHSIZE, setNewBrushSize));
 	sliders.forEach(slider => document.body.appendChild(slider));
 	return (yPos + height);
 }
