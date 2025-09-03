@@ -37,7 +37,7 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	initButton("Emitter", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", spawnEmitterAtMouse, null, actionHeader, null, 'l');
 
 	let sldSpread = 130;
-	let x = 0;
+	let x = 10;
 	let y = yPos - 20;
 	let sliders = [];
 	sliders.push(createVerticalPressSlider("Px SIZE", x, y, 1, 19, 1, PIXELSIZE, setNewPixelSize));
