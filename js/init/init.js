@@ -14,6 +14,16 @@ function initInfoHeader(yPos, color = 'black', height)
 	rInfo.style.textContent = "awf";
 	infoHeader.appendChild(rInfo);
 	infoHeader.rightText = rInfo;
+
+
+	let sldSpread = 70;
+	let x = 10;
+	let y = yPos + 10;
+	let sliders = [];
+	sliders.push(createVerticalPressSlider("Px SIZE", x, y, 1, 19, 1, PIXELSIZE, setNewPixelSize));
+	sliders.push(createVerticalPressSlider("GRAVITY", x + sldSpread, y, -1, 1, .1, GRAVITY, setNewGravity));
+	sliders.push(createVerticalPressSlider("SPEED", x + sldSpread * 2, y, .2, 2.2, .2, SIMSPEED, setNewSpeed));
+	sliders.forEach(slider => document.body.appendChild(slider));
 	return (yPos + height);
 }
 
@@ -36,14 +46,6 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	initButton("Brush", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", setNewBrushType, null, actionHeader, true, 'b');
 	initButton("Emitter", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", spawnEmitterAtMouse, null, actionHeader, null, 'l');
 
-	let sldSpread = 130;
-	let x = 10;
-	let y = yPos - 20;
-	let sliders = [];
-	sliders.push(createVerticalPressSlider("Px SIZE", x, y, 1, 19, 1, PIXELSIZE, setNewPixelSize));
-	sliders.push(createVerticalPressSlider("GRAVITY", x + sldSpread, y, -1, 1, .1, GRAVITY, setNewGravity));
-	sliders.push(createVerticalPressSlider("SPEED", x + sldSpread * 2, y, .2, 2.2, .2, SIMSPEED, setNewSpeed));
-	sliders.forEach(slider => document.body.appendChild(slider));
 	return (yPos + height);
 }
 
@@ -91,7 +93,7 @@ function inituiPagesHeader(y, color = 'grey', height = 40)
 
 function initUi()
 {
-	let y = initInfoHeader(CANVH, 'rgba(0, 0, 0, 1)', 25);
+	let y = initInfoHeader(CANVH, 'rgba(0, 0, 0, 1)', 35);
 	y = initActionHeader(y, 'rgb(23, 14, 23)');
 	y = inituiPagesHeader(y + 10, 'rgb(23, 14, 23)');
 

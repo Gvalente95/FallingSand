@@ -22,10 +22,6 @@ const BRUSHTYPES = Object.freeze({ DISC: 'DISC', RECT: 'RECT', LOSANGE: 'LOSANGE
 BRUSHTYPE = BRUSHTYPES.RECT;
 const BrushKeys = Object.keys(BRUSHTYPES);
 
-if (isMobile) {
-	PIXELSIZE = 2;
-}
-
 //	CANVAS
 CANVW = window.innerWidth;
 CANVH = window.innerHeight - 180;

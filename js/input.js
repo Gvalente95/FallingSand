@@ -133,7 +133,7 @@ document.addEventListener('touchmove', (e) => {
         const currentY = (touch1.clientY + touch2.clientY) / 2;
         if (lastY !== null) {
             const deltaY = (currentY - lastY) * 2;
-            simulateWheelEvent(e.target, deltaY);
+            // simulateWheelEvent(e.target, deltaY);
         }
         lastY = currentY;
     }
