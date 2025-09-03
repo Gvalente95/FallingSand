@@ -207,7 +207,7 @@ function switchCut(newCut) { BRUSHCUT = newCut;}
 function setRainIntensity(newIntensity) { RAININTENSITY = (newIntensity / (PIXELSIZE));}
 function goToNextFrame() { switchPause(true); update(false); };
 function switchRain(newActive) { ISRAINING = newActive; }
-function switchPick(newActive) { if (pxAtMouse) setNewType(getCurTypeIndex(pxAtMouse.type)); else PICKACTIVE = newActive; }
+function switchPick(newActive) { PICKACTIVE = newActive; }
 
 function setNewPixelSize(newPixelSize)
 {

@@ -26,7 +26,7 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	let actionHeader = addHeader(yPos, color, height, null);
 	pauseButton = initButton("Pause", 5, 0, "rgba(45, 67, 124, 0.18)", switchPause, -1, actionHeader, false, 'Enter');
 	initButton(">", 5 + xMargin, 0, "rgba(45, 67, 124, 0.18)", goToNextFrame, null, actionHeader, null, 'Space');
-	initButton("Reset", 5 + xMargin * ++nn, 0, "rgba(45, 67, 124, 0.18)", resetParticles, PIXELSIZE, actionHeader, null, 'r');
+	initButton("Clear", 5 + xMargin * ++nn, 0, "rgba(45, 67, 124, 0.18)", resetParticles, PIXELSIZE, actionHeader, null, 'r');
 	initButton("Fall", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", switchRain, null, actionHeader, false, 'f');
 	initButton("Cut", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", switchCut, null, actionHeader, false, "c");
 	initButton("Pick", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", switchPick, null, actionHeader, false, "p");
