@@ -1,7 +1,7 @@
 function updateInput()
 {
 	pxAtMouse = getPxlAtPos(MOUSEGRIDX, MOUSEGRIDY);
-	if (MOUSEPRESSED) {
+	if (MOUSEPRESSED && !isTwoFingerTouch) {
 		if (PICKACTIVE && pxAtMouse) setNewType(getCurTypeIndex(pxAtMouse.type));
 		if (KEYS['Shift']) deleteParticules(MOUSEX - BRUSHSIZE / 2, MOUSEY - BRUSHSIZE / 2, BRUSHSIZE, null, BRUSHTYPE == 'DISC');
 		else launchParticules(particleKeys[TYPEINDEX]);
