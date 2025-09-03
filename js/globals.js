@@ -6,6 +6,13 @@ MOUSEDX = MOUSEDY = 0;
 MOUSEGRIDX = MOUSEGRIDY = 0;
 MOUSEMOVED = false;
 const isMobile = isMobileDevice();
+if (isMobile) {
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      window.scrollTo(0, 1); // Scroll 1px to hide address bar
+    }, 0);
+  });
+}
 
 // PARAMS
 PIXELSIZE = 4;
