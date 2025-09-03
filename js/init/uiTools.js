@@ -203,11 +203,11 @@ function setNewBrushType(newType) { BRUSHTYPE = BRUSHTYPE == 'RECT' ? 'DISC' : '
 function setNewGravity(newGravity) { GRAVITY = newGravity;}
 function setNewSpeed(newSpeed) { SIMSPEED = newSpeed; }
 function switchGridMode(newGridMode) { gridMode = newGridMode; }
-function switchCut(newCut) { BRUSHCUT = newCut;}
 function setRainIntensity(newIntensity) { RAININTENSITY = (newIntensity / (PIXELSIZE));}
 function goToNextFrame() { switchPause(true); update(false); };
 function switchRain(newActive) { ISRAINING = newActive; }
-function switchPick(newActive) { PICKACTIVE = newActive; }
+function switchCut(newCut) { BRUSHCUT = newCut; if (newCut) { PICKACTIVE = false; pickButton.active = false; pickButton.classList.remove("activeButton"); }}
+function switchPick(newActive) { PICKACTIVE = newActive; if (newActive) { BRUSHCUT = false; cutButton.active = false; cutButton.classList.remove("activeButton"); } }
 
 function setNewPixelSize(newPixelSize)
 {

@@ -36,10 +36,10 @@ function update(loop = !inPause) {
 		fps = ticks;
 		ticks = 0;
 	}
-	infoHeader.text.textContent = `x${MOUSEX},y${MOUSEY} ${'   '}	Pxls: ${activeParticles.length} Tm:${time} Fps:${fps}`;
-	infoHeader.rightText.textContent = pxAtMouse ?
-		`Elem: ${pxAtMouse.type} - 
-		TimeAlive: ${Number(pxAtMouse.timeAlive / 1000).toFixed(1)}` : '';
+	// infoHeader.text.textContent = `x${MOUSEX},y${MOUSEY} ${'   '}	Pxls: ${activeParticles.length} Tm:${time} Fps:${fps}`;
+	// infoHeader.rightText.textContent = pxAtMouse ?
+	// 	`Elem: ${pxAtMouse.type} - 
+	// 	TimeAlive: ${Number(pxAtMouse.timeAlive / 1000).toFixed(1)}` : '';
 	updateInput();
 	if (inPause && loop)
 	{

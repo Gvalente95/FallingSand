@@ -18,6 +18,8 @@ function initInfoHeader(yPos, color = 'black', height)
 }
 
 let pauseButton = null;
+let pickButton = null;
+let cutButton = null;
 function initActionHeader(yPos, color = 'red', height = 40)
 {
 	let xMargin = 65;
@@ -28,15 +30,15 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	initButton(">", 5 + xMargin, 0, "rgba(45, 67, 124, 0.18)", goToNextFrame, null, actionHeader, null, 'Space');
 	initButton("Clear", 5 + xMargin * ++nn, 0, "rgba(45, 67, 124, 0.18)", resetParticles, PIXELSIZE, actionHeader, null, 'r');
 	initButton("Fall", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", switchRain, null, actionHeader, false, 'f');
-	initButton("Cut", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", switchCut, null, actionHeader, false, "c");
-	initButton("Pick", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", switchPick, null, actionHeader, false, "p");
+	cutButton = initButton("Cut", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", switchCut, null, actionHeader, false, "c");
+	pickButton = initButton("Pick", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", switchPick, null, actionHeader, false, "p");
 	initButton("Grid", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", switchGridMode, null, actionHeader, true, "g");
 	initButton("Brush", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", setNewBrushType, null, actionHeader, true, 'b');
 	initButton("Emitter", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", spawnEmitterAtMouse, null, actionHeader, null, 'l');
 
 	let sldSpread = 300;
-	let x = 5 + xMargin * nn + 80;
-	let y = yPos + 5;
+	let x = 0;
+	let y = yPos - 25;
 	let sliders = [];
 	sliders.push(createSlider("PARTICLE SIZE", x, y, 1, 14, 1, PIXELSIZE, setNewPixelSize));
 	sliders.push(createSlider("GRAVITY", x + sldSpread, y, -1, 1, .1, GRAVITY, setNewGravity));
