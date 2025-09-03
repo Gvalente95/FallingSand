@@ -16,9 +16,9 @@ function initInfoHeader(yPos, color = 'black', height)
 	infoHeader.rightText = rInfo;
 
 
-	let sldSpread = 70;
-	let x = 10;
-	let y = yPos + 10;
+	let sldSpread = 95;
+	let x = 5;
+	let y = yPos;
 	let sliders = [];
 	sliders.push(createVerticalPressSlider("Px Size", x, y, 1, 19, 1, PIXELSIZE, setNewPixelSize));
 	sliders.push(createVerticalPressSlider("Gravity", x + sldSpread, y, -1, 1, .1, GRAVITY, setNewGravity));
@@ -95,7 +95,7 @@ function inituiPagesHeader(y, color = 'grey', height = 40)
 function initUi()
 {
 	let y = initInfoHeader(CANVH, 'rgba(0, 0, 0, 1)', 35);
-	y = initActionHeader(y, 'rgb(23, 14, 23)');
+	y = initActionHeader(y + 10, 'rgb(23, 14, 23)');
 	y = inituiPagesHeader(y + 10, 'rgb(23, 14, 23)');
 
 	switchUiPage(0);

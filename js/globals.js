@@ -7,6 +7,7 @@ MOUSEGRIDX = MOUSEGRIDY = 0;
 MOUSEMOVED = false;
 const isMobile = isMobileDevice();
 
+SHOULCUT = false;
 // PARAMS
 PIXELSIZE = 4;
 BRUSHSIZE = 8;

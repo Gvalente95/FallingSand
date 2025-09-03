@@ -18,8 +18,8 @@ function render() {
 		else ctx.fillStyle = particle.color;
 		ctx.fillRect(particle.x * PIXELSIZE, particle.y * PIXELSIZE, PIXELSIZE, PIXELSIZE);
 	}
-	if (((!isMobile || isTwoFingerTouch) && !MOUSEPRESSED) && MOUSEX && MOUSEY) {
-		let px = isTwoFingerTouch ? CANVW / 2 : MOUSEX; py = isTwoFingerTouch ? CANVH / 2 : MOUSEY;
+	if (MOUSEX && MOUSEY && ((settingBrushSize) || (!isMobile && !MOUSEPRESSED) || (isMobile && MOUSEPRESSED))) {
+		let px = settingBrushSize ? CANVW / 2 : MOUSEX; py = settingBrushSize ? CANVH / 2 : MOUSEY;
 		let rad = BRUSHSIZE * PIXELSIZE;
 		if (BRUSHTYPE == BRUSHTYPES.DISC)
 			drawCircle(px, py, rad / 4, null, "#575757b0", 2);

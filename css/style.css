@@ -12,6 +12,7 @@ body {
 	height: 40px;
 	padding: 10px 10px;
 	background: var(--btn-bg, linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%), linear-gradient(180deg, #ff4d4d, #c31212));
+
 	color: #fff;
 	text-align: center;
 	font-family: 'Press Start 2P', monospace;

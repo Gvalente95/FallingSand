@@ -2,7 +2,7 @@ function updateInput()
 {
 	pxAtMouse = getPxlAtPos(MOUSEGRIDX, MOUSEGRIDY);
 	if (MOUSEPRESSED && !isTwoFingerTouch) {
-		if (BRUSHCUT || KEYS['Shift']) deleteParticulesAtMouse();
+		if ((BRUSHCUT && SHOULCUT) || KEYS['Shift']) deleteParticulesAtMouse();
 		else launchParticules(particleKeys[TYPEINDEX]);
 	}
 	if (KEYS['u']) explodeRadius(MOUSEX, MOUSEY, BRUSHSIZE, PARTICLE_TYPES.TNT, 100);

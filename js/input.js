@@ -4,11 +4,13 @@ canvas.addEventListener('mousedown', (e) => {
 	MOUSEX = e.clientX;
 	MOUSEY = e.clientY;
 	if (PICKACTIVE && pxAtMouse) setNewType(getCurTypeIndex(pxAtMouse.type));
+	if (BRUSHCUT && pxAtMouse) SHOULCUT = true;
 	setTimeout(() => { MOUSECLICKED = false }, 50);
 });
 
 canvas.addEventListener('mouseup', () => {
 	MOUSEPRESSED = false;
+	SHOULCUT = false;
 });
 
 window.addEventListener('mousemove', (e) => {
