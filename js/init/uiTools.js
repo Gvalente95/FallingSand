@@ -76,10 +76,10 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
   minLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
 
 	const curLabel = document.createElement("span");
-	curLabel.textContent = "Hello";
+	curLabel.textContent = value;
 	curLabel.style.position = "absolute";
 	curLabel.style.top = 0 + "px";
-	curLabel.style.right = "-40px";
+	curLabel.style.right = "-10px";
 	curLabel.style.color = "#fff";
 	curLabel.style.fontFamily = "'Press Start 2P', monospace";
 	curLabel.style.fontSize = "12px";
@@ -102,6 +102,7 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
     i = Math.max(0, Math.min(steps - 1, i));
     currentIndex = i;
 	  const val = min + currentIndex * step;
+		curLabel.style.right = "-40px";
 	  curLabel.textContent = val.toFixed(1);
 	  curLabel.style.top = (MOUSEY - y) + "px";
     for (let k = 0; k < rects.length; k++) rects[k].style.backgroundColor = "rgba(255,255,255,.3)";
@@ -160,7 +161,6 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
   container.appendChild(label);
   popup.appendChild(trackWrapper);
   container.appendChild(popup);
-
   applyIndex(currentIndex);
   return container;
 }
