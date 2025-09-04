@@ -16,7 +16,7 @@ function initInfoText() {
 	infoMouse.style.top = "20px";
 	document.body.appendChild(infoMouse);
 }
-function initInfoHeader(yPos, color = 'black', height)
+function initInfoHeader(yPos, height)
 {
 	let spread = 95;
 	let x = 5;
@@ -29,7 +29,7 @@ function initInfoHeader(yPos, color = 'black', height)
 	sliders.push(createVerticalPressSlider("Gravity", x + spread * n++, 0, 1, -1, .1, GRAVITY, setNewGravity));
 	sliders.push(createVerticalPressSlider("Rain Pow", x + spread * n++, 0, 1, 100, 1, RAINPOW, setRAINPOW));
 	let sldW = 19;
-	infoHeader = addHeader(yPos, color, height, null, sldW * n);
+	infoHeader = addHeader(yPos, null, height, null, sldW * n);
 	sliders.forEach(slider => infoHeader.appendChild(slider));
 	return (yPos + height);
 }
@@ -54,9 +54,9 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	rewButton = initButton("<", 5 + xMargin * nn++, 0, baseColor, goToPrevFrame, null, actionHeader, null, '1');
 	pauseButton = initButton("Pause", 5 + xMargin * nn++, 0, baseColor, switchPause, -1, actionHeader, false, '2', p + "pause.png");
 	initButton(">", 5 + xMargin * nn++, 0, baseColor, goToNextFrame, null, actionHeader, null, '3');
-	initButton("Clear", 5 + xMargin * nn++, 0, baseColor, resetParticles, PIXELSIZE, actionHeader, null, 'r', p + "broom.png");
 	initButton("Fall", 5 + xMargin * nn++, 0, baseColor, switchRain, null, actionHeader, false, 'f', p + "drop.png");
 	cutButton = initButton("Cut", 5 + xMargin * nn++, 0, baseColor, switchCut, null, actionHeader, false, "c", p + "eraser.png", wp + "eraser.png");
+	initButton("Clear", 5 + xMargin * nn++, 0, baseColor, resetParticles, PIXELSIZE, actionHeader, null, 'r', p + "broom.png");
 	pickButton = initButton("Pick", 5 + xMargin * nn++, 0, baseColor, switchPick, null, actionHeader, false, "p", p + "eyedropper.png", wp + "eyedropper.png");
 	initButton("Grid", 5 + xMargin * nn++, 0, baseColor, switchGridMode, null, actionHeader, true, "g", p + "grid.png");
 	initButton("Brush", 5 + xMargin * nn++, 0, baseColor, setNewBrushType, null, actionHeader, true, 'b', p + "disk.png");
@@ -105,13 +105,14 @@ function inituiPagesHeader(y)
 		}
 		uiPagesButtons.push(pageButton);
 	}
+	return (y + 80);
 }
 
 function initUi()
 {
-	let y = initInfoHeader(CANVH, 'rgba(0, 0, 0, 1)', 35);
-	y = initActionHeader(y + 10, 'rgb(23, 14, 23)');
-	y = inituiPagesHeader(y + 5, 'rgb(23, 14, 23)');
+	let y = initActionHeader(CANVH, 'rgb(23, 14, 23)');
+	y = initInfoHeader(y + 2 , 35);
+	y = inituiPagesHeader(y + 2, 'rgb(23, 14, 23)');
 	initInfoText();
 	switchUiPage(0);
 	setNewType(0);

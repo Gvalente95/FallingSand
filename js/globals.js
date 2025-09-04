@@ -31,7 +31,7 @@ const BrushKeys = Object.keys(BRUSHTYPES);
 
 //	CANVAS
 CANVW = window.innerWidth;
-CANVH = window.innerHeight - 180;
+CANVH = window.innerHeight - 165;
 GRIDW = Math.floor(CANVW / PIXELSIZE);
 GRIDH = Math.floor(CANVH / PIXELSIZE);
 
