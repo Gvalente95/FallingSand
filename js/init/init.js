@@ -23,10 +23,10 @@ function initInfoHeader(yPos, color = 'black', height)
 	let n = 0;
 
 	let sliders = [];
+	sliders.push(createVerticalPressSlider("Brush Sz", x + spread * n++, 0, 1, 100, 1, BRUSHSIZE, setNewBrushSize));
 	sliders.push(createVerticalPressSlider("Px Size", x + spread * n++, 0, 1, 19, 1, PIXELSIZE, setNewPixelSize));
-	sliders.push(createVerticalPressSlider("Gravity", x + spread * n++, 0, 1, -1, .1, GRAVITY, setNewGravity));
 	sliders.push(createVerticalPressSlider("Speed", x + spread * n++, 0, .2, 2.2, .2, SIMSPEED, setNewSpeed));
-	sliders.push(createVerticalPressSlider("Brush Sz", x + spread * n++, 0, 1, MAXBRUSHSIZE, 1, BRUSHSIZE, setNewBrushSize));
+	sliders.push(createVerticalPressSlider("Gravity", x + spread * n++, 0, 1, -1, .1, GRAVITY, setNewGravity));
 	sliders.push(createVerticalPressSlider("Rain Pow", x + spread * n++, 0, 1, 100, 1, RAINPOW, setRAINPOW));
 	let sldW = 19;
 	infoHeader = addHeader(yPos, color, height, null, sldW * n);

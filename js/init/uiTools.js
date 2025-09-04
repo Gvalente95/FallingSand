@@ -508,7 +508,7 @@ function getCurButtonTypeIndex()
 function getCurTypeIndex(typeString) { return (particleKeys.indexOf(typeString)); }
 
 let settingBrushSize = false;
-function setNewBrushSize(newBrushSize) { BRUSHSIZE = newBrushSize; settingBrushSize = true; }
+function setNewBrushSize(newPercentile) { BRUSHSIZE = ((Math.min(GRIDW, GRIDH) / 3) / 100) * newPercentile; settingBrushSize = true; }
 function setNewBrushType(newType) { BRUSHTYPE = BRUSHTYPE == 'RECT' ? 'DISC' : 'RECT'; }
 function setNewGravity(newGravity) { GRAVITY = newGravity;}
 function setNewSpeed(newSpeed) { SIMSPEED = newSpeed; }
