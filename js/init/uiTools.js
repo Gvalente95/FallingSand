@@ -422,66 +422,49 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	return div;
 }
 
-function addHeader(y, color, height, borderColor = null, isDraggable = true, hasDrags = tru) {
-  let header = document.createElement("div");
-  header.style.top = y + "px";
-  header.style.left = "0px";
-  header.className = "uiHeader";
-  header.style.width = CANVW + "px";
-  header.style.backgroundColor = color;
-  header.style.height = height + "px";
-  header.style.position = "absolute";
-  if (borderColor) header.style.border = "1px solid " + borderColor;
-  document.body.appendChild(header);
+function addHeader(y, color, height, borderColor = null, dragWidth = 0) {
+	let header = document.createElement("div");
+	header.style.top = y + "px";
+	header.style.left = "0px";
+	header.className = "uiHeader";
+	header.style.width = CANVW + "px";
+	if (color) header.style.backgroundColor = color;
+	else header.style.backgroundColor = "rgba(0, 0, 0, 0)";
+	header.style.height = height + "px";
+	header.style.position = "absolute";
+	if (borderColor) header.style.border = "1px solid " + borderColor;
+	document.body.appendChild(header);
 
-  if (isDraggable) {
-    header.style.userSelect = "none";
-    header.style.cursor = "grab";
-    let dragging = false;
-    let startX = 0;
-    let startLeft = 0;
-    function onMove(e){
-      if (!dragging) return;
-      const dx = e.clientX - startX;
-      const maxLeft = 0;
-      const minLeft = -CANVW;
-      header.style.left = clamp(startLeft + dx, minLeft, maxLeft) + "px";
-    }
-    function onUp(){
-      dragging = false;
-      header.style.cursor = "grab";
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-    }
-    header.addEventListener("mousedown", (e) => {
-      dragging = true;
-      header.style.cursor = "grabbing";
-      startX = e.clientX;
-      startLeft = parseFloat(getComputedStyle(header).left) || 0;
-      document.addEventListener("mousemove", onMove);
-      document.addEventListener("mouseup", onUp);
-    });
-  }
-
-  if (hasDrags) {
-    let curX = parseFloat(header.style.left) || 0;
-    const minLeft = -CANVW, maxLeft = 0;
-
-    const leftBtn = initButton("<", 8, 0, "rgba(0,0,0,.6)", () => {
-      curX = clamp(curX + CANVW, minLeft, maxLeft);
-      header.style.left = curX + "px";
-    }, null, header);
-    const rightBtn = initButton(">", CANVW - 58, 0, "rgba(0,0,0,.6)", () => {
-      curX = clamp(curX - CANVW, minLeft, maxLeft);
-      header.style.left = curX + "px";
-    }, null, header);
-
-    leftBtn.style.zIndex = "10";
-    rightBtn.style.zIndex = "10";
-    leftBtn.addEventListener("mousedown", e => e.stopPropagation());
-    rightBtn.addEventListener("mousedown", e => e.stopPropagation());
-  }
-  return header;
+	if (dragWidth && isMobile) {
+	header.style.userSelect = "none";
+	header.style.cursor = "grab";
+	header.style.width = dragWidth;
+	let dragging = false;
+	let startX = 0;
+	let startLeft = 0;
+	function onMove(e){
+		if (!dragging) return;
+		const dx = e.clientX - startX;
+		const maxLeft = 0;
+		const minLeft = -parseFloat(header.style.width);
+		header.style.left = clamp(startLeft + dx, minLeft, maxLeft) + "px";
+	}
+	function onUp(){
+		dragging = false;
+		header.style.cursor = "grab";
+		document.removeEventListener("mousemove", onMove);
+		document.removeEventListener("mouseup", onUp);
+	}
+	header.addEventListener("mousedown", (e) => {
+		dragging = true;
+		header.style.cursor = "grabbing";
+		startX = e.clientX;
+		startLeft = parseFloat(getComputedStyle(header).left) || 0;
+		document.addEventListener("mousemove", onMove);
+		document.addEventListener("mouseup", onUp);
+	});
+	}
+	return header;
 }
 
 
@@ -509,7 +492,7 @@ function updateUi()
 	}
 }
 
-function switchUiPage(newPageIndex){ uiPageIndex = newPageIndex;}
+function switchUiPage(newPageIndex) {uiPageIndex = newPageIndex;}
 function setNewType(newIndex) { switchCut(false); TYPEINDEX = newIndex; for (const b of uiPagesButtons[uiPageIndex].buttons) if (b.label == particleKeys[newIndex]) typeButton = b; }
 function getCurButtonTypeIndex()
 {
