@@ -2,7 +2,7 @@ const audioPath = "ressources/audio/";
 class AudioManager {
 	constructor() {
 		this.lastPlayTime = 0;
-		this.canPlay = true;
+		this.canPlay = isMobile ? false : true;
 		this.maxQueue = 200;
 		this.active = true;
 		this.playInterval = 0.05;

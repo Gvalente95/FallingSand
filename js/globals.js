@@ -1,26 +1,31 @@
 //	INPUT
 KEYS = {};
+ISREWINDING = false;
 MOUSECLICKED = MOUSEPRESSED = false;
 MOUSEX = MOUSEY = null;
 MOUSEDX = MOUSEDY = 0;
 MOUSEGRIDX = MOUSEGRIDY = 0;
 MOUSEMOVED = false;
+CLICKCOLOR = getRandomcolor();
+PXATMOUSE = null;
 const isMobile = isMobileDevice();
 
-SHOULDCUT = false;
 // PARAMS
 PIXELSIZE = 4;
 BRUSHSIZE = 8;
+MAXPARTICLES = 100000;
 MAXBRUSHSIZE = 40;
-BRUSHCUT = false;
-PICKACTIVE = false;
 XDRAG = .1;
 GRAVITY = .1;
 SIMSPEED = 1;
 TYPEINDEX = 0;
+TRAILAMOUNT = 10;
+RAINPOW = 50;
+BRUSHCUT = false;
+PICKACTIVE = false;
 ISRAINING = false;
-RAININTENSITY = 100;
-const BRUSHTYPES = Object.freeze({ DISC: 'DISC', RECT: 'RECT', LOSANGE: 'LOSANGE', RAND: 'RAND', })
+SHOULDCUT = false;
+const BRUSHTYPES = Object.freeze({ DISC: 'DISC', RECT: 'RECT'})
 BRUSHTYPE = BRUSHTYPES.RECT;
 const BrushKeys = Object.keys(BRUSHTYPES);
 
@@ -31,7 +36,7 @@ GRIDW = Math.floor(CANVW / PIXELSIZE);
 GRIDH = Math.floor(CANVH / PIXELSIZE);
 
 //	UI
-const selButtonColor = '4px solid rgba(255, 255, 255, 1)';
+const selButtonColor = '1px solid rgba(255, 255, 255, 1)';
 let uiPagesButtons = [];
 let uiPageContent = [];
 let typeButton = null;
@@ -53,34 +58,33 @@ let grid = [];
 let destroyedParticles = [];
 let activeParticles = [];
 let particleEmitters = [];
-const SOLID_TYPES = Object.freeze({ SOLID: 'SOLID', LIQUID: 'LIQUID', GAS: 'GAS', LIVING: 'LIVING', STATIC: 'STATIC' })
+const SOLID_TYPES = Object.freeze({ SOLID: 'SOLID', LIQUID: 'LIQUID', GAS: 'GAS', STATIC: 'STATIC' })
 const solidKeys = Object.keys(SOLID_TYPES);
 const UPDATE_TYPES = Object.freeze({STATIC: 'STATIC', DYNAMIC: 'DYNAMIC',})
-let PARTICLE_TYPES = Object.freeze({
-	SAND: 'SAND', TNT: 'TNT', WATER: 'WATER', WOOD: 'WOOD', TORCH: 'TORCH', FIRE: 'FIRE', GLASS: 'GLASS', BLOB: 'BLOB',
-	OIL: 'OIL', DIAMOND: 'DIAMOND', GRASS: 'GRASS', ACID: 'ACID', ROCK: 'ROCK', LAVA: 'LAVA', CLOUD: 'CLOUD', LIGHTNING: 'LIGHTNING',
-	SMOKE: 'SMOKE', MAGMA: 'MAGMA', COAL: 'COAL', BUBBLE: 'BUBBLE', STEAM: 'STEAM',})
-let particleKeys = Object.keys(PARTICLE_TYPES);
+
 let PARTICLE_PROPERTIES = {
-    [PARTICLE_TYPES.SAND]: { color: 'rgba(255, 221, 0, 1)', lifeTime: Infinity, flammability: 10, burner: 0, douse: 0, solType: SOLID_TYPES.SOLID, updType: UPDATE_TYPES.DYNAMIC, density: 50, spread: 10},
-    [PARTICLE_TYPES.WATER]: { color: 'rgba(0, 72, 255, 1)', lifeTime: Infinity, flammability: 0, burner: 0, douse: 1, solType: SOLID_TYPES.LIQUID, updType: UPDATE_TYPES.DYNAMIC, density: 2, spread: 15},
-	[PARTICLE_TYPES.GRASS]: { color: 'rgba(86, 223, 36, 1)', lifeTime: Infinity, flammability: 900, burner: 0, douse: 0, solType: SOLID_TYPES.SOLID, updType: UPDATE_TYPES.DYNAMIC, density: 4, spread: 10 },
-	[PARTICLE_TYPES.GLASS]: { color: 'rgba(208, 226, 239, 1)', lifeTime: Infinity, flammability: 0, burner: 0, douse: 0, solType: SOLID_TYPES.SOLID , updType: UPDATE_TYPES.DYNAMIC, density: 50, spread: 10},
-	[PARTICLE_TYPES.ROCK]: { color: 'rgba(76, 78, 1, 1)', lifeTime: Infinity, flammability: 0, burner: 0, douse: 0, solType: SOLID_TYPES.SOLID, updType: UPDATE_TYPES.DYNAMIC, density: 80, spread: 10 },
-	[PARTICLE_TYPES.DIAMOND]: { color: 'rgba(102, 203, 221, 1)', lifeTime: Infinity, flammability: 0, burner: 0, douse: 0, solType: SOLID_TYPES.SOLID, updType: UPDATE_TYPES.DYNAMIC, density: 100, spread: 10 },
-	[PARTICLE_TYPES.LIGHTNING]: { color: 'rgba(212, 255, 0, 1)', lifeTime: 400, flammability: 0, burner: 0, douse: 0, solType: SOLID_TYPES.GAS, updType: UPDATE_TYPES.DYNAMIC, density: 100 , spread: 10},
-	[PARTICLE_TYPES.MAGMA]: { color: 'rgba(198, 64, 2, 1)', lifeTime: 12000, flammability: 0, burner: 1000, douse: 0, solType: SOLID_TYPES.SOLID, updType: UPDATE_TYPES.DYNAMIC, density: 100, spread: 10 },
-    [PARTICLE_TYPES.TNT]: { color: 'rgba(37, 52, 57, 1)', lifeTime: Infinity, flammability: 999, burner: 0, douse: 0, solType: SOLID_TYPES.SOLID, updType: UPDATE_TYPES.DYNAMIC, density: 50, spread: 10},
-	[PARTICLE_TYPES.COAL]: { color: 'rgba(68, 68, 68, 1)', lifeTime: 20000, flammability: 1, burner: 0, douse: 0, solType: SOLID_TYPES.SOLID, updType: UPDATE_TYPES.DYNAMIC, density: 20, spread: 2 },
-	[PARTICLE_TYPES.BLOB]: { color: 'rgba(45, 119, 83, 1)', lifeTime: Infinity, flammability: 999, burner: 0, douse: 0, solType: SOLID_TYPES.LIVING, updType: UPDATE_TYPES.DYNAMIC, density: 10, spread: 10},
-	[PARTICLE_TYPES.TORCH]: { color: 'rgba(255, 0, 0, 1)', lifeTime: Infinity, flammability: 0, burner: 1000, douse: 0, solType: SOLID_TYPES.STATIC, updType: UPDATE_TYPES.STATIC, density: 1, spread: 10 },
-	[PARTICLE_TYPES.WOOD]: { color: 'rgba(74, 54, 10, 1)', lifeTime: Infinity, flammability: 950, burner: 0, douse: 0, solType: SOLID_TYPES.STATIC, updType: UPDATE_TYPES.STATIC, density: 20, spread: 10 },
-	[PARTICLE_TYPES.OIL]: { color: 'rgba(50, 96, 84, 1)', lifeTime: Infinity, flammability: 1000, burner: 0, douse: 1, solType: SOLID_TYPES.LIQUID, updType: UPDATE_TYPES.DYNAMIC, density: 1, spread: 20 },
-	[PARTICLE_TYPES.ACID]: { color: 'rgba(131, 35, 163, 1)', lifeTime: Infinity, flammability: 10, burner: 0, douse: 1, solType: SOLID_TYPES.LIQUID, updType: UPDATE_TYPES.DYNAMIC, density: 3, spread: 6 },
-	[PARTICLE_TYPES.BUBBLE]: { color: 'rgba(255, 255, 255, 1)', lifeTime: 1000, flammability: 0, burner: 0, douse: 1, solType: SOLID_TYPES.LIQUID, updType: UPDATE_TYPES.DYNAMIC, density: 1, spread: 10 },
-	[PARTICLE_TYPES.LAVA]: { color: 'rgba(255, 0, 0, 1)', lifeTime: Infinity, flammability: 0, burner: 1000, douse: 0, solType: SOLID_TYPES.LIQUID, updType: UPDATE_TYPES.DYNAMIC, density: 4, spread: 5 },
-	[PARTICLE_TYPES.FIRE]: { color: 'rgba(214, 113, 40, 1)', lifeTime: 400, flammability: 0, burner: 1000, douse: 0, solType: SOLID_TYPES.GAS, updType: UPDATE_TYPES.DYNAMIC, density: 1, spread: 10 },
-	[PARTICLE_TYPES.SMOKE]: { color: 'rgba(106, 106, 106, 1)', lifeTime: 600, flammability: 0, burner: 0, douse: 0, solType: SOLID_TYPES.GAS, updType: UPDATE_TYPES.DYNAMIC, density: 1 , spread: 10},
-	[PARTICLE_TYPES.CLOUD]: { color: 'rgba(255, 255, 255, 1)', lifeTime: 20000, flammability: 0, burner: 0, douse: 0, solType: SOLID_TYPES.GAS , updType: UPDATE_TYPES.DYNAMIC, density: 20, spread: 2},
-	[PARTICLE_TYPES.STEAM]: { color: 'rgba(237, 211, 211, 1)', lifeTime: 6000, flammability: 0, burner: 0, douse: 0, solType: SOLID_TYPES.GAS, updType: UPDATE_TYPES.DYNAMIC, density: 1, spread: 10 },
+    ['SAND']: { color: 'rgba(255, 221, 0, 1)', lifeTime: Infinity, burnable: 10, burner: 0, douse: 0, solType: 'SOLID', updType: 'DYNAMIC', density: 50, spread: 10},
+	['GRASS']: { color: 'rgba(86, 223, 36, 1)', lifeTime: Infinity, burnable: 900, burner: 0, douse: 0, solType: 'SOLID', updType: 'DYNAMIC', density: 4, spread: 10 },
+	['GLASS']: { color: 'rgba(208, 226, 239, 1)', lifeTime: Infinity, burnable: 0, burner: 0, douse: 0, solType: 'SOLID' , updType: 'DYNAMIC', density: 50, spread: 10},
+	['ROCK']: { color: 'rgba(76, 78, 1, 1)', lifeTime: Infinity, burnable: 0, burner: 0, douse: 0, solType: 'SOLID', updType: 'DYNAMIC', density: 80, spread: 10 },
+	['DIAMOND']: { color: 'rgba(102, 203, 221, 1)', lifeTime: Infinity, burnable: 0, burner: 0, douse: 0, solType: 'SOLID', updType: 'DYNAMIC', density: 100, spread: 10 },
+ 	['TNT']: { color: 'rgba(37, 52, 57, 1)', lifeTime: Infinity, burnable: 999, burner: 0, douse: 0, solType: 'SOLID', updType: 'DYNAMIC', density: 50, spread: 10},
+	['COAL']: { color: 'rgba(68, 68, 68, 1)', lifeTime: 20000, burnable: 1, burner: 0, douse: 0, solType: 'SOLID', updType: 'DYNAMIC', density: 20, spread: 2 },
+	['RAINBOW']: { color: 'rgba(255, 0, 234, 1)', lifeTime: Infinity, burnable: 100, burner: 0, douse: 0, solType: 'SOLID', updType: 'DYNAMIC', density: 100 , spread: 10},
+	['MAGMA']: { color: 'rgba(198, 64, 2, 1)', lifeTime: 12000, burnable: 0, burner: 1000, douse: 0, solType: 'SOLID', updType: 'DYNAMIC', density: 100, spread: 10 },
+	['OIL']: { color: 'rgba(50, 96, 84, 1)', lifeTime: Infinity, burnable: 1000, burner: 0, douse: 1, solType: 'LIQUID', updType: 'DYNAMIC', density: 1, spread: 20 },
+	['ACID']: { color: 'rgba(131, 35, 163, 1)', lifeTime: Infinity, burnable: 10, burner: 0, douse: 1, solType: 'LIQUID', updType: 'DYNAMIC', density: 3, spread: 6 },
+	['BUBBLE']: { color: 'rgba(255, 255, 255, 1)', lifeTime: 1000, burnable: 0, burner: 0, douse: 1, solType: 'LIQUID', updType: 'DYNAMIC', density: 1, spread: 10 },
+    ['WATER']: { color: 'rgba(0, 72, 255, 1)', lifeTime: Infinity, burnable: 0, burner: 0, douse: 1, solType: 'LIQUID', updType: 'DYNAMIC', density: 2, spread: 15},
+	['LAVA']: { color: 'rgba(255, 0, 0, 1)', lifeTime: Infinity, burnable: 0, burner: 1000, douse: 0, solType: 'LIQUID', updType: 'DYNAMIC', density: 4, spread: 5 },
+	['LIGHTNING']: { color: 'rgba(212, 255, 0, 1)', lifeTime: 400, burnable: 0, burner: 0, douse: 0, solType: 'GAS', updType: 'DYNAMIC', density: 100, spread: 10 },
+	['FIRE']: { color: 'rgba(214, 113, 40, 1)', lifeTime: 400, burnable: 0, burner: 1000, douse: 0, solType: 'GAS', updType: 'DYNAMIC', density: 1, spread: 10 },
+	['SMOKE']: { color: 'rgba(106, 106, 106, 1)', lifeTime: 600, burnable: 0, burner: 0, douse: 0, solType: 'GAS', updType: 'DYNAMIC', density: 1 , spread: 10},
+	['CLOUD']: { color: 'rgba(255, 255, 255, 1)', lifeTime: 20000, burnable: 0, burner: 0, douse: 0, solType: 'GAS' , updType: 'DYNAMIC', density: 20, spread: 2},
+	['STEAM']: { color: 'rgba(237, 211, 211, 1)', lifeTime: 6000, burnable: 0, burner: 0, douse: 0, solType: 'GAS', updType: 'DYNAMIC', density: 1, spread: 10 },
+	['PLANT']: { color: 'rgba(45, 119, 83, 1)', lifeTime: Infinity, burnable: 999, burner: 0, douse: 0, solType: 'STATIC', updType: 'DYNAMIC', density: 10, spread: 10 },
+	['BLOB']: { color: 'rgba(143, 62, 172, 1)', lifeTime: Infinity, burnable: 999, burner: 0, douse: 0, solType: 'LIQUID', updType: 'DYNAMIC', density: 10, spread: 2},
+	['TORCH']: { color: 'rgba(255, 0, 0, 1)', lifeTime: Infinity, burnable: 0, burner: 1000, douse: 0, solType: 'STATIC', updType: 'STATIC', density: 1, spread: 10 },
+	['WOOD']: { color: 'rgba(74, 54, 10, 1)', lifeTime: Infinity, burnable: 950, burner: 0, douse: 0, solType: 'STATIC', updType: 'STATIC', density: 20, spread: 10 },
 };
+let particleKeys = Object.keys(PARTICLE_PROPERTIES);

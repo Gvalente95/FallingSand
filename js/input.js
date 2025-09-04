@@ -3,8 +3,9 @@ canvas.addEventListener('mousedown', (e) => {
 	MOUSECLICKED = true;
 	MOUSEX = e.clientX;
 	MOUSEY = e.clientY;
-	if (PICKACTIVE && pxAtMouse) setNewType(getCurTypeIndex(pxAtMouse.type));
-	if (BRUSHCUT) { let pxs = getPxlsInRadius(MOUSEGRIDX, MOUSEGRIDY, BRUSHSIZE * 2); SHOULDCUT = pxs.length > 0};
+	CLICKCOLOR = getRandomcolor();
+	if (PICKACTIVE && PXATMOUSE) { setNewType(getCurTypeIndex(PXATMOUSE.type)); }
+	if (BRUSHCUT) { SHOULDCUT = true};
 	setTimeout(() => { MOUSECLICKED = false }, 50);
 });
 

@@ -208,7 +208,6 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
 	return container;
 }
 
-
 function createSlider(labelText, x, y, min, max, step, value, onChange, height = 16, width = 5) {
     const container = document.createElement("label");
     container.style.position = "absolute";
@@ -307,50 +306,161 @@ function createSlider(labelText, x, y, min, max, step, value, onChange, height =
     return container;
 }
 
-function initButton(label, x, y, color, onChange, value = null, parent = document.body, isSwitch = null, keyToggle = null) {
-    let div = document.createElement("div");
-    div.className = "button";
-    div.style.left = x + "px";
+function initImageDiv(imgPath, x, y, color, parent = document.body) {
+	let div = document.createElement("div");
+	div.style.position = "absolute";
+	div.style.minWidth = "60px";
+	div.style.height = "40px";
+	div.style.left = x + "px";
+	div.style.top = y + "px";
+	div.style.color = 'rgba(213, 213, 213, 1)';
+	const img = new Image();
+	img.onload = ()=>{ div.style.background = `${color} url("${imgPath}") calc(50% - 10px)center/contain no-repeat`; };
+	img.onerror = ()=>{ div.style.setProperty('--btn-bg', color); div.style.backgroundColor = color; };
+	img.src = imgPath;
+	img.backgroundColor = "white";
+	if (parent) parent.appendChild(div);
+	return (div);
+}
+
+function initButton(label, x, y, color, onChange, value = null, parent = document.body, isSwitch = null, keyToggle = null, imgPath = null, mouseFollowImg = null) {
+	function formatKeyLabel(k){
+	if(!k) return "";
+	const map={
+		"ArrowUp":"↑","ArrowDown":"↓","ArrowLeft":"←","ArrowRight":"→",
+		"Space":"␣","Enter":"⏎","Escape":"Esc","Backspace":"⌫",
+		"ShiftLeft":"Shift","ShiftRight":"Shift","ControlLeft":"Ctrl","ControlRight":"Ctrl",
+		"AltLeft":"Alt","AltRight":"Alt","MetaLeft":"Meta","MetaRight":"Meta"
+	};
+	if(map[k]) return map[k];
+	if(/^Key[A-Z]$/.test(k)) return k.slice(3);
+	if(/^Digit[0-9]$/.test(k)) return k.slice(5);
+	return k.length===1 ? k.toUpperCase() : k;
+	}
+
+	let div = document.createElement("div");
+	div.className = "button";
+	div.style.left = x + "px";
 	div.style.top = y + "px";
 	div.style.setProperty('--btn-bg', color);
-    div.style.backgroundColor = color;
-    div.style.color = 'rgba(213, 213, 213, 1)';
-    div.textContent = label.slice(0, 5);
-    div.label = label;
+	div.style.backgroundColor = color;
+	div.style.color = 'rgba(213, 213, 213, 1)';
+	div.style.position = div.style.position || "absolute";
+	div.style.boxSizing = "border-box";
+	div.textContent = label.slice(0, 5);
+	div.label = label;
 	div.value = value;
-    div.active = isSwitch;
-    if (div.active) div.classList.add("activeButton");
-    div.addEventListener("mousedown", activate);
-    div.setAttribute("tabindex", "0");
+	div.active = isSwitch;
+	if (div.active) div.classList.add("activeButton");
+	div.addEventListener("mousedown", activate);
+	div.setAttribute("tabindex", "0");
 
-	if (keyToggle) {window.addEventListener("keydown", (e) => { if (!isInInputField && (e.code === keyToggle || e.key == keyToggle)) activate(); });}
-    parent.appendChild(div);
+	if (imgPath) {
+		const img = new Image();
+		img.onload = ()=>{ div.style.background = `${color} url("${imgPath}") calc(50% - 10px)center/contain no-repeat`; };
+		img.onerror = ()=>{ div.style.setProperty('--btn-bg', color); div.style.backgroundColor = color; };
+		img.src = imgPath;
+		img.backgroundColor = "white";
+		div.textContent = "";
+		if (mouseFollowImg) {
+			div.cursorImg = initImageDiv(mouseFollowImg, CANVW / 2, CANVH / 2, "rgba(0,0,0,0)", document.body);
+			div.cursorImg.style.display = "none";
+			div.cursorImg.style.pointerEvents = "none";
+			let rafId = null;
+			const inside = () => MOUSEX >= 0 && MOUSEY >= 0 && MOUSEX < CANVW && MOUSEY < CANVH;
+			const stop = () => { if (rafId) cancelAnimationFrame(rafId); rafId = null; div.cursorImg.style.display = "none"; };
+			const loop = () => {
+				if (!MOUSEPRESSED || !div.active) return stop();
+				if (!inside()) { div.cursorImg.style.display = "none"; rafId = requestAnimationFrame(loop); return; }
+				div.cursorImg.style.top = (MOUSEY - 40) + "px";
+				div.cursorImg.style.left = MOUSEX + "px";
+				div.cursorImg.style.display = "block";
+				rafId = requestAnimationFrame(loop);
+			};
+			window.addEventListener("mousedown", () => { if (div.active && inside() && !rafId) loop(); });
+			window.addEventListener("mouseup", stop);
+			window.addEventListener("blur", stop);
+		}
+	}
 
-    function activate() {
+	if (keyToggle) {
+	window.addEventListener("keydown", (e) => {
+		if (!isInInputField && (e.code === keyToggle || e.key == keyToggle)) activate();
+	});
+		if (!isMobile) {
+			const badge=document.createElement("span");
+		const ktxt=formatKeyLabel(keyToggle);
+		badge.textContent=ktxt;
+		badge.style.position="absolute";
+		badge.style.top="0px";
+		badge.style.right="0px";
+		badge.style.padding="2px 6px";
+		badge.style.border="1px solid #000";
+		badge.style.background="rgba(0,0,0,.75)";
+		badge.style.color="#fff";
+		badge.style.fontFamily="'Press Start 2P', monospace";
+		badge.style.fontSize="9px";
+		badge.style.lineHeight="1";
+		badge.style.pointerEvents="none";
+		div.appendChild(badge); 
+		}
+	}
+
+	parent.appendChild(div);
+
+	function activate() {
 		if (isSwitch != null) {
-            div.active = !div.active;
-            if (div.active) div.classList.add("activeButton");
-            else div.classList.remove("activeButton");
-            if (onChange) { onChange(div.value != null ? value : div.active); }
-        } else if (onChange) onChange(value);
+			div.active = !div.active;
+			if (div.active) div.classList.add("activeButton");
+			else div.classList.remove("activeButton");
+			if (onChange) { onChange(div.value != null ? value : div.active); }
+		} else if (onChange) onChange(value);
 		updateUi();
 		au.playSound(au.tuk);
 		div.classList.add("clicked");
 		setTimeout(() => { div.classList.remove("clicked"); }, 100);
-    }
-    return div;
+	}
+	return div;
 }
 
-function addHeader(y, color, height, borderColor = null)
+function addHeader(y, color, height, borderColor = null, isDraggable = true)
 {
-	let uiContainer = document.createElement("div");
-	uiContainer.style.top = y + "px";
-	uiContainer.className = "uiHeader";
-	uiContainer.style.backgroundColor = color;
-	uiContainer.style.height = height + "px";
-	if (borderColor) uiContainer.style.border = "1px solid " + borderColor;
-	document.body.appendChild(uiContainer);
-	return uiContainer;
+	let header = document.createElement("div");
+	header.style.top = y + "px";
+	header.className = "uiHeader";
+	header.style.width = CANVW;
+	header.style.backgroundColor = color;
+	header.style.height = height + "px";
+	if (borderColor) header.style.border = "1px solid " + borderColor;
+	document.body.appendChild(header);
+	if (isDraggable) {	
+		header.style.position = header.style.position || "absolute";
+		header.style.userSelect = "none";
+		header.style.cursor = "grab";
+		let dragging = false;
+		let startX = 0;
+		let startLeft = parseFloat(getComputedStyle(header).left) || 0;
+		function onMove(e){
+			if (!dragging) return;
+			const dx = e.clientX - startX;
+			header.style.left = clamp(startLeft + dx, -CANVW, 0) + "px";
+		}
+		function onUp(){
+			dragging = false;
+			header.style.cursor = "grab";
+			document.removeEventListener("mousemove", onMove);
+			document.removeEventListener("mouseup", onUp);
+		}
+		header.addEventListener("mousedown", (e) => {
+		dragging = true;
+		header.style.cursor = "grabbing";
+		startX = e.clientX;
+		startLeft = parseFloat(getComputedStyle(header).left) || 0;
+		document.addEventListener("mousemove", onMove);
+		document.addEventListener("mouseup", onUp);
+		});
+	}
+	return header;
 }
 
 function updateUi()
@@ -361,7 +471,7 @@ function updateUi()
 		let buttons = uiPagesButtons[i];
 		let isOpen = uiPageIndex == i;
 		buttons.style.border = isOpen ? openColor : "1px solid rgba(0, 0, 0, 1)"
-		buttons.style.color = isOpen ? 'rgba(255, 255, 255, 1)' : 'rgba(213, 213, 213, 1)';
+		buttons.style.opacity = isOpen ? "1" : '.6';
 		for (const b of buttons.buttons) { if (b.isSwitch) continue; b.style.display = isOpen ? 'block' : 'none';}
 		for (const s of buttons.sliders) s.style.display = isOpen ? 'block' : 'none';
 	}
@@ -373,13 +483,12 @@ function updateUi()
 		let isOpen = typeButton && b.label == typeButton.label;
 		if (uiPagesButtons[uiPageIndex].label === 'BRUSH') isOpen = b.value == BRUSHTYPE;
 		b.style.border = isOpen ? openColor : "1px solid rgba(0, 0, 0, 1)"
-		b.style.color = isOpen ? 'rgba(255, 255, 255, 1)' : 'rgba(213, 213, 213, 1)';
-		b.classList.toggle("open", isOpen);
+		b.style.opacity = isOpen ? "1" : '.6';
 	}
 }
 
 function switchUiPage(newPageIndex){ uiPageIndex = newPageIndex;}
-function setNewType(newIndex) { TYPEINDEX = newIndex; for (const b of uiPagesButtons[uiPageIndex].buttons) if (b.label == particleKeys[newIndex]) typeButton = b; }
+function setNewType(newIndex) { switchCut(false); TYPEINDEX = newIndex; for (const b of uiPagesButtons[uiPageIndex].buttons) if (b.label == particleKeys[newIndex]) typeButton = b; }
 function getCurButtonTypeIndex()
 {
 	for (let i = 0; i < uiPagesButtons[uiPageIndex].buttons.length; i++)
@@ -399,11 +508,41 @@ function setNewBrushType(newType) { BRUSHTYPE = BRUSHTYPE == 'RECT' ? 'DISC' : '
 function setNewGravity(newGravity) { GRAVITY = newGravity;}
 function setNewSpeed(newSpeed) { SIMSPEED = newSpeed; }
 function switchGridMode(newGridMode) { gridMode = newGridMode; }
-function setRainIntensity(newIntensity) { RAININTENSITY = (newIntensity / (PIXELSIZE));}
+function setRAINPOW(newIntensity) { RAINPOW = (newIntensity / (PIXELSIZE));}
 function goToNextFrame() { switchPause(true); update(false); };
+function switchRewinding(newRewind) {ISREWINDING = newRewind;}
+function goToPrevFrame() {
+	if (!ISREWINDING) switchPause(true);
+	initGrid();
+	let hasReachedEnd = false;
+	for (const p of activeParticles) {
+		if (!p.prvP.length) { hasReachedEnd++; continue; }
+		let prvP = p.prvP.pop();
+		p.updatePosition(prvP[0], prvP[1], false);
+		p.velX = prvP[2];
+		p.velY = prvP[3];
+	}
+	if (hasReachedEnd >= activeParticles.length) { switchRewinding(); switchPause(true); }
+};
+
+function deactivateSwitchButton(button) {
+	button.active = false;
+	button.classList.remove("activeButton");
+}
+
 function switchRain(newActive) { ISRAINING = newActive; }
-function switchCut(newCut) { BRUSHCUT = newCut; if (newCut) { PICKACTIVE = false; pickButton.active = false; pickButton.classList.remove("activeButton"); }}
-function switchPick(newActive) { PICKACTIVE = newActive; if (newActive) { BRUSHCUT = false; cutButton.active = false; cutButton.classList.remove("activeButton"); } }
+function switchCut(newCut) {
+	BRUSHCUT = newCut;
+	if (!newCut) deactivateSwitchButton(cutButton);
+	else switchPick(false);
+}
+
+function switchPick(newActive)
+{
+	PICKACTIVE = newActive;
+	if (!newActive) deactivateSwitchButton(pickButton);
+	else switchCut(false);
+}
 
 function setNewPixelSize(newPixelSize)
 {

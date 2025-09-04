@@ -12,7 +12,7 @@ p.setToFire = function()
 	if (this.type == 'MAGMA') this.setType('MAGMA');
 	else if (this.type == 'MAGMA') this.setType('LAVA');
 	else {
-		this.burning = 120 - (this.flammability / 10);
+		this.burning = 120 - (this.burnable / 10);
 		this.setColor(this.type == 'COAL' ? 'rgba(129, 89, 80, 1)' : 'rgba(228, 76, 16, 1)');
 	}
 }

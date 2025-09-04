@@ -83,3 +83,34 @@ function randomizeColorAmount(color, randomAmount = 16) {
   }
   return `rgb(${r}, ${g}, ${b})`;
 }
+
+
+function getRainbowColor(time, speed = 0.002) {
+    const r = Math.floor(127 * Math.sin(speed * time + 0) + 128);
+    const g = Math.floor(127 * Math.sin(speed * time + 2) + 128);
+    const b = Math.floor(127 * Math.sin(speed * time + 4) + 128);
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
+function getTimeColor() {
+	let phase = 50;
+	let t = time;
+	let tr = t % 255;
+	let tg = (t + phase) % 255;
+	let tb = (t + phase * 2) % 255;
+  	return `rgb(${tr}, ${tg}, ${tb})`;
+}
+
+function getMountainColor() {
+	let phase = 50;
+	let t = time;
+	let tr = t % 255;
+	let tg = (t + phase) % 255;
+	let tb = (t + phase * 2) % 255;
+  	return `rgb(${tr}, ${tg}, ${tb})`;
+}
+
+
+function getRandomcolor() {
+  	return `rgb(${r_range(0, 255)}, ${r_range(0, 255)}, ${r_range(0, 255)})`;
+}

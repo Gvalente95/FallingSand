@@ -1,6 +1,6 @@
 let id = 0;
 class Particle{
-	constructor(x, y, type, velX = f_range(-.3, .3), velY = (PARTICLE_PROPERTIES[type].solType == 'GAS' ? -1 : f_range(0, 3)), lifeTime = PARTICLE_PROPERTIES[type].lifeTime * f_range(.5, 1.5))
+	constructor(x, y, type, velX = f_range(-.3, .3), velY = (PARTICLE_PROPERTIES[type].solType == 'GAS' ? -1 : f_range(0, 3)), lifeTime = PARTICLE_PROPERTIES[type].lifeTime * f_range(.5, 1.5), color = null)
 	{
 		if (isOutOfBorder(x, y)) return (this.toRemove(), 0);
 		this.properties = PARTICLE_PROPERTIES[type];
@@ -10,10 +10,11 @@ class Particle{
 			if (type == pxAtPos.type) { this.toRemove(); return; }
 			else if (this.properties.solType == 'GAS' && type != 'STEAM')
 			{
-				if (pxAtPos.type == 'WATER' && type == 'FIRE') pxAtPos.setType('STEAM');
+				if (pxAtPos.type == 'WATER' && type == 'FIRE') {
+					pxAtPos.replace('FIRE');
+				}
 				else if (type != pxAtPos.type && shouldBurnParticle(type, pxAtPos)) pxAtPos.setToFire();
-				this.toRemove();
-				return;
+				return (this.toRemove(), 0);
 			}
 			else pxAtPos.toRemove();
 		}
@@ -29,20 +30,23 @@ class Particle{
 		this.growSpeed = r_range(1, 3);
 		this.wet = 0;
 		this.frozen = 0;
+		this.prvP = [];
 		this.burning = 0;
 		this.setVel(velX, velY);
 		this.setType(type);
+		if (color) this.setColor(color);
 		this.x = clamp(x, 0, GRIDW);
 		this.y = clamp(y, 0, GRIDH);
 		this.newX = x;
 		this.newY = y;
 		this.active = true;
+		this.prvP.push([this.x, this.y, this.velX, this.velY]);
 		grid[this.x][this.y] = this;
 		activeParticles.push(this);
 	}
 	updateVelocity()
 	{
-		if (this.type == 'BLOB') return;
+		if (this.type == 'PLANT') return;
 		let isGrounded = this.ground && (this.ground.solType == 'SOLID') && this.ground.velY == 0;
 		if (this.type == 'WATER' && this.ground && !getPxlAtPos(this.x, this.y - 1) && dice(200) && this.ground.type == this.type)
 			this.setType('BUBBLE');
@@ -65,15 +69,15 @@ class Particle{
 	}
 
 	updateMovement(){
-		let newX = this.x + (this.velX * SIMSPEED);
-		let newY = this.y + (this.velY * SIMSPEED);
+		let newX = this.x + (this.velX * SIMSPEED * (dt));
+		let newY = this.y + (this.velY * SIMSPEED * (dt));
 		let xDiff = newX - this.x, yDiff = newY - this.y;
 		let steps = Math.ceil(Math.max(Math.abs(xDiff), Math.abs(yDiff)));
 		let xStep = steps > 0 ? xDiff / steps : 0;
 		let yStep = steps > 0 ? yDiff / steps : 0;
 		let curX = this.x, curY = this.y;
 		let lastValidx = curX, lastValidy = curY;
-		if (this.type === 'BLOB') return (this.newX = Math.round(newX), this.newY = Math.round(newY), 0);
+		if (this.type === 'PLANT') return (this.newX = Math.round(newX), this.newY = Math.round(newY), 0);
 		for (let i = 0; i < steps; i++) {
 			curX += xStep; curY += yStep;
 			let realX = Math.round(curX); let realY = Math.round(curY);
@@ -83,6 +87,9 @@ class Particle{
 			if (this.douse) pxAtPos.setWet(100, this.type);
 			if (shouldBurn(this, pxAtPos)) {pxAtPos.setToFire();}
 			if (shouldBurn(pxAtPos, this)) this.setToFire();
+			else if (this.solType === 'GAS' && pxAtPos.solType === 'LIQUID' && pxAtPos.y < this.y) {
+				this.swap(pxAtPos); curX = this.x; curY = this.y; break;
+			}
 			else if (this.solType === 'LIQUID' && pxAtPos.solType === 'LIQUID') {
 				const a = this.type, b = pxAtPos.type;
 				if ((a === 'LAVA' && b === 'WATER') || (a === 'WATER' && b === 'LAVA')) {
@@ -157,12 +164,12 @@ class Particle{
 		if (isOutOfBorder(newX, newY)) { this.toRemove(); return; }
 		this.updatePosition(newX, newY, this);
 	}
-	updateBlob(curX, curY) {
+	updatePLANT(curX, curY) {
 		if (this.parent || (time % (this.growSpeed)) != 0) return;
 		let inWater = false;
 		const px = getPxlAtPos(curX, curY, this);
 		if (px) {
-			if (px.type == 'WATER' || px.type == 'BLOB') { inWater = true; px.toRemove();}
+			if (px.type == 'WATER' || px.type == 'PLANT') { inWater = true; px.toRemove();}
 			else return (this.setColor());
 		}
 		if (dice(30)) this.dirAng += f_range(-0.2, 0.2);
@@ -213,6 +220,11 @@ class Particle{
 					if (px) px.setWet(this.wet - 10, this.wetType);
 				}
 			}
+			if (dice(5000)) {
+				let pxAb = getPxlAtPos(this.x, this.y - 1);
+				if (pxAb && pxAb.type === this.wetType)
+					pxAb.replace('BUBBLE');			
+			}
 		}
 		if (this.burning)
 		{
@@ -242,10 +254,10 @@ class Particle{
 
 	updateType() {
 		if (this.type === 'WOOD') return;
-		if (this.type == 'CLOUD') return this.updateCloud();
+		if (this.type === 'CLOUD') return this.updateCloud();
 		else if (this.type == 'STEAM' && this.y < 50 && dice(5))
 			{ launchParticules('CLOUD', this.x * PIXELSIZE, this.y * PIXELSIZE, 10, true); this.toRemove(); }
-		if (this.solType != 'STATIC') {
+		if (this.solType != 'STATIC' || this.type == 'PLANT') {
 			this.ground = getPxlAtPos(this.x, this.y + (this.solType == 'GAS' ? -1 : 1), this);
 			this.updateVelocity();
 			if (this.velX || this.velY) this.updateMovement();
@@ -256,18 +268,20 @@ class Particle{
 		if (this.type == 'FIRE' || this.type === 'TORCH') this.FireEffect(this.newX, this.newY);
 		else if (this.type == 'MAGMA') this.MagmaEffect(this.newX, this.newY);
 		else if (this.type == 'LAVA') this.LavaEffect(this.newX, this.newY);
-		else if (this.type == 'BLOB') this.updateBlob(this.newX, this.newY);
+		else if (this.type == 'PLANT') this.updatePLANT(this.newX, this.newY);
 		else if (this.solType != 'LIQUID') this.updatePosition(this.newX, this.newY);
 	}
 	update() {
 		if (!this.active) return;
+		this.prvP.push([this.x, this.y, this.velX, this.velY]);
+		if (this.prvP.length > TRAILAMOUNT) this.prvP.shift();
 		this.updateState();
 		this.updateLifeTime();
 		this.updateType();
 	}
 
 	toRemove(){
-		this.x = -1; this.y = -1; this.active = false;
+		this.x = -100; this.y = -100; this.active = false;
 		destroyedParticles.push(this);
 	}
 	onRemove(){

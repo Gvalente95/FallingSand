@@ -50,7 +50,7 @@ p.FireEffect = function (curX, curY)
 		for (let x = -depth; x < depth; x++) {
 			if ((x == 0 && y == 0) || isOutOfBorder(x + curX, y + curY)) continue;
 			let px = getPxlAtPos(curX + x, curY + y, this);
-			if (px && px.solType == 'LIQUID' && (!px.flammability && px.type != 'LAVA'))
+			if (px && px.solType == 'LIQUID' && (!px.burnable && px.type != 'LAVA'))
 			{
 				this.lifeTime = 50;
 				if (px.y > 0 && dice(20)) {
@@ -76,7 +76,7 @@ p.MagmaEffect = function(curX, curY)
 			let px = getPxlAtPos(realX, realY, this);
 			if (px) pxFound += (px.type == 'MAGMA' ? .05 : 1);
 			else if (y < 0 && dice(500)) new Particle(realX, realY, 'SMOKE');
-			if (px && px.solType == 'LIQUID' && !px.flammability && dice(20))
+			if (px && px.solType == 'LIQUID' && !px.burnable && dice(20))
 				this.setType('ROCK');
 			if (px && shouldBurnParticle('MAGMA', px))
 			{
@@ -100,8 +100,8 @@ p.LavaEffect = function(curX, curY)
 			if (!px) continue;
 			if (px.type == this.type) continue;
 			if (px.type == 'WATER' || px.type == 'BUBBLE') { px.setType('STEAM'); continue; }
-			if (!px.flammability) continue;
-			if (dice(1002 - px.flammability))
+			if (!px.burnable) continue;
+			if (dice(1002 - px.burnable))
 			{
 				px.velY = 0;
 				px.velX = 0;

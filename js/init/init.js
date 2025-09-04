@@ -1,58 +1,70 @@
 
 let infoHeader = null;
+let infoMouse = null;
+function initInfoText() {
+	infoText = document.createElement("label");
+	infoText.className = "infoText";
+	infoText.style.top = "0px";
+	infoText.style.left = "5px";
+	infoText.style.position = "fixed";
+	document.body.appendChild(infoText);
+	infoMouse = document.createElement("label");
+	infoMouse.className = "infoText";
+	infoMouse.style.textContent = "";
+	infoMouse.style.left = "5px";
+	infoMouse.style.position = "fixed";
+	infoMouse.style.top = "20px";
+	document.body.appendChild(infoMouse);
+}
 function initInfoHeader(yPos, color = 'black', height)
 {
-	infoHeader = addHeader(yPos, color, height, null);
-	let infoText = document.createElement("label");
-	infoText.className = "infoText";
-	infoHeader.text = infoText;
-	infoHeader.appendChild(infoText);
-
-	let rInfo = document.createElement("label");
-	rInfo.className = "infoText";
-	rInfo.style.marginLeft = "100px";
-	rInfo.style.textContent = "awf";
-	infoHeader.appendChild(rInfo);
-	infoHeader.rightText = rInfo;
-
+	infoHeader = addHeader(yPos, color, height, null, isMobile);
 
 	let sldSpread = 95;
 	let x = 5;
 	let y = yPos;
+	let n = 0;
 	let sliders = [];
-	sliders.push(createVerticalPressSlider("Px Size", x, y, 1, 19, 1, PIXELSIZE, setNewPixelSize));
-	sliders.push(createVerticalPressSlider("Gravity", x + sldSpread, y, 1, -1, .1, GRAVITY, setNewGravity));
-	sliders.push(createVerticalPressSlider("Speed", x + sldSpread * 2, y, .2, 2.2, .2, SIMSPEED, setNewSpeed));
-	sliders.push(createVerticalPressSlider("Brush Sz", x + sldSpread * 3, y, 1, MAXBRUSHSIZE, 1, BRUSHSIZE, setNewBrushSize));
-	sliders.forEach(slider => document.body.appendChild(slider));
+	sliders.push(createVerticalPressSlider("Px Size", x + sldSpread * n++, 0, 1, 19, 1, PIXELSIZE, setNewPixelSize));
+	sliders.push(createVerticalPressSlider("Gravity", x + sldSpread * n++, 0, 1, -1, .1, GRAVITY, setNewGravity));
+	sliders.push(createVerticalPressSlider("Speed", x + sldSpread * n++, 0, .2, 2.2, .2, SIMSPEED, setNewSpeed));
+	sliders.push(createVerticalPressSlider("Brush Sz", x + sldSpread * n++, 0, 1, MAXBRUSHSIZE, 1, BRUSHSIZE, setNewBrushSize));
+	sliders.push(createVerticalPressSlider("Rain Pow", x + sldSpread * n++, 0, 1, 100, 1, RAINPOW, setRAINPOW));
+	sliders.forEach(slider => infoHeader.appendChild(slider));
 	return (yPos + height);
 }
 
 let pauseButton = null;
 let pickButton = null;
+let rewButton = null;
 let cutButton = null;
 function initActionHeader(yPos, color = 'red', height = 40)
 {
 	let xMargin = 65;
-	let nn = 1;
+	let nn = 0;
 
-	let actionHeader = addHeader(yPos, color, height, null);
-	pauseButton = initButton("Pause", 5, 0, "rgba(45, 67, 124, 0.18)", switchPause, -1, actionHeader, false, 'Enter');
-	initButton(">", 5 + xMargin, 0, "rgba(45, 67, 124, 0.18)", goToNextFrame, null, actionHeader, null, 'Space');
-	initButton("Clear", 5 + xMargin * ++nn, 0, "rgba(45, 67, 124, 0.18)", resetParticles, PIXELSIZE, actionHeader, null, 'r');
-	initButton("Fall", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", switchRain, null, actionHeader, false, 'f');
-	cutButton = initButton("Cut", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", switchCut, null, actionHeader, false, "c");
-	pickButton = initButton("Pick", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", switchPick, null, actionHeader, false, "p");
-	initButton("Grid", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", switchGridMode, null, actionHeader, true, "g");
-	initButton("Brush", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", setNewBrushType, null, actionHeader, true, 'b');
-	initButton("Emitter", 5 + xMargin * ++nn, 0, "rgba(51, 94, 168, 0.58)", spawnEmitterAtMouse, null, actionHeader, null, 'l');
+	const wp = "ressources/img/white/";
+	const p = "ressources/img/white/";
 
+	let baseColor = "rgba(33, 23, 37, 1)"
+	let actionHeader = addHeader(yPos, color, height, null, isMobile);
+	actionHeader.style.left = "0px";
+	rewButton = initButton("<", 5 + xMargin * nn++, 0, baseColor, goToPrevFrame, null, actionHeader, null, '1');
+	pauseButton = initButton("Pause", 5 + xMargin * nn++, 0, baseColor, switchPause, -1, actionHeader, false, '2', p + "pause.png");
+	initButton(">", 5 + xMargin * nn++, 0, baseColor, goToNextFrame, null, actionHeader, null, '3');
+	initButton("Clear", 5 + xMargin * nn++, 0, baseColor, resetParticles, PIXELSIZE, actionHeader, null, 'r', p + "broom.png");
+	initButton("Fall", 5 + xMargin * nn++, 0, baseColor, switchRain, null, actionHeader, false, 'f', p + "drop.png");
+	cutButton = initButton("Cut", 5 + xMargin * nn++, 0, baseColor, switchCut, null, actionHeader, false, "c", p + "eraser.png", wp + "eraser.png");
+	pickButton = initButton("Pick", 5 + xMargin * nn++, 0, baseColor, switchPick, null, actionHeader, false, "p", p + "eyedropper.png", wp + "eyedropper.png");
+	initButton("Grid", 5 + xMargin * nn++, 0, baseColor, switchGridMode, null, actionHeader, true, "g", p + "grid.png");
+	initButton("Brush", 5 + xMargin * nn++, 0, baseColor, setNewBrushType, null, actionHeader, true, 'b', p + "disk.png");
+	initButton("Emitter", 5 + xMargin * nn++, 0, baseColor, spawnEmitterAtMouse, null, actionHeader, null, 'l', p + "emit.png");
 	return (yPos + height);
 }
 
-function inituiPagesHeader(y, color = 'grey', height = 40)
+function inituiPagesHeader(y)
 {
-	let header = addHeader(y, color, height, null);
+	let pageHeader = addHeader(y);
 	let buttonSpread = 65;
 	let uiPAGENAMES = [];
 	for (let i = 0; i < solidKeys.length; i++) uiPAGENAMES.push(solidKeys[i]);
@@ -96,8 +108,8 @@ function initUi()
 {
 	let y = initInfoHeader(CANVH, 'rgba(0, 0, 0, 1)', 35);
 	y = initActionHeader(y + 10, 'rgb(23, 14, 23)');
-	y = inituiPagesHeader(y + 10, 'rgb(23, 14, 23)');
-
+	y = inituiPagesHeader(y + 5, 'rgb(23, 14, 23)');
+	initInfoText();
 	switchUiPage(0);
 	setNewType(0);
 	setNewBrushType('DISC');

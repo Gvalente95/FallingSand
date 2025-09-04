@@ -149,7 +149,7 @@ function initInputParticleValuesContainer() {
 		name: 'Cust_' + defaultName,
 		color: 'rgba(220,220,255,0.6)',
 		lifeTime: 'Infinity',
-		flammability: 0,
+		burnable: 0,
 		burner: 0,
 		douse: 0,
 		solType: SOLID_TYPES.SOLID,
@@ -214,7 +214,7 @@ function initInputParticleValuesContainer() {
 
 	const nameI = textInput(props.name);
 	const lifeI = textInput(String(props.lifeTime));
-	const flamI = numberInput(props.flammability);
+	const flamI = numberInput(props.burnable);
 	const burnI = numberInput(props.burner);
 	const douseI = numberInput(props.douse);
 	const densI = numberInput(props.density);
@@ -277,7 +277,7 @@ function initInputParticleValuesContainer() {
 			name: nameI.value.trim() || 'Custom',
 			color: colorHidden.value.trim() || 'rgba(255,255,255,1)',
 			lifeTime: life,
-			flammability: Number(flamI.value),
+			burnable: Number(flamI.value),
 			burner: Number(burnI.value),
 			douse: Number(douseI.value),
 			solType: solI.value,
@@ -314,7 +314,7 @@ function addParticleType(props = {}) {
 		name: 'Ola',
 		color: 'rgba(255,255,255,1)',
 		lifeTime: Infinity,
-		flammability: 0,
+		burnable: 0,
 		burner: 0,
 		douse: 0,
 		solType: SOLID_TYPES.SOLID,
@@ -327,8 +327,7 @@ function addParticleType(props = {}) {
 	if (props.solType && !Object.values(SOLID_TYPES).includes(props.solType)) throw new Error('invalid solType');
 	if (props.updType && !Object.values(UPDATE_TYPES).includes(props.updType)) throw new Error('invalid updType');
 
-	PARTICLE_TYPES = Object.freeze({ ...PARTICLE_TYPES, [key]: key });
-	particleKeys = Object.keys(PARTICLE_TYPES);
+	particleKeys = Object.keys(PARTICLE_PROPERTIES);
 	PARTICLE_PROPERTIES[key] = { ...defaults, ...props };
 
 	const customIdx = uiPagesButtons.findIndex(p => p.label === 'CUSTOM');
