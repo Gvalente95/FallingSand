@@ -18,7 +18,7 @@ function initInfoText() {
 }
 function initInfoHeader(yPos, color = 'black', height)
 {
-	infoHeader = addHeader(yPos, color, height, null, isMobile);
+	infoHeader = addHeader(yPos, color, height, null, isMobile, isMobile);
 
 	let sldSpread = 95;
 	let x = 5;
