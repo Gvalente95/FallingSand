@@ -107,9 +107,9 @@ class Particle{
 				curX = this.x; curY = this.y;
 				break;
 			}
-			else if (this.cor && this.cor > pxAtPos.cor && dice(pxAtPos.dns))
+			else if (this.cor && this.cor > pxAtPos.dns && dice(1001 - this.cor + (pxAtPos.dns)))
 			{
-				pxAtPos.setType('BUBBLE');
+				pxAtPos.replace('BUBBLE');
 				curX -= xStep; curY -= yStep;
 				break;
 			}

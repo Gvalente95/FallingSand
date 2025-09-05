@@ -24,7 +24,7 @@ function initParamHeader(yPos, height)
 
 	let sliders = [];
 	sliders.push(createVerticalPressSlider("Brush Sz", x + spread * n++, 0, 1, 100, 1, BRUSHSIZE, setNewBrushSize));
-	sliders.push(createVerticalPressSlider("Px Size", x + spread * n++, 0, 1, 19, 1, PIXELSIZE, setNewPixelSize));
+	sliders.push(createVerticalPressSlider("Px Size", x + spread * n++, 0, 2, 19, 1, PIXELSIZE, setNewPixelSize));
 	sliders.push(createVerticalPressSlider("Speed", x + spread * n++, 0, .2, 2.2, .2, SIMSPEED, setNewSpeed));
 	sliders.push(createVerticalPressSlider("Gravity", x + spread * n++, 0, 1, -1, .1, GRAVITY, setNewGravity));
 	sliders.push(createVerticalPressSlider("Rain Pow", x + spread * n++, 0, 1, 100, 1, RAINPOW, setRAINPOW));
@@ -64,24 +64,6 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	return (yPos + height);
 }
 
-const PHYS_COLORS = [
-  'rgba(115,144,118,1)', // SOLID
-  'rgba(46,113,207,1)',  // LIQUID
-  'rgba(129,127,23,1)',  // GAS
-  'rgba(33,169,117,1)'   // STATIC
-];
-
-const TAG_COLORS = [
-  'rgba(226, 93, 93, 1)',  // ALIVE
-  'rgba(237, 139, 66, 1)', // FLAMMABLE
-  'rgba(214, 113, 40, 1)', // INCENDIARY
-  'rgba(167, 102, 204, 1)',// CORROSIVE
-  'rgba(66, 135, 245, 1)', // WETTING
-  'rgba(255, 255, 255, 1)',// COLOR
-  'rgba(246, 232, 84, 1)', // ELECTRIC
-  'rgba(190, 58, 58, 1)'   // EXPLOSIVE
-];
-
 function initParticlePagesHeader(y) {
 	const buttonSpread = 65;
 	const particleTypes = [...TAGS];
@@ -96,7 +78,7 @@ function initParticlePagesHeader(y) {
 		const name = particleTypes[i];
 		const color = TAGSCOLORS[i % TAGSCOLORS.length] || "rgba(80,80,80,1)";
 
-		const famButton = initButton(name, 5 + i * buttonSpread, 0, color, switchUiPage, i, pageHeader);
+		const famButton = initButton(name, 5 + i * buttonSpread, 0, color, switchUiPage, i, pageHeader, null, null, null, null);
 		famButton.sliders = [];
 		famButton.buttons = [];
 		famButton.label = name;

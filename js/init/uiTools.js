@@ -323,7 +323,7 @@ function initImageDiv(imgPath, x, y, color, parent = document.body) {
 	return (div);
 }
 
-function initButton(label, x, y, color, onChange, value = null, parent = document.body, isSwitch = null, keyToggle = null, imgPath = null, mouseFollowImg = null) {
+function initButton(label, x, y, color, onChange, value = null, parent = document.body, isSwitch = null, keyToggle = null, imgPath = null, mouseFollowImg = null, clrText = false) {
 	function formatKeyLabel(k){
 	if(!k) return "";
 	const map={
@@ -347,7 +347,21 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	div.style.color = 'rgba(213, 213, 213, 1)';
 	div.style.position = div.style.position || "absolute";
 	div.style.boxSizing = "border-box";
-	if (isMobile || !imgPath) div.textContent = label.slice(0, 5);
+	if (isMobile || !imgPath) {
+		div.style.display = "flex";
+		div.style.alignItems = "center";
+		div.style.justifyContent = "center";
+		if (clrText) {
+			div.style.color = color;
+			div.style.backgroundColor = "black";	
+		}
+		const fontSize = clamp(60 / label.length, 6, 20);
+		div.style.fontSize = fontSize + "px";
+		const minWidth = Math.max(50, fontSize * (label.length * 0.7));
+		div.style.minWidth = minWidth + "px";
+		div.textContent = label;
+		div.textContent = label;
+	}
 	div.label = label;
 	div.value = value;
 	div.active = isSwitch;
