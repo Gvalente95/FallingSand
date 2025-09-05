@@ -1,6 +1,6 @@
 let id = 0;
 class Particle{
-	constructor(x, y, type, velX = f_range(-.3, .3), velY = (PARTICLE_PROPERTIES[type].solType == 'GAS' ? -1 : f_range(0, 3)), lifeTime = PARTICLE_PROPERTIES[type].lifeTime * f_range(.5, 1.5), color = null)
+	constructor(x, y, type, velX = f_range(-.3, .3), velY = (PARTICLE_PROPERTIES[type].physT == 'GAS' ? -1 : f_range(0, 3)), lt = PARTICLE_PROPERTIES[type].lt * f_range(.5, 1.5), color = null)
 	{
 		if (isOutOfBorder(x, y)) return (this.toRemove(), 0);
 		this.properties = PARTICLE_PROPERTIES[type];
@@ -8,7 +8,7 @@ class Particle{
 		if (pxAtPos)
 		{
 			if (type == pxAtPos.type) { this.toRemove(); return; }
-			else if (this.properties.solType == 'GAS' && type != 'STEAM')
+			else if (this.properties.physT == 'GAS' && type != 'STEAM')
 			{
 				if (pxAtPos.type == 'WATER' && type == 'FIRE') {
 					pxAtPos.replace('FIRE');
@@ -24,7 +24,7 @@ class Particle{
 		this.hasTouchedSurface = false;
 		this.hasTouchedBorder = false;
 		this.id = id++;
-		this.lifeTime = lifeTime;
+		this.lt = lt;
 		this.startTime = now;
 		this.timeAlive = 0;
 		this.growSpeed = r_range(1, 3);
@@ -47,23 +47,23 @@ class Particle{
 	updateVelocity()
 	{
 		if (this.type == 'PLANT') return;
-		let isGrounded = this.ground && (this.ground.solType == 'SOLID') && this.ground.velY == 0;
+		let isGrounded = this.ground && (this.ground.physT == 'SOLID') && this.ground.velY == 0;
 		if (this.type == 'WATER' && this.ground && !getPxlAtPos(this.x, this.y - 1) && dice(200) && this.ground.type == this.type)
 			this.setType('BUBBLE');
-		if (this.ground && this.ground.solType == 'LIQUID' && this.solType == 'SOLID')
+		if (this.ground && this.ground.physT == 'LIQUID' && this.physT == 'SOLID')
 		{
 			this.velY *= .7;
-			let minV = (4 - this.ground.density) * .5;
+			let minV = (4 - this.ground.dns) * .5;
 			if (this.velY < minV) this.velY = minV;
 			if (this.velY < .3 && dice(5)) this.velY = .3;
 		}
-		else if (isGrounded && this.solType != 'GAS')
+		else if (isGrounded && this.physT != 'GAS')
 		{
 			this.velY = (this.ground.type == 'WOOD' ? 1 : 0);
 			this.velX *= (1 - XDRAG);
 			if (Math.abs(this.velX) < .01) this.velX = 0;
 		}
-		else if (this.solType != 'GAS') this.velY += GRAVITY;
+		else if (this.physT != 'GAS') this.velY += GRAVITY;
 		else if ((this.type == 'STEAM' || this.type == 'CLOUD') || this.id % 5 == 0)
 			this.velX = getSin(now * .002, 5, .9, this.id * .3);
 	}
@@ -87,26 +87,26 @@ class Particle{
 			if (this.douse) pxAtPos.setWet(100, this.type);
 			if (shouldBurn(this, pxAtPos)) {pxAtPos.setToFire();}
 			if (shouldBurn(pxAtPos, this)) this.setToFire();
-			else if (this.solType === 'GAS' && pxAtPos.solType === 'LIQUID' && pxAtPos.y < this.y) {
+			else if (this.physT === 'GAS' && pxAtPos.physT === 'LIQUID' && pxAtPos.y < this.y) {
 				this.swap(pxAtPos); curX = this.x; curY = this.y; break;
 			}
-			else if (this.solType === 'LIQUID' && pxAtPos.solType === 'LIQUID') {
+			else if (this.physT === 'LIQUID' && pxAtPos.physT === 'LIQUID') {
 				const a = this.type, b = pxAtPos.type;
 				if ((a === 'LAVA' && b === 'WATER') || (a === 'WATER' && b === 'LAVA')) {
 					if (a === 'LAVA') (dice(5) ? this.setType('COAL') : pxAtPos.setType('STEAM'));
 					else this.setType('STEAM');
 					curX -= xStep; curY -= yStep; break;
 				}
-				if (pxAtPos.density < this.density) { this.swap(pxAtPos); curX = this.x; curY = this.y; break; }
+				if (pxAtPos.dns < this.dns) { this.swap(pxAtPos); curX = this.x; curY = this.y; break; }
 			}
-			else if (this.solType == 'SOLID' && pxAtPos.solType == 'LIQUID')
+			else if (this.physT == 'SOLID' && pxAtPos.physT == 'LIQUID')
 			{
 				if (i != steps - 1) continue;
 				this.swap(pxAtPos);
 				curX = this.x; curY = this.y;
 				break;
 			}
-			else if ((this.type == 'ACID') && pxAtPos.type != this.type && dice(pxAtPos.density))
+			else if ((this.type == 'ACID') && pxAtPos.type != this.type && dice(pxAtPos.dns))
 			{
 				pxAtPos.setType('BUBBLE');
 				curX -= xStep; curY -= yStep;
@@ -124,7 +124,7 @@ class Particle{
 	{
 		if (!this.active) return;
 		let px = getPxlAtPos(newX, newY, this);
-		if (this.solType === 'GAS' && px) return (this.toRemove(), 0);
+		if (this.physT === 'GAS' && px) return (this.toRemove(), 0);
 		const clampedX = Math.floor(clamp(newX, 0, GRIDW - 1));
 		const clampedY = Math.floor(clamp(newY, 0, GRIDH - 1));
 		if (clampedX != newX || clampedY != newY) this.velX = 0;
@@ -137,15 +137,15 @@ class Particle{
 		grid[this.x][this.y] = this;
 		return (1);
 	}
-	updateLifeTime(){
+	updatelt(){
 		this.timeAlive = now - this.startTime;
-		if (this.timeAlive > this.lifeTime)
+		if (this.timeAlive > this.lt)
 		{
 			if (this.type == 'MAGMA') return;
-			if (this.solType == 'SOLID') {
+			if (this.physT == 'SOLID') {
 				let y = this.y - 1;
 				let p = getPxlAtPos(this.x, y);
-				while (p && p.updType == 'DYNAMIC')
+				while (p && p.updT == 'DYNAMIC')
 				{
 					grid[p.x][p.y] = null;
 					grid[p.x][++p.y] = p;
@@ -230,7 +230,7 @@ class Particle{
 		{
 			if (--this.burning <= 0)
 			{
-				if (this.type == 'OIL') this.lifeTime = 0;
+				if (this.type == 'OIL') this.lt = 0;
 				else if (this.type == 'SAND' && dice(20)) this.setType('GLASS');
 				else this.setType('COAL')
 				this.burning = 0;
@@ -257,11 +257,11 @@ class Particle{
 		if (this.type === 'CLOUD') return this.updateCloud();
 		else if (this.type == 'STEAM' && this.y < 50 && dice(5))
 			{ launchParticules('CLOUD', this.x * PIXELSIZE, this.y * PIXELSIZE, 10, true); this.toRemove(); }
-		if (this.solType != 'STATIC' || this.type == 'PLANT') {
-			this.ground = getPxlAtPos(this.x, this.y + (this.solType == 'GAS' ? -1 : 1), this);
+		if (this.physT != 'STATIC' || this.type == 'PLANT') {
+			this.ground = getPxlAtPos(this.x, this.y + (this.physT == 'GAS' ? -1 : 1), this);
 			this.updateVelocity();
 			if (this.velX || this.velY) this.updateMovement();
-			if (this.solType == 'LIQUID') this.updateLiquid(this.newX, this.newY);
+			if (this.physT == 'LIQUID') this.updateLiquid(this.newX, this.newY);
 		}
 		if (this.type == 'TORCH' && dice(10))
 			new Particle(this.x, this.y - 1, 'FIRE');
@@ -269,14 +269,14 @@ class Particle{
 		else if (this.type == 'MAGMA') this.MagmaEffect(this.newX, this.newY);
 		else if (this.type == 'LAVA') this.LavaEffect(this.newX, this.newY);
 		else if (this.type == 'PLANT') this.updatePLANT(this.newX, this.newY);
-		else if (this.solType != 'LIQUID') this.updatePosition(this.newX, this.newY);
+		else if (this.physT != 'LIQUID') this.updatePosition(this.newX, this.newY);
 	}
 	update() {
 		if (!this.active) return;
 		this.prvP.push([this.x, this.y, this.velX, this.velY]);
 		if (this.prvP.length > TRAILAMOUNT) this.prvP.shift();
 		this.updateState();
-		this.updateLifeTime();
+		this.updatelt();
 		this.updateType();
 	}
 

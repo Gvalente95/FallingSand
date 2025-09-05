@@ -1,6 +1,6 @@
 p.updateLiquid = function(curX, curY, spreadAm = this.spreadAmount) {
 		let upx = getPxlAtPos(curX, curY - 1);
-		if (upx && upx.solType == 'LIQUID' && upx.density > this.density && upx.type != 'BUBBLE')
+		if (upx && upx.physT == 'LIQUID' && upx.dns > this.dns && upx.type != 'BUBBLE')
 		{
 			this.velX = 0;
 			this.swap(upx);
@@ -21,11 +21,11 @@ p.updateLiquid = function(curX, curY, spreadAm = this.spreadAmount) {
 				let xp = curX + (i * this.flowDir);
 				if (xp < 0 || xp >= GRIDW) { this.flowDir *= -1; break; }
 				let p = getPxlAtPos(xp, curY, this);
-				if (p && p.solType != 'LIQUID')
+				if (p && p.physT != 'LIQUID')
 					break;
-				if (p && p.solType == 'LIQUID' && p.type != this.type && i <= 4)
+				if (p && p.physT == 'LIQUID' && p.type != this.type && i <= 4)
 				{
-					if (p.density > this.density) {this.swap(p);
+					if (p.dns > this.dns) {this.swap(p);
 					return;}
 				}
 				if (!p) {newX = xp; found = true; break;}
@@ -50,9 +50,9 @@ p.FireEffect = function (curX, curY)
 		for (let x = -depth; x < depth; x++) {
 			if ((x == 0 && y == 0) || isOutOfBorder(x + curX, y + curY)) continue;
 			let px = getPxlAtPos(curX + x, curY + y, this);
-			if (px && px.solType == 'LIQUID' && (!px.burnable && px.type != 'LAVA'))
+			if (px && px.physT == 'LIQUID' && (!px.brn && px.type != 'LAVA'))
 			{
-				this.lifeTime = 50;
+				this.lt = 50;
 				if (px.y > 0 && dice(20)) {
 					new Particle(px.x, px.y - 1, px.type == 'WATER' ? 'STEAM' : 'SMOKE');
 					px.setType('BUBBLE');
@@ -76,7 +76,7 @@ p.MagmaEffect = function(curX, curY)
 			let px = getPxlAtPos(realX, realY, this);
 			if (px) pxFound += (px.type == 'MAGMA' ? .05 : 1);
 			else if (y < 0 && dice(500)) new Particle(realX, realY, 'SMOKE');
-			if (px && px.solType == 'LIQUID' && !px.burnable && dice(20))
+			if (px && px.physT == 'LIQUID' && !px.brn && dice(20))
 				this.setType('ROCK');
 			if (px && shouldBurnParticle('MAGMA', px))
 			{
@@ -85,7 +85,7 @@ p.MagmaEffect = function(curX, curY)
 			}
 		}
 	}
-	if (this.timeAlive > this.lifeTime && pxFound <= 3) this.setType('ROCK');
+	if (this.timeAlive > this.lt && pxFound <= 3) this.setType('ROCK');
 	this.updatePosition(curX, curY);
 }
 p.LavaEffect = function(curX, curY)
@@ -100,8 +100,8 @@ p.LavaEffect = function(curX, curY)
 			if (!px) continue;
 			if (px.type == this.type) continue;
 			if (px.type == 'WATER' || px.type == 'BUBBLE') { px.setType('STEAM'); continue; }
-			if (!px.burnable) continue;
-			if (dice(1002 - px.burnable))
+			if (!px.brn) continue;
+			if (dice(1002 - px.brn))
 			{
 				px.velY = 0;
 				px.velX = 0;

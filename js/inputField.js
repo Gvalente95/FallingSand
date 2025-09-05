@@ -148,13 +148,13 @@ function initInputParticleValuesContainer() {
 	const props = {
 		name: 'Cust_' + defaultName,
 		color: 'rgba(220,220,255,0.6)',
-		lifeTime: 'Infinity',
-		burnable: 0,
-		burner: 0,
+		lt: 'Infinity',
+		brn: 0,
+		brnpwr: 0,
 		douse: 0,
-		solType: SOLID_TYPES.SOLID,
-		updType: UPDATE_TYPES.DYNAMIC,
-		density: 10,
+		physT: SOLID_TYPES.SOLID,
+		updT: UPDATE_TYPES.DYNAMIC,
+		dns: 10,
 		spread: 10
 	};
 
@@ -213,14 +213,14 @@ function initInputParticleValuesContainer() {
 	}
 
 	const nameI = textInput(props.name);
-	const lifeI = textInput(String(props.lifeTime));
-	const flamI = numberInput(props.burnable);
-	const burnI = numberInput(props.burner);
+	const lifeI = textInput(String(props.lt));
+	const flamI = numberInput(props.brn);
+	const burnI = numberInput(props.brnpwr);
 	const douseI = numberInput(props.douse);
-	const densI = numberInput(props.density);
+	const densI = numberInput(props.dns);
 	const spreadI = numberInput(props.spread);
-	const solI = selectInput(SOLID_TYPES, props.solType);
-	const updI = selectInput(UPDATE_TYPES, props.updType);
+	const solI = selectInput(SOLID_TYPES, props.physT);
+	const updI = selectInput(UPDATE_TYPES, props.updT);
 
 	const colorHidden = textInput(props.color);
 	colorHidden.style.display='none';
@@ -241,7 +241,7 @@ function initInputParticleValuesContainer() {
 	form.appendChild(field('Extinction', douseI));
 	form.appendChild(field('Densité', densI));
 	form.appendChild(field('Spread', spreadI));
-	form.appendChild(field('SolType', solI));
+	form.appendChild(field('physT', solI));
 	form.appendChild(field('UpdateType', updI));
 
 	const cancelB = document.createElement('button');
@@ -276,13 +276,13 @@ function initInputParticleValuesContainer() {
 		const p = {
 			name: nameI.value.trim() || 'Custom',
 			color: colorHidden.value.trim() || 'rgba(255,255,255,1)',
-			lifeTime: life,
-			burnable: Number(flamI.value),
-			burner: Number(burnI.value),
+			lt: life,
+			brn: Number(flamI.value),
+			brnpwr: Number(burnI.value),
 			douse: Number(douseI.value),
-			solType: solI.value,
-			updType: updI.value,
-			density: Number(densI.value),
+			physT: solI.value,
+			updT: updI.value,
+			dns: Number(densI.value),
 			spread: Number(spreadI.value)
 		};
 		addParticleType(p);
@@ -313,19 +313,19 @@ function addParticleType(props = {}) {
 	const defaults = {
 		name: 'Ola',
 		color: 'rgba(255,255,255,1)',
-		lifeTime: Infinity,
-		burnable: 0,
-		burner: 0,
+		lt: Infinity,
+		brn: 0,
+		brnpwr: 0,
 		douse: 0,
-		solType: SOLID_TYPES.SOLID,
-		updType: UPDATE_TYPES.DYNAMIC,
-		density: 10,
+		physT: SOLID_TYPES.SOLID,
+		updT: UPDATE_TYPES.DYNAMIC,
+		dns: 10,
 		spread: 10
 	};
 	const key = props.name.toUpperCase().replace(/\s+/g, '_');
 
-	if (props.solType && !Object.values(SOLID_TYPES).includes(props.solType)) throw new Error('invalid solType');
-	if (props.updType && !Object.values(UPDATE_TYPES).includes(props.updType)) throw new Error('invalid updType');
+	if (props.physT && !Object.values(SOLID_TYPES).includes(props.physT)) throw new Error('invalid physT');
+	if (props.updT && !Object.values(UPDATE_TYPES).includes(props.updT)) throw new Error('invalid updT');
 
 	particleKeys = Object.keys(PARTICLE_PROPERTIES);
 	PARTICLE_PROPERTIES[key] = { ...defaults, ...props };

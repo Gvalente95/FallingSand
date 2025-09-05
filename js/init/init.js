@@ -92,7 +92,7 @@ function initParticlePagesHeader(y)
 		}
 		for (let v = 0; v < particleKeys.length; v++)
 		{
-			if (curType === 'ALL' || PARTICLE_PROPERTIES[particleKeys[v]].solType == curType)
+			if (curType === 'ALL' || PARTICLE_PROPERTIES[particleKeys[v]].physT == curType)
 			{
 				let newBut = initButton(
 					particleKeys[v], 5 + -(i * buttonSpread) + (xp++) * buttonSpread, 0,

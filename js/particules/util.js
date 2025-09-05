@@ -20,7 +20,7 @@ p.hasTouchedSurfaceCheck = function()
 				return (true);
 			}
 			px = getPxlAtPos(this.x, this.y + y);
-			if (px && (px.solType == 'SOLID' || px.solType == 'STATIC')) {
+			if (px && (px.physT == 'SOLID' || px.physT == 'STATIC')) {
 				if (hasBubble && dice(10)) new Particle(this.newX, this.newY - 1, this.type == 'LAVA' ? 'SMOKE' : 'BUBBLE');
 				return (true);
 			}
@@ -44,17 +44,17 @@ p.setType = function(newType)
 	this.type = newType;
 	this.properties = PARTICLE_PROPERTIES[newType];
 	this.douse = this.properties.douse;
-	this.solType = this.properties.solType;
-	this.lifeTime = this.properties.lifeTime * f_range(.5, 1.5);
-	this.burnable = this.properties.burnable;
-	this.burner = this.properties.burner;
-	this.density = this.properties.density;
+	this.physT = this.properties.physT;
+	this.lt = this.properties.lt * f_range(.5, 1.5);
+	this.brn = this.properties.brn;
+	this.brnpwr = this.properties.brnpwr;
+	this.dns = this.properties.dns;
 	this.spreadAmount = this.properties.spread;
-	this.updType = this.properties.updType;
+	this.updT = this.properties.updT;
 	this.setColor(
-		this.solType != 'LIQUID' || this.type == 'LAVA' ? randomizeColor(this.properties.color) : this.properties.color);
+		this.physT != 'LIQUID' || this.type == 'LAVA' ? randomizeColor(this.properties.color) : this.properties.color);
 	this.flowDir = r_range(0, 2) == 0 ? -1 : 1;
-	if (this.updType == 'STATIC') { this.velY = 0; this.velX = 0; }
+	if (this.updT == 'STATIC') { this.velY = 0; this.velX = 0; }
 	if (this.type == 'PLANT')
 	{
 		this.velX = 0; this.velY = 0;
@@ -68,27 +68,27 @@ p.setType = function(newType)
 
 function shouldBurn(agressor, victim)
 {
-	let burnable = victim.burnable;
-	if (victim.wet && victim.wetType) burnable = PARTICLE_PROPERTIES[victim.wetType].burnable;
-	if (!agressor.burner || !burnable) return (0);
-	let sumChance = Math.max(1, 2000 - burnable - agressor.burner);
+	let brn = victim.brn;
+	if (victim.wet && victim.wetType) brn = PARTICLE_PROPERTIES[victim.wetType].brn;
+	if (!agressor.brnpwr || !brn) return (0);
+	let sumChance = Math.max(1, 2000 - brn - agressor.brnpwr);
 	return (dice(sumChance));
 }
 function shouldBurnType(typeA, typeB)
 {
-	let burnForce = PARTICLE_PROPERTIES[typeA].burner;
-	let burnable = PARTICLE_PROPERTIES[typeB].burnable;
-	if (!burnForce || !burnable) return (0);
-	let sumChance = Math.max(1, 2000 - burnable - burnForce);
+	let burnForce = PARTICLE_PROPERTIES[typeA].brnpwr;
+	let brn = PARTICLE_PROPERTIES[typeB].brn;
+	if (!burnForce || !brn) return (0);
+	let sumChance = Math.max(1, 2000 - brn - burnForce);
 	return (dice(sumChance));
 }
 function shouldBurnParticle(typeA, victim)
 {
-	let burnForce = PARTICLE_PROPERTIES[typeA].burner;
-	let burnable = victim.burnable;
-	if (victim.wet && victim.wetType) burnable = PARTICLE_PROPERTIES[victim.wetType].burnable;
-	if (!burnForce || !burnable) return (0);
-	let sumChance = Math.max(1, 2000 - burnable - burnForce);
+	let burnForce = PARTICLE_PROPERTIES[typeA].brnpwr;
+	let brn = victim.brn;
+	if (victim.wet && victim.wetType) brn = PARTICLE_PROPERTIES[victim.wetType].brn;
+	if (!burnForce || !brn) return (0);
+	let sumChance = Math.max(1, 2000 - brn - burnForce);
 	return (dice(sumChance));
 }
 

@@ -32,8 +32,8 @@ function launchParticules(type = 'SAND', x = MOUSEX, y = MOUSEY, radius = BRUSHS
 				let newP = new Particle(clampedX, clampedY, type);
 				if (type === 'RAINBOW') newP.setColor(getRainbowColor(time, .1));
 				if (!useMouseDx) continue;
-				newP.velX += MOUSEDX * (newP.solType == SOLID_TYPES.LIQUID ? .05 : .02);
-				newP.velY += MOUSEDY * (newP.solType == SOLID_TYPES.LIQUID ? .05 : .02);
+				newP.velX += MOUSEDX * (newP.physT == SOLID_TYPES.LIQUID ? .05 : .02);
+				newP.velY += MOUSEDY * (newP.physT == SOLID_TYPES.LIQUID ? .05 : .02);
 				if (radius <= 1) return;
             }
         }
