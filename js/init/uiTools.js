@@ -352,7 +352,7 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	div.value = value;
 	div.active = isSwitch;
 	if (div.active) div.classList.add("activeButton");
-	div.addEventListener("mousedown", activate);
+	div.addEventListener("mouseup", activate);
 	div.setAttribute("tabindex", "0");
 
 	if (imgPath) {
@@ -405,9 +405,10 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 		}
 	}
 
-	parent.appendChild(div);
+	if (parent) parent.appendChild(div);
 
 	function activate() {
+		if (isDraggingheader) return;
 		if (isSwitch != null) {
 			div.active = !div.active;
 			if (div.active) div.classList.add("activeButton");
@@ -422,6 +423,7 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	return div;
 }
 
+let isDraggingheader = false;
 function addHeader(y, color, height, borderColor = null, dragWidth = 0) {
 	let header = document.createElement("div");
 	header.style.top = y + "px";
@@ -435,27 +437,29 @@ function addHeader(y, color, height, borderColor = null, dragWidth = 0) {
 	if (borderColor) header.style.border = "1px solid " + borderColor;
 	document.body.appendChild(header);
 
-	if (dragWidth && isMobile) {
+	if (dragWidth > 0) {
 	header.style.userSelect = "none";
 	header.style.cursor = "grab";
-	header.style.width = dragWidth;
+	header.style.width = dragWidth + "px";
 	let dragging = false;
 	let startX = 0;
 	let startLeft = 0;
 	function onMove(e){
 		if (!dragging) return;
 		const dx = e.clientX - startX;
+		isDraggingheader = Math.abs(dx) > 1;
 		const maxLeft = 0;
 		const minLeft = -parseFloat(header.style.width);
 		header.style.left = clamp(startLeft + dx, minLeft, maxLeft) + "px";
 	}
 	function onUp(){
 		dragging = false;
+		isDraggingheader = false;
 		header.style.cursor = "grab";
 		document.removeEventListener("mousemove", onMove);
 		document.removeEventListener("mouseup", onUp);
 	}
-	header.addEventListener("mousedown", (e) => {
+		header.addEventListener("mousedown", (e) => {
 		dragging = true;
 		header.style.cursor = "grabbing";
 		startX = e.clientX;

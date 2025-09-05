@@ -1,5 +1,5 @@
 
-let infoHeader = null;
+let paramheader = null;
 let infoMouse = null;
 function initInfoText() {
 	infoText = document.createElement("label");
@@ -16,7 +16,7 @@ function initInfoText() {
 	infoMouse.style.top = "20px";
 	document.body.appendChild(infoMouse);
 }
-function initInfoHeader(yPos, height)
+function initParamHeader(yPos, height)
 {
 	let spread = 95;
 	let x = 5;
@@ -29,8 +29,8 @@ function initInfoHeader(yPos, height)
 	sliders.push(createVerticalPressSlider("Gravity", x + spread * n++, 0, 1, -1, .1, GRAVITY, setNewGravity));
 	sliders.push(createVerticalPressSlider("Rain Pow", x + spread * n++, 0, 1, 100, 1, RAINPOW, setRAINPOW));
 	let sldW = 19;
-	infoHeader = addHeader(yPos, null, height, null, sldW * n);
-	sliders.forEach(slider => infoHeader.appendChild(slider));
+	paramheader = addHeader(yPos, null, height, null, sldW * n);
+	sliders.forEach(slider => paramheader.appendChild(slider));
 	return (yPos + height);
 }
 
@@ -64,30 +64,28 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	return (yPos + height);
 }
 
-function inituiPagesHeader(y)
+function initParticlePagesHeader(y)
 {
 	let buttonSpread = 65;
-	let uiPAGENAMES = [];
-	for (let i = 0; i < solidKeys.length; i++) uiPAGENAMES.push(solidKeys[i]);
-	uiPAGENAMES.push("ALL");
-	uiPAGENAMES.push("CUSTOM");
-	let pageHeader = addHeader(y, "rgb(0,0,0,0)", 40, null, isMobile ? (uiPAGENAMES.length) : 0);
+	let particleTypes = [];
+	for (let i = 0; i < solidKeys.length; i++) particleTypes.push(solidKeys[i]);
+	particleTypes.push("ALL");
+	particleTypes.push("CUSTOM");
+	let pageHeader = addHeader(y, null, 40, null, ((particleTypes.length - 6) * 30));
 	let uiPageColors = ['rgba(115, 144, 118, 1)', 'rgba(46, 113, 207, 1)', 'rgba(129, 127, 23, 1)', 'rgba(33, 169, 117, 1)', 'grey', 'white', 'black'];
-	for (let i = 0; i < uiPAGENAMES.length; i++)
+	for (let i = 0; i < particleTypes.length; i++)
 	{
-		let name = uiPAGENAMES[i];
-		let yPos = y;
+		let name = particleTypes[i];
 		let buttonHeight = 45;
-		let pageButton = initButton(name, 5 + i * buttonSpread, 0, uiPageColors[i], switchUiPage, i, pageHeader);
+		let famButton = initButton(name, 5 + i * buttonSpread, 0, uiPageColors[i], switchUiPage, i, pageHeader);
 		let curType = solidKeys[i];
 		let xp = 0;
-		let elementsHeader = addHeader(y, null, 40, null, isMobile ? CANVW * 3 : 0);
-		pageButton.sliders = [];
-		pageButton.buttons = [];
-		pageButton.label = name;
+		famButton.sliders = [];
+		famButton.buttons = [];
+		famButton.label = name;
 		if (name === 'ALL' || name === 'CUSTOM') curType = name;
 		if (curType === 'CUSTOM') {
-			pageButton.buttons.push(initButton(
+			famButton.buttons.push(initButton(
 				'MAKE', -(5 + i * buttonSpread) + (xp++) * buttonSpread, buttonHeight,
 				'rgb(0,0,0)',
 				createNewType, -1, document.body));
@@ -97,13 +95,15 @@ function inituiPagesHeader(y)
 			if (curType === 'ALL' || PARTICLE_PROPERTIES[particleKeys[v]].solType == curType)
 			{
 				let newBut = initButton(
-					particleKeys[v], -(i * buttonSpread) + (xp++) * buttonSpread, buttonHeight,
+					particleKeys[v], 5 + -(i * buttonSpread) + (xp++) * buttonSpread, 0,
 					PARTICLE_PROPERTIES[particleKeys[v]].color,
-					setNewType, v, elementsHeader);
-				pageButton.buttons.push(newBut);
+					setNewType, v, null);
+				famButton.buttons.push(newBut);
 			}
 		}
-		uiPagesButtons.push(pageButton);
+		let elementsHeader = addHeader(y + 45, null, 40, null, !isMobile ? 0 : (famButton.buttons.length - 5) * 50);
+		for (const b of famButton.buttons) elementsHeader.appendChild(b);
+		uiPagesButtons.push(famButton);
 	}
 	return (y + 80);
 }
@@ -111,8 +111,8 @@ function inituiPagesHeader(y)
 function initUi()
 {
 	let y = initActionHeader(CANVH, 'rgb(23, 14, 23)');
-	y = initInfoHeader(y + 2 , 35);
-	y = inituiPagesHeader(y + 2, 'rgb(23, 14, 23)');
+	y = initParamHeader(y + 2 , 35);
+	y = initParticlePagesHeader(y + 2, 'rgb(23, 14, 23)');
 	initInfoText();
 	switchUiPage(0);
 	setNewType(0);
@@ -124,15 +124,10 @@ function initGrid() {
     grid = [];
     for (let x = 0; x < GRIDW; x++) {
         grid[x] = [];
-        for (let y = 0; y < GRIDH; y++) {
+        for (let y = 0; y < GRIDH; y++)
             grid[x][y] = null;
-        }
 	}
 	buildGridLayer();
-}
-
-function isMobileDevice() {
-    return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
 let au = null;

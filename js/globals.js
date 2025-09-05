@@ -8,7 +8,7 @@ MOUSEGRIDX = MOUSEGRIDY = 0;
 MOUSEMOVED = false;
 CLICKCOLOR = getRandomcolor();
 PXATMOUSE = null;
-const isMobile = isMobileDevice();
+const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 // PARAMS
 PIXELSIZE = 4;
