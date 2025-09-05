@@ -64,49 +64,75 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	return (yPos + height);
 }
 
-function initParticlePagesHeader(y)
-{
-	let buttonSpread = 65;
-	let particleTypes = [];
-	for (let i = 0; i < solidKeys.length; i++) particleTypes.push(solidKeys[i]);
-	particleTypes.push("ALL");
-	particleTypes.push("CUSTOM");
-	let pageHeader = addHeader(y, null, 40, null, ((particleTypes.length - 6) * 30));
-	let uiPageColors = ['rgba(115, 144, 118, 1)', 'rgba(46, 113, 207, 1)', 'rgba(129, 127, 23, 1)', 'rgba(33, 169, 117, 1)', 'grey', 'white', 'black'];
-	for (let i = 0; i < particleTypes.length; i++)
-	{
-		let name = particleTypes[i];
-		let buttonHeight = 45;
-		let famButton = initButton(name, 5 + i * buttonSpread, 0, uiPageColors[i], switchUiPage, i, pageHeader);
-		let curType = solidKeys[i];
-		let xp = 0;
+const PHYS_COLORS = [
+  'rgba(115,144,118,1)', // SOLID
+  'rgba(46,113,207,1)',  // LIQUID
+  'rgba(129,127,23,1)',  // GAS
+  'rgba(33,169,117,1)'   // STATIC
+];
+
+const TAG_COLORS = [
+  'rgba(226, 93, 93, 1)',  // ALIVE
+  'rgba(237, 139, 66, 1)', // FLAMMABLE
+  'rgba(214, 113, 40, 1)', // INCENDIARY
+  'rgba(167, 102, 204, 1)',// CORROSIVE
+  'rgba(66, 135, 245, 1)', // WETTING
+  'rgba(255, 255, 255, 1)',// COLOR
+  'rgba(246, 232, 84, 1)', // ELECTRIC
+  'rgba(190, 58, 58, 1)'   // EXPLOSIVE
+];
+
+function initParticlePagesHeader(y) {
+	const buttonSpread = 65;
+	const particleTypes = [...TAGS, "ALL", "CUSTOM"];
+
+	const tabsCount = particleTypes.length;
+	const tabsContentW = tabsCount * buttonSpread + 10;
+	const tabsDragW = Math.max(0, tabsContentW - CANVW);
+
+	const pageHeader = addHeader(y, null, 40, null, tabsDragW);
+
+	for (let i = 0; i < particleTypes.length; i++) {
+		const name = particleTypes[i];
+		const color = TAGSCOLORS[i % TAGSCOLORS.length] || "rgba(80,80,80,1)";
+
+		const famButton = initButton(name, 5 + i * buttonSpread, 0, color, switchUiPage, i, pageHeader);
 		famButton.sliders = [];
 		famButton.buttons = [];
 		famButton.label = name;
-		if (name === 'ALL' || name === 'CUSTOM') curType = name;
-		if (curType === 'CUSTOM') {
-			famButton.buttons.push(initButton(
-				'MAKE', -(5 + i * buttonSpread) + (xp++) * buttonSpread, buttonHeight,
-				'rgb(0,0,0)',
-				createNewType, -1, document.body));
-		}
-		for (let v = 0; v < particleKeys.length; v++)
-		{
-			if (curType === 'ALL' || PARTICLE_PROPERTIES[particleKeys[v]].physT == curType)
-			{
-				let newBut = initButton(
-					particleKeys[v], 5 + -(i * buttonSpread) + (xp++) * buttonSpread, 0,
-					PARTICLE_PROPERTIES[particleKeys[v]].color,
-					setNewType, v, null);
-				famButton.buttons.push(newBut);
+
+		const elementsY = y + 45;
+		const elementsHeader = addHeader(elementsY, null, 40, null, 0);
+
+		let xp = 0;
+		if (name === "CUSTOM") {
+			const makeBtn = initButton( "MAKE", 5 + xp++ * buttonSpread,0, "rgb(0,0,0)",createNewType,-1,elementsHeader);
+			famButton.buttons.push(makeBtn);
+		} else {
+			for (let v = 0; v < particleKeys.length; v++) {
+				const key = particleKeys[v];
+				const prop = PARTICLE_PROPERTIES[key];
+				const matches = name === "ALL" ? true : hasTag(key, name);
+				if (!matches) continue;
+				const btn = initButton( key, 5 + xp++ * buttonSpread, 0, prop.color, setNewType, v, elementsHeader);
+				famButton.buttons.push(btn);
 			}
 		}
-		let elementsHeader = addHeader(y + 45, null, 40, null, !isMobile ? 0 : (famButton.buttons.length - 5) * 50);
-		for (const b of famButton.buttons) elementsHeader.appendChild(b);
+		const rowContentW = Math.max(10, xp * buttonSpread + 10);
+		const rowDragW = Math.max(0, rowContentW - CANVW);
+		elementsHeader.style.width = rowContentW + "px";
+		const curLeft = parseFloat(getComputedStyle(elementsHeader).left) || 0;
+		const minLeft = -rowDragW;
+		const maxLeft = 0;
+		elementsHeader.style.left = Math.max(minLeft, Math.min(maxLeft, curLeft)) + "px";
 		uiPagesButtons.push(famButton);
 	}
-	return (y + 80);
+	const curLeftTabs = parseFloat(getComputedStyle(pageHeader).left) || 0;
+	pageHeader.style.left = Math.max(-tabsDragW, Math.min(0, curLeftTabs)) + "px";
+	return y + 80;
 }
+
+
 
 function initUi()
 {

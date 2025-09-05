@@ -48,6 +48,7 @@ p.setType = function(newType)
 	this.lt = this.properties.lt * f_range(.5, 1.5);
 	this.brn = this.properties.brn;
 	this.brnpwr = this.properties.brnpwr;
+	this.cor = this.properties.cor;
 	this.dns = this.properties.dns;
 	this.spreadAmount = this.properties.spread;
 	this.updT = this.properties.updT;

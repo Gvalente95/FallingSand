@@ -7,7 +7,7 @@ function showGradial()
 }
 
 function showParticle(particle, x, y, alpha) {
-	if (particle.physT == SOLID_TYPES.GAS)
+	if (particle.physT == PHYSTYPES.GAS)
 		alpha = Math.max(0, 1 - particle.timeAlive / particle.lt);
 	ctx.fillStyle = particle.color;
 	if (alpha != 1) ctx.fillStyle = `rgba(${particle.rgb}, ${alpha})`;

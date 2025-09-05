@@ -503,8 +503,7 @@ function getCurButtonTypeIndex()
 	for (let i = 0; i < uiPagesButtons[uiPageIndex].buttons.length; i++)
 	{
 		let b = uiPagesButtons[uiPageIndex].buttons[i];
-		if (uiPagesButtons[uiPageIndex].label === 'BRUSH' && b.value == BRUSHTYPE) return (i);
-		else if (b.label == particleKeys[TYPEINDEX]) return (i);
+		if (b.label == particleKeys[TYPEINDEX]) return (i);
 	}
 	return (0);
 }

@@ -152,7 +152,7 @@ function initInputParticleValuesContainer() {
 		brn: 0,
 		brnpwr: 0,
 		douse: 0,
-		physT: SOLID_TYPES.SOLID,
+		physT: PHYSTYPES.SOLID,
 		updT: UPDATE_TYPES.DYNAMIC,
 		dns: 10,
 		spread: 10
@@ -219,7 +219,7 @@ function initInputParticleValuesContainer() {
 	const douseI = numberInput(props.douse);
 	const densI = numberInput(props.dns);
 	const spreadI = numberInput(props.spread);
-	const solI = selectInput(SOLID_TYPES, props.physT);
+	const solI = selectInput(PHYSTYPES, props.physT);
 	const updI = selectInput(UPDATE_TYPES, props.updT);
 
 	const colorHidden = textInput(props.color);
@@ -317,14 +317,14 @@ function addParticleType(props = {}) {
 		brn: 0,
 		brnpwr: 0,
 		douse: 0,
-		physT: SOLID_TYPES.SOLID,
+		physT: PHYSTYPES.SOLID,
 		updT: UPDATE_TYPES.DYNAMIC,
 		dns: 10,
 		spread: 10
 	};
 	const key = props.name.toUpperCase().replace(/\s+/g, '_');
 
-	if (props.physT && !Object.values(SOLID_TYPES).includes(props.physT)) throw new Error('invalid physT');
+	if (props.physT && !Object.values(PHYSTYPES).includes(props.physT)) throw new Error('invalid physT');
 	if (props.updT && !Object.values(UPDATE_TYPES).includes(props.updT)) throw new Error('invalid updT');
 
 	particleKeys = Object.keys(PARTICLE_PROPERTIES);

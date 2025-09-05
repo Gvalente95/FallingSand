@@ -106,7 +106,7 @@ class Particle{
 				curX = this.x; curY = this.y;
 				break;
 			}
-			else if ((this.type == 'ACID') && pxAtPos.type != this.type && dice(pxAtPos.dns))
+			else if (this.cor && this.cor > pxAtPos.cor && dice(pxAtPos.dns))
 			{
 				pxAtPos.setType('BUBBLE');
 				curX -= xStep; curY -= yStep;
@@ -248,7 +248,7 @@ class Particle{
 				}
 		}
 	}
-	updateLightning() {
+	updateBOLT() {
 		
 	}
 
