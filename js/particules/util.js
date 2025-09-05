@@ -64,6 +64,7 @@ p.setType = function(newType)
 		this.oscSpeed = f_range(0.0025, 0.006);
 		this.oscAmp = f_range(2, 6);
 	}
+	if (this.type == 'MARM') this.flowDir = 1;
 	if (this.type == 'COAL') { this.velX = 0; }
 }
 

@@ -347,7 +347,7 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	div.style.color = 'rgba(213, 213, 213, 1)';
 	div.style.position = div.style.position || "absolute";
 	div.style.boxSizing = "border-box";
-	div.textContent = label.slice(0, 5);
+	if (isMobile || !imgPath) div.textContent = label.slice(0, 5);
 	div.label = label;
 	div.value = value;
 	div.active = isSwitch;
@@ -357,7 +357,7 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 
 	if (imgPath) {
 		const img = new Image();
-		img.onload = ()=>{ div.textContent = ""; div.style.background = `${color} url("${imgPath}") calc(50% - 10px)center/contain no-repeat`; };
+		img.onload = ()=>{ div.style.background = `${color} url("${imgPath}") calc(50% - 10px) center/contain no-repeat`; };
 		img.onerror = ()=>{ div.style.setProperty('--btn-bg', color); div.style.backgroundColor = color; };
 		img.src = imgPath;
 		img.backgroundColor = "white";
@@ -388,20 +388,9 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	});
 		if (!isMobile) {
 			const badge=document.createElement("span");
-		const ktxt=formatKeyLabel(keyToggle);
-		badge.textContent=ktxt;
-		badge.style.position="absolute";
-		badge.style.top="0px";
-		badge.style.right="0px";
-		badge.style.padding="2px 6px";
-		badge.style.border="1px solid #000";
-		badge.style.background="rgba(0,0,0,.75)";
-		badge.style.color="#fff";
-		badge.style.fontFamily="'Press Start 2P', monospace";
-		badge.style.fontSize="9px";
-		badge.style.lineHeight="1";
-		badge.style.pointerEvents="none";
-		div.appendChild(badge); 
+			badge.className = "buttonBadge";
+			badge.textContent=formatKeyLabel(keyToggle);
+			div.appendChild(badge); 
 		}
 	}
 
@@ -434,11 +423,11 @@ function addHeader(y, color, height, borderColor = null, dragWidth = 0) {
 	else header.style.backgroundColor = "rgba(0, 0, 0, 0)";
 	header.style.height = height + "px";
 	header.style.position = "absolute";
+	header.style.userSelect = "none";
 	if (borderColor) header.style.border = "1px solid " + borderColor;
 	document.body.appendChild(header);
 
-	if (dragWidth > 0) {
-	header.style.userSelect = "none";
+	if (dragWidth <= 0 || !isMobile) return (header);
 	header.style.cursor = "grab";
 	header.style.width = dragWidth + "px";
 	let dragging = false;
@@ -450,27 +439,23 @@ function addHeader(y, color, height, borderColor = null, dragWidth = 0) {
 		isDraggingheader = Math.abs(dx) > 1;
 		const maxLeft = 0;
 		const minLeft = -parseFloat(header.style.width);
-		header.style.left = clamp(startLeft + dx, minLeft, maxLeft) + "px";
-	}
+		header.style.left = clamp(startLeft + dx, minLeft, maxLeft) + "px";}
 	function onUp(){
 		dragging = false;
 		isDraggingheader = false;
 		header.style.cursor = "grab";
 		document.removeEventListener("mousemove", onMove);
-		document.removeEventListener("mouseup", onUp);
-	}
-		header.addEventListener("mousedown", (e) => {
-		dragging = true;
-		header.style.cursor = "grabbing";
-		startX = e.clientX;
-		startLeft = parseFloat(getComputedStyle(header).left) || 0;
-		document.addEventListener("mousemove", onMove);
-		document.addEventListener("mouseup", onUp);
+		document.removeEventListener("mouseup", onUp);}
+	header.addEventListener("mousedown", (e) => {
+	dragging = true;
+	header.style.cursor = "grabbing";
+	startX = e.clientX;
+	startLeft = parseFloat(getComputedStyle(header).left) || 0;
+	document.addEventListener("mousemove", onMove);
+	document.addEventListener("mouseup", onUp);
 	});
-	}
 	return header;
 }
-
 
 function updateUi()
 {

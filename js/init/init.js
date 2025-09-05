@@ -51,9 +51,9 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	let butW = 27;
 	let actionHeader = addHeader(yPos, color, height, null, butLen * butW);
 	actionHeader.style.left = "0px";
-	rewButton = initButton("<", 5 + xMargin * nn++, 0, baseColor, goToPrevFrame, null, actionHeader, null, '1');
+	rewButton = initButton("Prev", 5 + xMargin * nn++, 0, baseColor, goToPrevFrame, null, actionHeader, null, '1', p + "prev.png");
 	pauseButton = initButton("Pause", 5 + xMargin * nn++, 0, baseColor, switchPause, -1, actionHeader, false, '2', p + "pause.png");
-	initButton(">", 5 + xMargin * nn++, 0, baseColor, goToNextFrame, null, actionHeader, null, '3');
+	initButton("Next", 5 + xMargin * nn++, 0, baseColor, goToNextFrame, null, actionHeader, null, '3', p + "next.png");
 	initButton("Fall", 5 + xMargin * nn++, 0, baseColor, switchRain, null, actionHeader, false, 'f', p + "drop.png");
 	cutButton = initButton("Cut", 5 + xMargin * nn++, 0, baseColor, switchCut, null, actionHeader, false, "c", p + "eraser.png", wp + "eraser.png");
 	initButton("Clear", 5 + xMargin * nn++, 0, baseColor, resetParticles, PIXELSIZE, actionHeader, null, 'r', p + "broom.png");
@@ -84,7 +84,7 @@ const TAG_COLORS = [
 
 function initParticlePagesHeader(y) {
 	const buttonSpread = 65;
-	const particleTypes = [...TAGS, "ALL", "CUSTOM"];
+	const particleTypes = [...TAGS];
 
 	const tabsCount = particleTypes.length;
 	const tabsContentW = tabsCount * buttonSpread + 10;
@@ -112,8 +112,7 @@ function initParticlePagesHeader(y) {
 			for (let v = 0; v < particleKeys.length; v++) {
 				const key = particleKeys[v];
 				const prop = PARTICLE_PROPERTIES[key];
-				const matches = name === "ALL" ? true : hasTag(key, name);
-				if (!matches) continue;
+				if (!hasTag(key, name)) continue;
 				const btn = initButton( key, 5 + xp++ * buttonSpread, 0, prop.color, setNewType, v, elementsHeader);
 				famButton.buttons.push(btn);
 			}

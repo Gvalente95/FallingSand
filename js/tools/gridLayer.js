@@ -1,5 +1,5 @@
 function buildGridLayer() {
-    const off = document.createElement("canvas");
+	const off = document.createElement("canvas");
     off.width = canvas.width;
     off.height = canvas.height;
     const g = off.getContext("2d");

@@ -94,6 +94,20 @@ body {
     background-color: darkred; /* Visual feedback on hover */
 }
 
+.buttonBadge {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	padding: 2px 6px;
+	border: 1px solid #000;
+	background: rgba(0,0,0,.75);
+	color: #fff;
+	font-Family: 'Press Start 2P', monospace;
+	font-Size: 9px;
+	line-Height: 1;
+	pointer-Events: none;
+}
+
 #input[type="range"] {
   appearance: none;
   height: 6px;

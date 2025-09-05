@@ -21,6 +21,7 @@ class Particle{
 		this.ground = null;
 		this.wetType = null;
 		this.parent = null;
+		this.childrens = [];
 		this.hasTouchedSurface = false;
 		this.hasTouchedBorder = false;
 		this.id = id++;
@@ -46,7 +47,7 @@ class Particle{
 	}
 	updateVelocity()
 	{
-		if (this.type == 'PLANT') return;
+		if (this.physT == 'STATIC') return;
 		let isGrounded = this.ground && (this.ground.physT == 'SOLID') && this.ground.velY == 0;
 		if (this.type == 'WATER' && this.ground && !getPxlAtPos(this.x, this.y - 1) && dice(200) && this.ground.type == this.type)
 			this.setType('BUBBLE');
