@@ -1,45 +1,46 @@
-p.updateLiquid = function(curX, curY, spreadAm = this.spreadAmount) {
-		let upx = getPxlAtPos(curX, curY - 1);
-		if (upx && upx.physT == 'LIQUID' && upx.dns > this.dns && upx.type != 'BUBBLE')
-		{
-			this.velX = 0;
-			this.swap(upx);
-			return;
-		}
-		if (!this.hasTouchedSurface)
-		{
-			if (this.hasTouchedSurfaceCheck()) { this.hasTouchedSurface = true; }
-			else {this.updatePosition(curX, curY); return;}
-		}
-		if (curX <= 0 && this.flowDir == -1) this.flowDir = 1;
-		else if (curX >= GRIDW - 1 && this.flowDir == 1) this.flowDir = -1;
 
-		if (getPxlAtPos(curX, curY + 1, this)) {
-			let found = false;
-			let newX = curX;
-			for (let i = 1; i < spreadAm; i++) {
-				let xp = curX + (i * this.flowDir);
-				if (xp < 0 || xp >= GRIDW) { this.flowDir *= -1; break; }
-				let p = getPxlAtPos(xp, curY, this);
-				if (p && p.physT != 'LIQUID')
-					break;
-				if (p && p.physT == 'LIQUID' && p.type != this.type && i <= 4)
-				{
-					if (p.dns > this.dns) {this.swap(p);
-					return;}
-				}
-				if (!p) {newX = xp; found = true; break;}
-				if (!getPxlAtPos(xp, curY + 1, this))
-				{
-					found = true;
-					curY++;
-					newX = xp; found = true; break;
-				}
+p.updateLiquid = function (curX, curY, spreadAm = this.spreadAmount) {
+	let upx = getPxlAtPos(curX, curY - 1);
+	if (upx && upx.physT == 'LIQUID' && upx.dns > this.dns && upx.type != 'BUBBLE')
+	{
+		this.velX = 0;
+		this.swap(upx);
+		return;
+	}
+	if (!this.hasTouchedSurface)
+	{
+		if (this.hasTouchedSurfaceCheck()) { this.hasTouchedSurface = true; }
+		else {this.updatePosition(curX, curY); return;}
+	}
+	if (curX <= 0 && this.xDir == -1) this.xDir = 1;
+	else if (curX >= GRIDW - 1 && this.xDir == 1) this.xDir = -1;
+
+	if (getPxlAtPos(curX, curY + 1, this)) {
+		let found = false;
+		let newX = curX;
+		for (let i = 1; i < spreadAm; i++) {
+			let xp = curX + (i * this.xDir);
+			if (xp < 0 || xp >= GRIDW) { this.xDir *= -1; break; }
+			let p = getPxlAtPos(xp, curY, this);
+			if (p && p.physT != 'LIQUID')
+				break;
+			if (p && p.physT == 'LIQUID' && p.type != this.type && i <= 4)
+			{
+				if (p.dns > this.dns) {this.swap(p);
+				return;}
 			}
-			if (!found) this.flowDir *= -1;
-			curX = newX;
+			if (!p) {newX = xp; found = true; break;}
+			if (!getPxlAtPos(xp, curY + 1, this))
+			{
+				found = true;
+				curY++;
+				newX = xp; found = true; break;
+			}
 		}
-		this.updatePosition(curX, curY);
+		if (!found) this.xDir *= -1;
+		curX = newX;
+	}
+	this.updatePosition(curX, curY);
 }
 
 p.FireEffect = function (curX, curY)
@@ -52,10 +53,13 @@ p.FireEffect = function (curX, curY)
 			let px = getPxlAtPos(curX + x, curY + y, this);
 			if (px && px.physT == 'LIQUID' && (!px.brn && px.type != 'LAVA'))
 			{
-				this.lt = 50;
-				if (px.y > 0 && dice(20)) {
-					new Particle(px.x, px.y - 1, px.type == 'WATER' ? 'STEAM' : 'SMOKE');
-					px.setType('BUBBLE');
+				if (px.frozen) px.unFreeze(10000);
+				else {
+					this.lt = 50;
+					if (px.y > 0 && dice(20)) {
+						new Particle(px.x, px.y - 1, px.type == 'WATER' ? 'STEAM' : 'SMOKE');
+						px.setType('BUBBLE');
+					}
 				}
 				continue;
 			}
@@ -76,8 +80,10 @@ p.MagmaEffect = function(curX, curY)
 			let px = getPxlAtPos(realX, realY, this);
 			if (px) pxFound += (px.type == 'MAGMA' ? .05 : 1);
 			else if (y < 0 && dice(500)) new Particle(realX, realY, 'SMOKE');
-			if (px && px.physT == 'LIQUID' && !px.brn && dice(20))
-				this.setType('ROCK');
+			if (px && px.physT == 'LIQUID' && !px.brn && dice(20)) {
+				if (px.frozen) px.unFreeze(2000);
+				else this.setType('ROCK');				
+			}
 			if (px && shouldBurnParticle('MAGMA', px))
 			{
 				px.setToFire();
@@ -133,3 +139,16 @@ p.PropagateExplosion = function(x, y, typeToExplode, newType = 'MAGMA', depth = 
 	this.PropagateExplosion(x, y - 1, typeToExplode, newType, depth--);
 	this.PropagateExplosion(x, y + 1, typeToExplode, newType, depth--);
 }
+
+p.applyFrost = function (ignoreType = null, frostAmount = this.frozen) {
+    const dirs = [[1, 0],[-1, 0],[0, 1],[0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
+    const rdir = dirs[Math.floor(Math.random() * dirs.length)];
+    const nx = this.x + rdir[0];
+    const ny = this.y + rdir[1];
+    if (nx < 0 || nx >= GRIDW || ny < 0 || ny >= GRIDH) return;
+    const px = getPxlAtPos(nx, ny, this);
+    if (!px || px.frozen) return;
+    if (ignoreType && px.type === ignoreType) return;
+	if (px.brnpwr || px.warm) { if (this.frozen && dice(10)) {this.unFreeze(px.warm); this.warm = 100;} }
+    else  px.setFrozen(frostAmount);
+};

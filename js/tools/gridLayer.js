@@ -1,4 +1,5 @@
 function buildGridLayer() {
+	buildWaterShades();
 	const off = document.createElement("canvas");
     off.width = canvas.width;
     off.height = canvas.height;

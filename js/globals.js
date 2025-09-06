@@ -61,7 +61,7 @@ let particleEmitters = [];
 
 const PHYSTYPES = Object.freeze({ SOLID: 'SOLID', LIQUID: 'LIQUID', GAS: 'GAS', STATIC: 'STATIC' })
 const physKeys = Object.keys(PHYSTYPES);
-const UPDATE_TYPES = Object.freeze({ STATIC: 'STATIC', DYNAMIC: 'DYNAMIC', })
+const UPDATE_TYPES = Object.freeze({ STATIC: 'STATIC', DYNAMIC: 'DYNAMIC', ALIVE: 'ALIVE', })
 let PARTICLE_PROPERTIES = {
 ['SAND']:	{ color: 'rgba(255, 221, 0, 1)',	lt: Infinity,	brn: 10,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 50,	spread: 10,	},
 ['GRASS']:	{ color: 'rgba(86, 223, 36, 1)',	lt: Infinity,	brn: 900,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 15,	spread: 10,	},
@@ -73,7 +73,7 @@ let PARTICLE_PROPERTIES = {
 ['RAINBOW']:{ color: 'rgba(255, 0, 234, 1)',	lt: Infinity,	brn: 100,	brnpwr: 0, 		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 10,	spread: 10,	},
 ['MAGMA']:	{ color: 'rgba(198, 64, 2, 1)',	lt: 12000,		brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 100,	spread: 10,	},
 ['OIL']:	{ color: 'rgba(50, 96, 84, 1)',	lt: Infinity,	brn: 1000,	brnpwr: 0,		douse: 1, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 1,	spread: 20,	},
-['ACID']:	{ color: 'rgba(131, 35, 163, 1)',	lt: Infinity,	brn: 10,	brnpwr: 0,		douse: 1, cor: 1000, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 1.9,	spread: 6,	},
+['ACID']:	{ color: 'rgba(131, 35, 163, 1)',	lt: Infinity,	brn: 10,	brnpwr: 0,		douse: 1, cor: 1000, physT:'LIQUID',updT: 'DYNAMIC', dns: 1.9,	spread: 6,	},
 ['BUBBLE']:	{ color: 'rgba(255, 255, 255, 1)',	lt: 1000,		brn: 0,		brnpwr: 0,		douse: 1, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 1,	spread: 10,	},
 ['WATER']:	{ color: 'rgba(0, 72, 255, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 2,	spread: 15,	},
 ['LAVA']:	{ color: 'rgba(255, 0, 0, 1)',		lt: Infinity,	brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 2.1,	spread: 5,	},
@@ -82,9 +82,10 @@ let PARTICLE_PROPERTIES = {
 ['SMOKE']:	{ color: 'rgba(106, 106, 106, 1)',	lt: 600,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 10,	},
 ['CLOUD']:	{ color: 'rgba(255, 255, 255, 1)',	lt: 20000,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 2,	},
 ['STEAM']:	{ color: 'rgba(237, 211, 211, 1)',	lt: 6000,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 10,	},
-['PLANT']:	{ color: 'rgba(45, 119, 83, 1)', 	lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, cor: 0, physT: 'STATIC', 	updT: 'DYNAMIC', dns: 20, 	spread: 10, },
-['BLOB']:	{ color: 'rgba(192, 144, 190, 1)',	lt: Infinity,	brn: 999,	brnpwr: 0,		douse: 0, cor: 0, physT: 'STATIC',	updT: 'DYNAMIC', dns: 25,	spread: 10,	},
-['MARM']:	{ color: 'rgba(143, 62, 172, 1)',	lt: Infinity,	brn: 999,	brnpwr: 0,		douse: 0, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 10,	spread: 2,	},
+['PLANT']:	{ color: 'rgba(45, 119, 83, 1)', 	lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, cor: 0, physT: 'STATIC', 	updT: 'DYNAMIC', dns: 4, 	spread: 10, },
+['BLOB']: 	{ color: 'rgba(192, 144, 190, 1)', lt: Infinity, 	brn: 999, 	brnpwr: 0,		douse: 0, cor: 0, physT: 'STATIC', updT: 'DYNAMIC',  dns: 25, 	spread: 10, },
+['ANT']:	{ color: 'rgba(99, 62, 62, 1)',	lt: 90000,		brn: 999,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'ALIVE', 	 dns: 25,	spread: 10,	},
+['FROST']:	{ color: 'rgba(126, 166, 205, 1)',	lt: Infinity,	brn: 999,	brnpwr: 0,		douse: 0, cor: 0, physT: 'STATIC',	updT: 'DYNAMIC', dns: 10,	spread: 2,	},
 ['TORCH']:	{ color: 'rgba(255, 0, 0, 1)',		lt: Infinity,	brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'STATIC',	updT: 'STATIC',  dns: 30,	spread: 10,	},
 ['WOOD']:	{ color: 'rgba(74, 54, 10, 1)',	lt: Infinity,	brn: 950,	brnpwr: 0,		douse: 0, cor: 0, physT: 'STATIC',	updT: 'STATIC',  dns: 40,	spread: 10,	},
 };
@@ -114,7 +115,7 @@ for (const k in PARTICLE_PROPERTIES) {
 	if (p.douse > 0) s.add('WETTING');
 	if (p.physT) s.add(p.physT);
 	if (p.cor) s.add('ERODE');
-	if (k == 'PLANT' || k == 'MARM' || k == 'BLOB') s.add('ALIVE');
+	if (k == 'PLANT' || k == 'BLOB' || k == 'ANT') s.add('ALIVE');
 	s.add('ALL');
 	p.tags = [...s];
 	p.tagMask = tagMaskOf(p.tags);

@@ -30,8 +30,10 @@ class Particle{
 		this.timeAlive = 0;
 		this.growSpeed = r_range(1, 3);
 		this.wet = 0;
+		this.warm = 0;
 		this.frozen = 0;
 		this.prvP = [];
+		this.fseed = f_range(.1, 1);
 		this.burning = 0;
 		this.setVel(velX, velY);
 		this.setType(type);
@@ -47,6 +49,7 @@ class Particle{
 	}
 	updateVelocity()
 	{
+		if (this.type == 'ANT' && this.hasTouchedBorder) { return;}
 		if (this.physT == 'STATIC') return;
 		let isGrounded = this.ground && (this.ground.physT == 'SOLID') && this.ground.velY == 0;
 		if (this.type == 'WATER' && this.ground && !getPxlAtPos(this.x, this.y - 1) && dice(200) && this.ground.type == this.type)
@@ -58,7 +61,7 @@ class Particle{
 			if (this.velY < minV) this.velY = minV;
 			if (this.velY < .3 && dice(5)) this.velY = .3;
 		}
-		else if (isGrounded && this.physT != 'GAS')
+		else if (isGrounded && this.physT != 'GAS' && this.updT != 'ALIVE')
 		{
 			this.velY = (this.ground.type == 'WOOD' ? 1 : 0);
 			this.velX *= (1 - XDRAG);
@@ -69,7 +72,8 @@ class Particle{
 			this.velX = getSin(now * .002, 5, .9, this.id * .3);
 	}
 
-	updateMovement(){
+	updateMovement() {
+		if (this.type == 'ANT' && this.hasTouchedBorder) return;
 		let newX = this.x + (this.velX * SIMSPEED * (dt));
 		let newY = this.y + (this.velY * SIMSPEED * (dt));
 		let xDiff = newX - this.x, yDiff = newY - this.y;
@@ -156,127 +160,12 @@ class Particle{
 			return (this.toRemove(), 0);
 		}
 	}
-	updateCloud(){
-		this.velX += this.flowDir * .1;
-		let newX = this.x + this.velX;
-		let newY = this.y;
-		let px = getPxlAtPos(newX, newY, this);
-		if (px && px.type != this.type) { this.swap(px); return; }
-		if (isOutOfBorder(newX, newY)) { this.toRemove(); return; }
-		this.updatePosition(newX, newY, this);
-	}
-	updatePLANT(curX, curY) {
-		if (this.parent || (time % (this.growSpeed)) != 0) return;
-		let inWater = false;
-		const px = getPxlAtPos(curX, curY, this);
-		if (px) {
-			if (px.type == 'WATER' || px.type == 'PLANT') { inWater = true; px.toRemove();}
-			else return (this.setColor());
-		}
-		if (dice(30)) this.dirAng += f_range(-0.2, 0.2);
-		const t = now * this.oscSpeed + this.oscPhase;
-		const ang = this.dirAng + this.oscAmp * Math.sin(t);
-		const speed = inWater ? .2 : 1;
-		this.velX = Math.cos(ang) * speed;
-		this.velY = Math.sin(ang) * speed;
-		const ox = this.x, oy = this.y;
-		this.updatePosition(curX, curY);
-		const clone = new Particle(ox, oy, this.type);
-		clone.parent = this;
-		if (dice(10))this.dirAng += f_range(-0.3, 0.3);
-		if (this.timeAlive < 2000) {
-			let rpx = getPxlsInRect(this.x, this.y, 3, 3, this.type);
-			let isStuck = (rpx.length > 4);
-			if (isStuck) {
-				// if (this.timeAlive > 1500) this.parent = rpx[0];
-				return (this.setColor());
-			}
-			else if (this.color != "rgba(133, 190, 154, 1)") {
-				this.setColor("rgba(133, 190, 154, 1)");
-				if (this.timeAlive > 6000) this.toRemove();
-			}
-		}
-	}
-	updateState()
-	{
-		if (this.frozen)
-		{
-			this.velX = 0;
-			this.velY = 0;
-			if (time % 10 == 0 && --this.frozen <= 0) this.setColor();
-		}
-		if (this.wet)
-		{
-			if (this.burning) { if (this.wetType == 'OIL') this.wet = 0; else this.stopFire();}
-			if (time % 10 == 0 && --this.wet <= 0) this.setColor();
-			else if (this.wet > 80)
-			{
-				let depth = 2;
-				for (let x = -depth; x < depth; x++)
-				for (let y = -depth; y < depth; y++)
-				{
-					if (x == 0 && y == 0) continue;
-					if (isOutOfBorder(this.x + x, this.y + y)) continue;
-					let px = getPxlAtPos(this.x + x, this.y + y, this);
-					if (px) px.setWet(this.wet - 10, this.wetType);
-				}
-			}
-			if (dice(5000)) {
-				let pxAb = getPxlAtPos(this.x, this.y - 1);
-				if (pxAb && pxAb.type === this.wetType)
-					pxAb.replace('BUBBLE');			
-			}
-		}
-		if (this.burning)
-		{
-			if (--this.burning <= 0)
-			{
-				if (this.type == 'OIL') this.lt = 0;
-				else if (this.type == 'SAND' && dice(20)) this.setType('GLASS');
-				else this.setType('COAL')
-				this.burning = 0;
-			}
-			else if (dice(10) && !getPxlAtPos(this.x, this.y - 1)) new Particle(this.x, this.y - 1, 'FIRE');
-			let depth = 2;
-			for (let x = -depth; x < depth; x++)
-				for (let y = -depth; y < depth; y++)
-				{
-					if (x == 0 && y == 0) continue;
-					if (isOutOfBorder(this.x + x, this.y + y)) continue;
-					let px = getPxlAtPos(this.x + x, this.y + y, this);
-					if (px && !px.burning && shouldBurnParticle('FIRE', px)) px.setToFire();
-					if (!px && dice(30)) new Particle(this.x + x, this.y + y, 'SMOKE');
-				}
-		}
-	}
-	updateBOLT() {
-		
-	}
-
-	updateType() {
-		if (this.type === 'WOOD') return;
-		if (this.type === 'CLOUD') return this.updateCloud();
-		else if (this.type == 'STEAM' && this.y < 50 && dice(5))
-			{ launchParticules('CLOUD', this.x * PIXELSIZE, this.y * PIXELSIZE, 10, true); this.toRemove(); }
-		if (this.physT != 'STATIC' || this.type == 'PLANT') {
-			this.ground = getPxlAtPos(this.x, this.y + (this.physT == 'GAS' ? -1 : 1), this);
-			this.updateVelocity();
-			if (this.velX || this.velY) this.updateMovement();
-			if (this.physT == 'LIQUID') this.updateLiquid(this.newX, this.newY);
-		}
-		if (this.type == 'TORCH' && dice(10))
-			new Particle(this.x, this.y - 1, 'FIRE');
-		if (this.type == 'FIRE' || this.type === 'TORCH') this.FireEffect(this.newX, this.newY);
-		else if (this.type == 'MAGMA') this.MagmaEffect(this.newX, this.newY);
-		else if (this.type == 'LAVA') this.LavaEffect(this.newX, this.newY);
-		else if (this.type == 'PLANT') this.updatePLANT(this.newX, this.newY);
-		else if (this.physT != 'LIQUID') this.updatePosition(this.newX, this.newY);
-	}
 	update() {
 		if (!this.active) return;
 		this.prvP.push([this.x, this.y, this.velX, this.velY]);
 		if (this.prvP.length > TRAILAMOUNT) this.prvP.shift();
 		this.updateState();
+		if (this.frozen) return;
 		this.updatelt();
 		this.updateType();
 	}

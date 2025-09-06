@@ -31,7 +31,13 @@ p.hasTouchedSurfaceCheck = function()
 
 p.setVel = function (newX = 0, newY = 0) { this.velX = newX; this.velY = newY; }
 
-p.setColor = function (color = this.properties.color) { this.color = color; this.rgb = hexToRgb(this.color);}
+p.setColor = function(color = this.properties.color) {
+    this.color = color;
+    if (color.startsWith("rgb")) {
+        const rgb = color.match(/\d+/g);
+        this.rgb = `${rgb[0]},${rgb[1]},${rgb[2]}`;
+    } else this.rgb = hexToRgb(color);
+}
 
 p.replace = function(newType){
 	let p = [this.x, this.y];
@@ -54,7 +60,8 @@ p.setType = function(newType)
 	this.updT = this.properties.updT;
 	this.setColor(
 		this.physT != 'LIQUID' || this.type == 'LAVA' ? randomizeColor(this.properties.color) : this.properties.color);
-	this.flowDir = r_range(0, 2) == 0 ? -1 : 1;
+	this.xDir = r_range(0, 2) == 0 ? -1 : 1;
+	this.yDir = r_range(0, 2) == 0 ? -1 : 1;
 	if (this.updT == 'STATIC') { this.velY = 0; this.velX = 0; }
 	if (this.type == 'PLANT')
 	{
@@ -64,8 +71,7 @@ p.setType = function(newType)
 		this.oscSpeed = f_range(0.0025, 0.006);
 		this.oscAmp = f_range(2, 6);
 	}
-	if (this.type == 'MARM') this.flowDir = 1;
-	if (this.type == 'COAL') { this.velX = 0; }
+	else if (this.type == 'COAL') { this.velX = 0; }
 }
 
 function shouldBurn(agressor, victim)
@@ -76,6 +82,7 @@ function shouldBurn(agressor, victim)
 	let sumChance = Math.max(1, 2000 - brn - agressor.brnpwr);
 	return (dice(sumChance));
 }
+
 function shouldBurnType(typeA, typeB)
 {
 	let burnForce = PARTICLE_PROPERTIES[typeA].brnpwr;
@@ -96,24 +103,4 @@ function shouldBurnParticle(typeA, victim)
 
 function getSin(t, freq, amp, phase) {
 	return (Math.sin(t * freq + phase) * amp);
-}
-
-
-
-let curLetterIndex = 0;
-let curLetterPosIndex = 0;
-function updateStart() {
-	let yb = CANVH / 2;
-	let wm = 20;
-	let lh = 40;
-	let lw = 40;
-
-	let text = {
-		"S": {Pos:[0,lh],Steps:[[lw,lh],[lw,lh-lh/3],[0,lh-lh/3],[0,0],[lw, 0]]},
-		"A": {Pos:[lw,yb],Steps:[[0,lh],[lw/2,0],[lw,lh],[lw-lw/4,lh/2],[lw/4,lh/2]]},
-		"N": {Pos:[(lw+wm)*2,yb],Steps:[[0,lh],[0,0],[lw,lh],[lw,0]]},
-		"D": {Pos:[(lw+wm)*3,yb],Steps:[[0,lh],[lw/3,lh],[lw,lh-lh/3],[lw,lh/3],[lw/3,0],[0,0],[0,lh]]}
-	};
-
-	requestAnimationFrame(updateStart);
 }

@@ -42,7 +42,7 @@ window.addEventListener('keydown', (e) => {
 	let newIndex = ((curIndex + xScroll) % max);
 	if (newIndex < 0) newIndex = max - 1;
 	if (uiLayerIndex == 0) switchUiPage(newIndex);
-	else { console.warn(newIndex); setNewType(uiPagesButtons[uiPageIndex].buttons[newIndex].value); }
+	else { setNewType(uiPagesButtons[uiPageIndex].buttons[newIndex].value); }
 	updateUi();
 });
 
