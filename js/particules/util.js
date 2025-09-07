@@ -19,7 +19,7 @@ p.hasTouchedSurfaceCheck = function()
 				if (hasBubble && dice(10)) new Particle(this.newX, this.newY - 1, this.type == 'LAVA' ? 'SMOKE' : 'BUBBLE');
 				return (true);
 			}
-			px = getPxlAtPos(this.x, this.y + y);
+			px = pxAtP(this.x, this.y + y);
 			if (px && (px.physT == 'SOLID' || px.physT == 'STATIC')) {
 				if (hasBubble && dice(10)) new Particle(this.newX, this.newY - 1, this.type == 'LAVA' ? 'SMOKE' : 'BUBBLE');
 				return (true);
@@ -58,18 +58,19 @@ p.setType = function(newType)
 	this.dns = this.properties.dns;
 	this.spreadAmount = this.properties.spread;
 	this.updT = this.properties.updT;
+	this.inWater = false;
 	this.setColor(
 		this.physT != 'LIQUID' || this.type == 'LAVA' ? randomizeColor(this.properties.color) : this.properties.color);
 	this.xDir = r_range(0, 2) == 0 ? -1 : 1;
 	this.yDir = r_range(0, 2) == 0 ? -1 : 1;
 	if (this.updT == 'STATIC') { this.velY = 0; this.velX = 0; }
-	if (this.type == 'PLANT')
+	if (this.type == 'PLANT' || this.type == 'FISH')
 	{
 		this.velX = 0; this.velY = 0;
 		this.dirAng = Math.atan2(f_range(-1,1), f_range(-1,1));
 		this.oscPhase = Math.random() * Math.PI * 2;
 		this.oscSpeed = f_range(0.0025, 0.006);
-		this.oscAmp = f_range(2, 6);
+		this.oscAmp = this.type == 'FISH' ? f_range(.3, 1) : f_range(2, 6);
 	}
 	else if (this.type == 'COAL') { this.velX = 0; }
 }

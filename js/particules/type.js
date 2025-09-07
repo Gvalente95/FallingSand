@@ -2,7 +2,7 @@ p.updateCloud = function(){
 	this.velX += this.xDir * .1;
 	let newX = this.x + this.velX;
 	let newY = this.y;
-	let px = getPxlAtPos(newX, newY, this);
+	let px = pxAtP(newX, newY, this);
 	if (px && px.type != this.type) { this.swap(px); return; }
 	if (isOutOfBorder(newX, newY)) { this.toRemove(); return; }
 	this.updatePosition(newX, newY, this);
@@ -11,7 +11,7 @@ p.updateCloud = function(){
 p.updatePLANT = function(curX, curY){
 	if (this.parent || (time % (this.growSpeed)) != 0) return;
 	let inWater = false;
-	const px = getPxlAtPos(curX, curY, this);
+	const px = pxAtP(curX, curY, this);
 	if (px) {
 		if (px.type == 'WATER' || px.type == 'PLANT') { inWater = true; px.toRemove();}
 		else return (this.setColor());
@@ -47,87 +47,139 @@ p.updateFrost = function(curX, curY){
 
 p.updateAnt = function (curX, curY) {
   if (this.burning) return;
-
+  if (this.wet || this.physT == 'LIQUID'){
+    return (this.updatePosition(curX, curY));
+  }
   if (!this.hasTouchedSurface) {
-    this.hasTouchedSurface = (this.y >= GRIDH - 1) || (getPxlAtPos(this.x, this.y + 1, this) && getPxlAtPos(this.x, this.y + 1, this).hasTouchedSurface);
+    this.hasTouchedSurface = (this.y >= GRIDH - 1) || (this.ground && this.ground.type != this.type);
     if (!this.hasTouchedSurface) { this.updatePosition(curX, curY); return; }
-    this.xDir = (dice(2)?1:-1); this.yDir = 0;
-    this.antTrace = [];
-    this.antBackCD = 0;
+    this.xDir = dice(2) == 0 ? -1 : 1;
+    this.yDir = 0;
+  }
+if (dice(10)) return;
+
+  curX = this.x;
+  curY = this.y;
+
+  if (dice(300)){
+      if (dice(5)) new Particle(curX - this.xDir, curY - this.yDir, 'ANTEGG');
+    this.xDir = this.yDir = 0;
+  }
+  if (!this.xDir && !this.yDir){
+    if (curY == 0 || curX == GRIDH - 1){
+          if (isValid(curX + 1, curY, 0, 0)) curX++;
+      else if (isValid(curX - 1, curY, 0, 0)) curX--;
+    }
+  if (dice(20)) {
+    this.xDir = dice(2) ? -1 : 1;
+    }
   }
 
-  const empty = (x,y)=> x>=0 && x<GRIDW && y>=0 && y<GRIDH && !getPxlAtPos(x,y,this);
-  const solid = (x,y)=> x>=0 && x<GRIDW && y>=0 && y<GRIDH && !!getPxlAtPos(x,y,this);
-  const leftOf = (dx,dy)=>[-dy,dx];
-  const rightOf = (dx,dy)=>[dy,-dx];
-  const seen = (x,y)=> this.antTrace && this.antTrace.some(t=> t[0]===x && t[1]===y);
+  function isAtCorner(x, y) {return((x == 0 && y == 0) || (x == GRIDW - 1 && y == 0) || (x == 0 && y == GRIDH - 1) || (x == GRIDW - 1 && y == GRIDH - 1))}
+  function isValid(x, y, xd, yd) {return (!pxAtP(x + xd, y + yd, this) && !isOutOfBorder(x + xd, y + yd));}
+  function isAtBorder(x, y) {return (x == 0 || x == GRIDW - 1 || y == 0 || y == GRIDH - 1);}
 
-  let dx = this.xDir|0, dy = this.yDir|0;
-  if (!dx && !dy) { dx = 1; dy = 0; }
-
-  const supportOK = (nx,ny,ndx,ndy)=>{
-    const L = leftOf(ndx,ndy);
-    const lx = nx + L[0], ly = ny + L[1];
-    return solid(lx,ly) || nx===0 || nx===GRIDW-1 || ny===0 || ny===GRIDH-1;
-  };
-  const canDiagPass = (ndx,ndy)=>{
-    if ((ndx&1) && (ndy&1)) return empty(this.x+ndx, this.y) || empty(this.x, this.y+ndy);
-    return true;
-  };
-
-  const tryStep = (ndx,ndy)=>{
-    const nx = this.x + ndx, ny = this.y + ndy;
-    if (!empty(nx,ny)) return false;
-    if (!canDiagPass(ndx,ndy)) return false;
-    if (!supportOK(nx,ny,ndx,ndy)) return false;
-    if (this.antBackCD > 0 && ndx === -dx && ndy === -dy) return false;
-    this.xDir = ndx; this.yDir = ndy;
-    this.updatePosition(nx,ny);
-    if (!this.antTrace) this.antTrace = [];
-    this.antTrace.push([nx,ny]);
-    if (this.antTrace.length > 12) this.antTrace.shift();
-    this.antBackCD = Math.max(0, this.antBackCD - 1);
-    return true;
-  };
-
-  const L = leftOf(dx,dy), R = rightOf(dx,dy);
-  const LD = [Math.max(-1,Math.min(1,dx+L[0])), Math.max(-1,Math.min(1,dy+L[1]))];
-  const RD = [Math.max(-1,Math.min(1,dx+R[0])), Math.max(-1,Math.min(1,dy+R[1]))];
-
-  let cand = [
-    [L[0],L[1]],
-    [dx,dy],
-    [R[0],R[1]],
-    LD, RD
-  ];
-  if (dy===0) cand.push([dx,-1],[dx,1]); else if (dx===0) cand.push([-1,dy],[1,dy]); else cand.push([dx,0],[0,dy]);
-
-  const good = [];
-  const ok = [];
-  for (let i=0;i<cand.length;i++){
-    const ndx=cand[i][0], ndy=cand[i][1];
-    const nx=this.x+ndx, ny=this.y+ndy;
-    if (!empty(nx,ny)) continue;
-    if (!canDiagPass(ndx,ndy)) continue;
-    if (!supportOK(nx,ny,ndx,ndy)) continue;
-    if (this.antBackCD > 0 && ndx === -dx && ndy === -dy) continue;
-    if (!seen(nx,ny)) good.push([ndx,ndy]); else ok.push([ndx,ndy]);
+  if (curX <= 0 || curX >= GRIDW - 1){
+    if (dice(4) && isAtCorner(curX, curY)) this.xDir *= -1;
+    else{
+          this.xDir = 0;
+        if (curY == GRIDH - 1) this.yDir = -1;
+        if (curY <= 0) {this.yDir = 0; this.xDir = curX <= 0 ? 1 : -1;}
+    }
   }
-
-  if (good.length && tryStep(good[0][0], good[0][1])) return;
-  if (ok.length && tryStep(ok[0][0], ok[0][1])) return;
-
-  this.antBackCD = 3;
-  const back = [-dx,-dy];
-  if (tryStep(back[0], back[1])) return;
-
-  if (dice(150)) {
-    const r = dice(2) ? [1,0] : [0,1];
-    const s = dice(2)?1:-1;
-    tryStep(r[0]*s, r[1]*s);
+  else if (curY <= 0 || curY >= GRIDH - 1){
+    if (dice(4) && isAtCorner(curX, curY)) this.yDir *= -1;
+    else{
+          this.yDir = 0;
+      if (curX == 0) this.xDir = -1;
+      if (curX <= 0) this.xDir = 0;
+    }
+  }
+  if ((!isAtBorder(curX, curY)) && !pxAtP(curX + this.xDir, curY + 1, this) && (!pxAtP(curX - 1, curY, this) && !pxAtP(curX + 1, curY, this))){
+    curY++;
+    if (this.yDir == -1) this.yDir = 0;
+    this.xDir = 0;
+  }
+  let px = pxAtP(curX + this.xDir,  curY + this.yDir);
+  if (!px && dice(10)){
+    px = pxAtP(curX + this.xDir,  curY  - 1);
+    if (px) this.yDir = -1;
+  }
+  if (px){
+    if (px.physT == 'LIQUID' || px.wet) {this.physT = 'LIQUID'; return;}
+    if (px.type == 'ANT' || px.type == 'ANTEGG'){
+      this.swap(px);
+      return;
+    }
+    if ((px.physT == 'SOLID' || px.physT == 'STATIC') && dice(px.dns)){
+         for (let x = -2; x < 2; x++){
+        for (let y = -2; y < 2; y++){
+          let npx = pxAtP(px.x + x, px.y + y, this);
+          if (npx) npx.physT = 'STATIC';
+        }
+      }
+     
+        px.toRemove();
+        if (dice(2)) this.yDir = (dice(2) == 0 ? -1 : 1);
+    }
+  }
+  if (isValid(curX, curY, this.xDir, this.yDir))
+    this.updatePosition(curX + this.xDir, curY + this.yDir);
+  else{
+    let tr = 1;
+    while (!isValid(curX, --curY, this.xDir, this.yDir) && curY > 0 && tr--){
+      continue;
+    }
+    if (isValid(curX, curY, this.xDir, this.yDir))
+        this.updatePosition(curX + this.xDir, curY + this.yDir);
+      else{
+        if (dice(10)) this.xDir *= -1;
+        else if (dice(10)) this.yDir *= -1;
+      }
   }
 };
 
+p.updateFish = function(curX, curY) {
+    if (this.inWater) {
+      this.velX = this.velY = 0;
+        if (!this.xDir && dice(10)) this.xDir = 1;
+        if (dice(50) || curX + this.xDir == 10 || curY + this.yDir == GRIDW - 10) this.xDir *= -1;
+        curX = this.x + this.xDir;
+
+        if (dice(10)) this.yDir = 0;
+        else if (dice(20)) this.yDir = r_range(-1, 2);
+        curY = this.y + this.yDir;
+  
+        let px = pxAtP(curX, curY, this);
+        if (px && (px.physT == 'LIQUID' || px.type == this.type)) {
+            this.swap(px);
+        } else {
+            this.inWater = false;
+            this.updatePosition(this.x, this.y);
+        }
+    } else {
+        let liquidPx = null;
+        for (let x = -1; x <= 1; x++) {
+            for (let y = -1; y <= 1; y++) {
+                let px = pxAtP(curX + x, curY + y, this);
+                if (px && px.physT == 'LIQUID') {
+                    liquidPx = px;
+                    this.xDir = x !== 0 ? x / Math.abs(x) : this.xDir;
+                    break;
+                }
+            }
+            if (liquidPx) break;
+        }
+        if (liquidPx) {
+            this.inWater = true;
+            this.swap(liquidPx);
+        } else {
+            if (curY < GRIDH - 1 && !pxAtP(curX, curY + 1, this))
+                curY += SIMSPEED * dt;
+            this.updatePosition(curX, curY);
+        }
+    }
+};
 
 
 p.updateType = function(){
@@ -136,7 +188,7 @@ p.updateType = function(){
 	else if (this.type == 'STEAM' && this.y < 50 && dice(5))
 		{ launchParticules('CLOUD', this.x * PIXELSIZE, this.y * PIXELSIZE, 10, true); this.toRemove(); }
 	if (this.physT != 'STATIC' || this.type == 'PLANT') {
-		this.ground = getPxlAtPos(this.x, this.y + (this.physT == 'GAS' ? -1 : 1), this);
+		this.ground = pxAtP(this.x, this.y + (this.physT == 'GAS' ? -1 : 1), this);
 		this.updateVelocity();
 		if (this.velX || this.velY) this.updateMovement();
 		if (this.physT == 'LIQUID') this.updateLiquid(this.newX, this.newY);
@@ -148,6 +200,7 @@ p.updateType = function(){
 	else if (this.type == 'FIRE' || this.type === 'TORCH') this.FireEffect(this.newX, this.newY);
 	else if (this.type == 'MAGMA') this.MagmaEffect(this.newX, this.newY);
 	else if (this.type == 'LAVA') this.LavaEffect(this.newX, this.newY);
+	else if (this.type == 'FISH') this.updateFish(this.newX, this.newY);
 	else if (this.type == 'PLANT') this.updatePLANT(this.newX, this.newY);
 	else if (this.physT != 'LIQUID') this.updatePosition(this.newX, this.newY);
 }

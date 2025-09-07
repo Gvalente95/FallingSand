@@ -8,14 +8,14 @@ p.updateBurn = function () {
 		else this.setType('COAL');
 		this.burning = 0;
 	}
-	else if (dice(10) && !getPxlAtPos(this.x, this.y - 1)) new Particle(this.x, this.y - 1, 'FIRE');
+	else if (dice(10) && !pxAtP(this.x, this.y - 1)) new Particle(this.x, this.y - 1, 'FIRE');
 	let depth = 2;
 	for (let x = -depth; x < depth; x++)
 		for (let y = -depth; y < depth; y++)
 		{
 			if (x == 0 && y == 0) continue;
 			if (isOutOfBorder(this.x + x, this.y + y)) continue;
-			let px = getPxlAtPos(this.x + x, this.y + y, this);
+			let px = pxAtP(this.x + x, this.y + y, this);
 			if (px && !px.burning && shouldBurnParticle('FIRE', px)) px.setToFire();
 			if (!px && dice(30)) new Particle(this.x + x, this.y + y, 'SMOKE');
 		}
@@ -63,12 +63,12 @@ p.updateWet = function () {
 		{
 			if (x == 0 && y == 0) continue;
 			if (isOutOfBorder(this.x + x, this.y + y)) continue;
-			let px = getPxlAtPos(this.x + x, this.y + y, this);
+			let px = pxAtP(this.x + x, this.y + y, this);
 			if (px) px.setWet(this.wet - 10, this.wetType);
 		}
 	}
 	if (dice(5000)) {
-		let pxAb = getPxlAtPos(this.x, this.y - 1);
+		let pxAb = pxAtP(this.x, this.y - 1);
 		if (pxAb && pxAb.type === this.wetType)
 			pxAb.replace('BUBBLE');			
 	}

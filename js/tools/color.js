@@ -111,6 +111,6 @@ function getMountainColor() {
 }
 
 
-function getRandomcolor() {
+function getRandomColor() {
   	return `rgb(${r_range(0, 255)}, ${r_range(0, 255)}, ${r_range(0, 255)})`;
 }

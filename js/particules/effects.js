@@ -1,6 +1,6 @@
 
 p.updateLiquid = function (curX, curY, spreadAm = this.spreadAmount) {
-	let upx = getPxlAtPos(curX, curY - 1);
+	let upx = pxAtP(curX, curY - 1);
 	if (upx && upx.physT == 'LIQUID' && upx.dns > this.dns && upx.type != 'BUBBLE')
 	{
 		this.velX = 0;
@@ -15,13 +15,13 @@ p.updateLiquid = function (curX, curY, spreadAm = this.spreadAmount) {
 	if (curX <= 0 && this.xDir == -1) this.xDir = 1;
 	else if (curX >= GRIDW - 1 && this.xDir == 1) this.xDir = -1;
 
-	if (getPxlAtPos(curX, curY + 1, this)) {
+	if (pxAtP(curX, curY + 1, this)) {
 		let found = false;
 		let newX = curX;
 		for (let i = 1; i < spreadAm; i++) {
 			let xp = curX + (i * this.xDir);
 			if (xp < 0 || xp >= GRIDW) { this.xDir *= -1; break; }
-			let p = getPxlAtPos(xp, curY, this);
+			let p = pxAtP(xp, curY, this);
 			if (p && p.physT != 'LIQUID')
 				break;
 			if (p && p.physT == 'LIQUID' && p.type != this.type && i <= 4)
@@ -30,7 +30,7 @@ p.updateLiquid = function (curX, curY, spreadAm = this.spreadAmount) {
 				return;}
 			}
 			if (!p) {newX = xp; found = true; break;}
-			if (!getPxlAtPos(xp, curY + 1, this))
+			if (!pxAtP(xp, curY + 1, this))
 			{
 				found = true;
 				curY++;
@@ -50,7 +50,7 @@ p.FireEffect = function (curX, curY)
 	{
 		for (let x = -depth; x < depth; x++) {
 			if ((x == 0 && y == 0) || isOutOfBorder(x + curX, y + curY)) continue;
-			let px = getPxlAtPos(curX + x, curY + y, this);
+			let px = pxAtP(curX + x, curY + y, this);
 			if (px && px.physT == 'LIQUID' && (!px.brn && px.type != 'LAVA'))
 			{
 				if (px.frozen) px.unFreeze(10000);
@@ -77,7 +77,7 @@ p.MagmaEffect = function(curX, curY)
 		for (let x = -depth; x < depth; x++) {
 			if ((x == 0 && y == 0) || isOutOfBorder(x + curX, y + curY)) continue;
 			let realX = curX + x, realY = curY + y;
-			let px = getPxlAtPos(realX, realY, this);
+			let px = pxAtP(realX, realY, this);
 			if (px) pxFound += (px.type == 'MAGMA' ? .05 : 1);
 			else if (y < 0 && dice(500)) new Particle(realX, realY, 'SMOKE');
 			if (px && px.physT == 'LIQUID' && !px.brn && dice(20)) {
@@ -87,7 +87,7 @@ p.MagmaEffect = function(curX, curY)
 			if (px && shouldBurnParticle('MAGMA', px))
 			{
 				px.setToFire();
-				if (!getPxlAtPos(px.x, px.y - 1, this)) new Particle(px.x, px.y - 1, 'SMOKE');
+				if (!pxAtP(px.x, px.y - 1, this)) new Particle(px.x, px.y - 1, 'SMOKE');
 			}
 		}
 	}
@@ -96,13 +96,13 @@ p.MagmaEffect = function(curX, curY)
 }
 p.LavaEffect = function(curX, curY)
 {
-	if (!getPxlAtPos(this.x, this.y - 1, this) && dice(200))
+	if (!pxAtP(this.x, this.y - 1, this) && dice(200))
 		new Particle(this.x, this.y - 1, 'SMOKE');
 	let depth = 3;
 	let hasExplosion = false;
 	for (let y = -depth; y < depth; y++) {
 		for (let x = -depth; x < depth; x++) {
-			let px = getPxlAtPos(curX + x, curY + y, this);
+			let px = pxAtP(curX + x, curY + y, this);
 			if (!px) continue;
 			if (px.type == this.type) continue;
 			if (px.type == 'WATER' || px.type == 'BUBBLE') { px.setType('STEAM'); continue; }
@@ -122,7 +122,7 @@ p.LavaEffect = function(curX, curY)
 		depth = 3;
 		for (let y = -depth; y < depth; y++) {
 		for (let x = -depth; x < depth; x++) {
-			let px = getPxlAtPos(curX + x, curY + y, this);
+			let px = pxAtP(curX + x, curY + y, this);
 			if (!px) new Particle(curX + x, curY + y, 'FIRE');
 		} 
 	}
@@ -131,7 +131,7 @@ p.LavaEffect = function(curX, curY)
 p.PropagateExplosion = function(x, y, typeToExplode, newType = 'MAGMA', depth = 10)
 {
 	if (depth <= 0) return;
-	let px = getPxlAtPos(x, y, this);
+	let px = pxAtP(x, y, this);
 	if (!px || (px.type != typeToExplode)) return;
 	if (px.type != newType) px.setType(newType);
 	this.PropagateExplosion(x + 1, y, typeToExplode, newType, depth--);
@@ -146,7 +146,7 @@ p.applyFrost = function (ignoreType = null, frostAmount = this.frozen) {
     const nx = this.x + rdir[0];
     const ny = this.y + rdir[1];
     if (nx < 0 || nx >= GRIDW || ny < 0 || ny >= GRIDH) return;
-    const px = getPxlAtPos(nx, ny, this);
+    const px = pxAtP(nx, ny, this);
     if (!px || px.frozen) return;
     if (ignoreType && px.type === ignoreType) return;
 	if (px.brnpwr || px.warm) { if (this.frozen && dice(10)) {this.unFreeze(px.warm); this.warm = 100;} }

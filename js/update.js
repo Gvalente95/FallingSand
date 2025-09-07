@@ -1,6 +1,6 @@
 function updateInput()
 {
-	PXATMOUSE = getPxlAtPos(MOUSEGRIDX, MOUSEGRIDY);
+	PXATMOUSE = pxAtP(MOUSEGRIDX, MOUSEGRIDY);
 	if (MOUSEPRESSED && !isTwoFingerTouch) {
 		if ((BRUSHCUT && SHOULDCUT) || KEYS['Shift']) deleteParticulesAtMouse();
 		else launchParticules(particleKeys[TYPEINDEX]);

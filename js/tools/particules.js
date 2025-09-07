@@ -9,7 +9,7 @@ function deleteParticules(x = MOUSEX, y = MOUSEY, radius = 10, type = null, isDi
 				let py = y + posY * PIXELSIZE;
 				let gridX = Math.floor((px) / PIXELSIZE);
 				let gridY = Math.floor(py / PIXELSIZE);
-				const p = getPxlAtPos(gridX, gridY);
+				const p = pxAtP(gridX, gridY);
 				if (p && (!type || p.type == type)) destroyedParticles.push(p);
             }
         }
@@ -69,7 +69,7 @@ function exciteRadius(x = MOUSEGRIDX, y = MOUSEGRIDY, radius = BRUSHSIZE * 2, in
 	for (let posY = -radius; posY <= radius; posY++) {
 		for (let posX = -radius; posX <= radius; posX++) {
 			if ((posX * posX + posY * posY) <= radiusSquared) {
-				let px = getPxlAtPos(x, y);
+				let px = pxAtP(x, y);
 				if (!px) continue;
 				px.velY = -intensity;
 				px.updatePosition(px.x + Math.sign(px.velX) * 3, px.y + Math.sign(px.velY) * 3);

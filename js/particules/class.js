@@ -4,13 +4,13 @@ class Particle{
 	{
 		if (isOutOfBorder(x, y)) return (this.toRemove(), 0);
 		this.properties = PARTICLE_PROPERTIES[type];
-		let pxAtPos = getPxlAtPos(x, y, this);
+		let pxAtPos = pxAtP(x, y, this);
 		if (pxAtPos)
 		{
 			if (type == pxAtPos.type) { this.toRemove(); return; }
 			else if (this.properties.physT == 'GAS' && type != 'STEAM')
 			{
-				if (pxAtPos.type == 'WATER' && type == 'FIRE') {
+				if (pxAtPos.physT == 'WATER' && type == 'FIRE') {
 					pxAtPos.replace('FIRE');
 				}
 				else if (type != pxAtPos.type && shouldBurnParticle(type, pxAtPos)) pxAtPos.setToFire();
@@ -50,9 +50,10 @@ class Particle{
 	updateVelocity()
 	{
 		if (this.type == 'ANT' && this.hasTouchedBorder) { return;}
+		if (this.type == 'FISH' && this.inWater) return;
 		if (this.physT == 'STATIC') return;
 		let isGrounded = this.ground && (this.ground.physT == 'SOLID') && this.ground.velY == 0;
-		if (this.type == 'WATER' && this.ground && !getPxlAtPos(this.x, this.y - 1) && dice(200) && this.ground.type == this.type)
+		if (this.type == 'WATER' && this.ground && !pxAtP(this.x, this.y - 1) && dice(200) && this.ground.type == this.type)
 			this.setType('BUBBLE');
 		if (this.ground && this.ground.physT == 'LIQUID' && this.physT == 'SOLID')
 		{
@@ -74,6 +75,7 @@ class Particle{
 
 	updateMovement() {
 		if (this.type == 'ANT' && this.hasTouchedBorder) return;
+		if (this.type == 'FISH' && this.inWater) return;
 		let newX = this.x + (this.velX * SIMSPEED * (dt));
 		let newY = this.y + (this.velY * SIMSPEED * (dt));
 		let xDiff = newX - this.x, yDiff = newY - this.y;
@@ -82,12 +84,12 @@ class Particle{
 		let yStep = steps > 0 ? yDiff / steps : 0;
 		let curX = this.x, curY = this.y;
 		let lastValidx = curX, lastValidy = curY;
-		if (this.type === 'PLANT') return (this.newX = Math.round(newX), this.newY = Math.round(newY), 0);
+		if (this.type === 'PLANT' || (this.type == 'FISH' && this.inWater)) return (this.newX = Math.round(newX), this.newY = Math.round(newY), 0);
 		for (let i = 0; i < steps; i++) {
 			curX += xStep; curY += yStep;
 			let realX = Math.round(curX); let realY = Math.round(curY);
 			if (isOutOfBorder(realX, realY)) { curX = lastValidx; curY = lastValidy; break; }
-			let pxAtPos = getPxlAtPos(realX, realY, this);
+			let pxAtPos = pxAtP(realX, realY, this);
 			if (!pxAtPos){ lastValidx = curX; lastValidy = curY; continue; }
 			if (this.douse) pxAtPos.setWet(100, this.type);
 			if (shouldBurn(this, pxAtPos)) {pxAtPos.setToFire();}
@@ -118,9 +120,9 @@ class Particle{
 				break;
 			}
 			let leftR = dice(2) ? -1 : 1;
-			let px = getPxlAtPos(realX + leftR, realY, this);
+			let px = pxAtP(realX + leftR, realY, this);
 			if (!px && (realX + leftR >= 0 && realX + leftR < GRIDW)) curX += leftR;
-			else if (!getPxlAtPos(realX - leftR, realY, this) && (realX - leftR >= 0 && realX - leftR < GRIDW)) curX -= leftR;
+			else if (!pxAtP(realX - leftR, realY, this) && (realX - leftR >= 0 && realX - leftR < GRIDW)) curX -= leftR;
 			else {curX -= xStep;curY -= yStep; break;}
 		}
 		this.newX = Math.round(curX); this.newY = Math.round(curY);
@@ -128,7 +130,7 @@ class Particle{
 	updatePosition(newX, newY, nullifyThis = true, checkIfNull = true)
 	{
 		if (!this.active) return;
-		let px = getPxlAtPos(newX, newY, this);
+		let px = pxAtP(newX, newY, this);
 		if (this.physT === 'GAS' && px) return (this.toRemove(), 0);
 		const clampedX = Math.floor(clamp(newX, 0, GRIDW - 1));
 		const clampedY = Math.floor(clamp(newY, 0, GRIDH - 1));
@@ -146,15 +148,18 @@ class Particle{
 		this.timeAlive = now - this.startTime;
 		if (this.timeAlive > this.lt)
 		{
-			if (this.type == 'MAGMA') return;
-			if (this.physT == 'SOLID') {
+			if (this.type == 'ANTEGG'){
+				let npx = new Particle(this.x , this.y, 'ANT');
+			}
+			else if (this.type == 'MAGMA') return;
+			else if (this.physT == 'SOLID') {
 				let y = this.y - 1;
-				let p = getPxlAtPos(this.x, y);
+				let p = pxAtP(this.x, y);
 				while (p && p.updT == 'DYNAMIC')
 				{
 					grid[p.x][p.y] = null;
 					grid[p.x][++p.y] = p;
-					p = getPxlAtPos(this.x, --y);
+					p = pxAtP(this.x, --y);
 				}
 			}
 			return (this.toRemove(), 0);
