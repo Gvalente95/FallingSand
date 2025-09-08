@@ -6,11 +6,29 @@ function showGradial()
 	ctx.fillStyle = color;
 }
 
-function showParticle(particle, x, y, alpha) {
-	if (particle.physT == 'GAS')
-		alpha = Math.max(0, 1 - particle.timeAlive / particle.lt);
-	ctx.fillStyle = ((particle.type == 'WATER' && !particle.frozen) ? waterShades[particle.y].color : particle.color);
-	if (alpha != 1) ctx.fillStyle = `rgba(${particle.rgb}, ${alpha})`;
+function showShroomHead(prt, x, y) {
+	prt.isLoop = 1;
+	showParticle(prt, x - 1, y, 1, 'rgba(159, 47, 47, 1)');
+	showParticle(prt, x + 1, y, 1, 'rgba(150, 39, 39, 0.99)');
+	showParticle(prt, x, y - 1, 1, 'rgba(143, 46, 46, 1)');
+	prt.isLoop = 0;
+}
+
+function showParticle(prt, x, y, alpha, color = prt.color) {
+	if (prt.type == 'SHROOM' && prt.digType) color = addColor(PARTICLE_PROPERTIES[prt.digType].color, 'rgba(0,0,0,1)', .1);
+	if (prt.type == 'SHROOM' && prt.isGrower && !prt.isLoop && !prt.parent && prt.hasTouchedBorder) {
+		let px = pxAtP(x, y - 1, prt);
+		if (px && px.type == prt.type) {
+			ctx.fillStyle = prt.digType ? color : 'rgba(33, 132, 64, 1)';
+			ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, PIXELSIZE, PIXELSIZE);
+			return;
+		}
+		showShroomHead(prt, x, y);
+	}
+	// else if (prt.type == 'PLANT' && !prt.isLoop && !prt.parent) showShroomHead(prt, x, y);
+	if (prt.physT == 'GAS') alpha = Math.max(0, 1 - prt.timeAlive / prt.lt);
+	ctx.fillStyle = ((prt.type == 'WATER' && !prt.frozen) ? waterShades[prt.y].color : color);
+	if (alpha != 1) ctx.fillStyle = `rgba(${prt.rgb}, ${alpha})`;
 	ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, PIXELSIZE, PIXELSIZE);
 }
 
@@ -18,12 +36,13 @@ function render() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let p of activeParticles) showParticle(p, p.x, p.y, 1);
 	if (((settingBrushSize) || (!isMobile && !MOUSEPRESSED) || (isMobile && MOUSEPRESSED))) {
-		let px = settingBrushSize ? CANVW / 2 : MOUSEX; py = settingBrushSize ? CANVH / 2 : MOUSEY;
+		let px = settingBrushSize ? CANVW / 2 : MOUSEGRIDX * PIXELSIZE; py = settingBrushSize ? CANVH / 2 : MOUSEGRIDY * PIXELSIZE;
 		let rad = BRUSHSIZE * PIXELSIZE;
+		let color = BRUSHCOLOR ? setAlpha(BRUSHCOLOR, .5) : null;
 		if (BRUSHTYPE == BRUSHTYPES.DISC)
-			drawCircle(px, py, rad / 4, null, "#575757b0", 2);
+			drawCircle(px, py, rad / 4, color, "#575757b0", 2);
 		else if (BRUSHTYPE == BRUSHTYPES.RECT)
-			drawRect(px - rad, py - rad, rad * 2, rad * 2, null, "#575757b0", 2);
+			drawRect(px - rad, py - rad, rad * 2, rad * 2, color, "#575757b0", 2);
 	}
 	if (gridMode) { ctx.drawImage(gridLayer, 0, 0); }
 
@@ -50,13 +69,12 @@ function drawRect(x, y, width, height, color, strokeColor, lineWidth) {
     }
 }
 
-function drawCircle(x, y, radius, color, strokeColor, lineWidth)
-{
+function drawCircle(x, y, radius, color, strokeColor, lineWidth) {
 	ctx.beginPath();
 	ctx.arc(x, y, radius * 4, 0, 2 * Math.PI);
 	ctx.strokeStyle = strokeColor;
 	ctx.lineWidth = lineWidth;
-	if (color){ ctx.color = color; ctx.fill();}
+	if (color) { ctx.fillStyle = color; ctx.fill(); }
 	ctx.stroke();
 	ctx.closePath();
 }

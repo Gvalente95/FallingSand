@@ -47,15 +47,40 @@ function getR(hex) { return (parseInt(hex.substring(0, 2), 16));}
 function getG(hex) { return (parseInt(hex.substring(2, 4), 16)); }
 function getB(hex) { return (parseInt(hex.substring(4, 6), 16)); }
 function getRGB(color) {
-    const match = color.match(/^\s*(?:rgba?\()(\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})(?:,\s*[\d.]+)?\)?\s*$/);
-    if (!match)
-        throw new Error(`Invalid RGB or RGBA color format: ${color}`);
-    const rgb = [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
-    if (rgb.some(v => v < 0 || v > 255)) {
-        throw new Error('RGB components must be between 0 and 255');
+    color = color.trim();
+    if (color.startsWith("#")) {
+        const hex = color.slice(1);
+        if (hex.length === 3) {
+            const r = parseInt(hex[0] + hex[0], 16);
+            const g = parseInt(hex[1] + hex[1], 16);
+            const b = parseInt(hex[2] + hex[2], 16);
+            return [r, g, b];
+        }
+        if (hex.length === 6) {
+            const r = parseInt(hex.slice(0, 2), 16);
+            const g = parseInt(hex.slice(2, 4), 16);
+            const b = parseInt(hex.slice(4, 6), 16);
+            return [r, g, b];
+        }
+
+        throw new Error(`Invalid HEX color format: ${color}`);
     }
-    return rgb;
+    const match = color.match(/^\s*rgba?\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})(?:,\s*[\d.]+)?\)\s*$/i);
+    if (match) {
+        const rgb = [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
+        if (rgb.some(v => v < 0 || v > 255)) {
+            throw new Error(`RGB components must be between 0 and 255: ${color}`);
+        }
+        return rgb;
+    }
+    throw new Error(`Invalid color format: ${color}`);
 }
+
+function setAlpha(color, alpha) {
+	let rgb = getRGB(color);
+	return (`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha}`);
+}
+
 
 function addColor(originalColor, newColor, amount = 1) {
     const rgb0 = getRGB(originalColor);
@@ -63,7 +88,7 @@ function addColor(originalColor, newColor, amount = 1) {
     const newr = clamp(rgb0[0] * (1 - amount) + rgb1[0] * amount, 0, 255);
     const newg = clamp(rgb0[1] * (1 - amount) + rgb1[1] * amount, 0, 255);
     const newb = clamp(rgb0[2] * (1 - amount) + rgb1[2] * amount, 0, 255);
-    return `rgb(${newr}, ${newg}, ${newb})`;
+    return `rgba(${newr}, ${newg}, ${newb})`;
 }
 
 function randomizeColorAmount(color, randomAmount = 16) {

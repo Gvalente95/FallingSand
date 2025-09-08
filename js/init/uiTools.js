@@ -416,7 +416,7 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 			div.active = !div.active;
 			if (div.active) div.classList.add("activeButton");
 			else div.classList.remove("activeButton");
-			if (onChange) { onChange(div.value != null ? value : div.active); }
+			if (onChange) { onChange(div.value != null && div.active ? value : div.value != null ? null : div.active); }
 		} else if (onChange) onChange(value);
 		updateUi();
 		au.playSound(au.tuk);
@@ -496,7 +496,15 @@ function updateUi()
 }
 
 function switchUiPage(newPageIndex) {uiPageIndex = newPageIndex;}
-function setNewType(newIndex) { switchCut(false); TYPEINDEX = newIndex; for (const b of uiPagesButtons[uiPageIndex].buttons) if (b.label == particleKeys[newIndex]) typeButton = b; }
+function setNewType(newIndex)
+{
+	TYPEINDEX = newIndex;
+	for (const b of uiPagesButtons[uiPageIndex].buttons) {
+		if (b.label == particleKeys[newIndex]) {typeButton = b;
+			BRUSHCOLOR = b.style.backgroundColor;
+		}
+	}
+}
 function getCurButtonTypeIndex()
 {
 	for (let i = 0; i < uiPagesButtons[uiPageIndex].buttons.length; i++)
@@ -538,31 +546,80 @@ function deactivateSwitchButton(button) {
 }
 
 function switchRain(newActive) { ISRAINING = newActive; }
-function switchCut(newCut) {
-	BRUSHCUT = newCut;
-	if (!newCut) deactivateSwitchButton(cutButton);
-	else switchPick(false);
+
+function switchBrushAction(newAction) {
+	BRUSHACTION = newAction;
+	for (const b of brushActionButtons) {
+		if (b.value != newAction) deactivateSwitchButton(b);
+	}
 }
 
-function switchPick(newActive)
-{
-	PICKACTIVE = newActive;
-	if (!newActive) deactivateSwitchButton(pickButton);
-	else switchCut(false);
-}
 
-function setNewPixelSize(newPixelSize)
-{
+
+function setNewPixelSize(newPixelSize){
+	if (newPixelSize <= 0 || newPixelSize === PIXELSIZE) return;
 	BRUSHSIZE = clamp(Math.round(BRUSHSIZE * (PIXELSIZE / newPixelSize)), 1, MAXBRUSHSIZE);
+	const scale = PIXELSIZE / newPixelSize;
 	PIXELSIZE = newPixelSize;
-	GRIDW = Math.floor(CANVW / PIXELSIZE);
-	GRIDH = Math.floor(CANVH / PIXELSIZE);
-	resetParticles();
+	const newGRIDW = Math.max(1, Math.floor(CANVW / PIXELSIZE));
+	const newGRIDH = Math.max(1, Math.floor(CANVH / PIXELSIZE));
+	const newGrid = new Array(newGRIDW);
+	for (let x = 0; x < newGRIDW; x++) newGrid[x] = new Array(newGRIDH);
+	for (let i = 0; i < activeParticles.length; i++){
+		const p = activeParticles[i];
+		let nx = Math.round(p.x * scale);
+		let ny = Math.round(p.y * scale);
+		nx = clamp(nx, 0, newGRIDW - 1);
+		ny = clamp(ny, 0, newGRIDH - 1);
+
+		if (!newGrid[nx][ny]) {
+			p.x = nx; p.y = ny; p.newX = nx; p.newY = ny;
+			p.velX *= scale; p.velY *= scale;
+			newGrid[nx][ny] = p;
+			continue;
+		}
+		let placed = false;
+		const maxR = 8;
+		for (let r = 1; r <= maxR && !placed; r++){
+			for (let oy = -r; oy <= r && !placed; oy++){
+				for (let ox = -r; ox <= r && !placed; ox++){
+					const tx = nx + ox, ty = ny + oy;
+					if (tx < 0 || ty < 0 || tx >= newGRIDW || ty >= newGRIDH) continue;
+					if (!newGrid[tx][ty]){
+						p.x = tx; p.y = ty; p.newX = tx; p.newY = ty;
+						p.velX *= scale; p.velY *= scale;
+						newGrid[tx][ty] = p;
+						placed = true;
+					}
+				}
+			}
+		}
+		if (!placed){
+			p.active = false;
+			destroyedParticles.push(p);
+		}
+	}
+	GRIDW = newGRIDW;
+	GRIDH = newGRIDH;
+	grid = newGrid;
+	buildGridLayer();
+	buildWaterShades();
 }
+
 
 function switchPause(newPause = !inPause) {
     if (newPause == -1) newPause = !inPause;
     inPause = newPause;
     if (inPause) pauseButton.classList.add("activeButton");
     else pauseButton.classList.remove("activeButton");
+}
+
+function fillScreen() {
+	initGrid();
+	activeParticles = [];
+	for (let x = 0; x < GRIDW; x++){
+		for (let y = GRIDH / 2; y < GRIDH; y++){
+			new Particle(x, y, particleKeys[TYPEINDEX]);
+		}
+	}
 }

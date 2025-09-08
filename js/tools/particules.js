@@ -1,4 +1,6 @@
-function isOutOfBorder(x, y) { return (x < 0 || x > GRIDW - 1 || y < 0 || y > GRIDH - 1);}
+function isOutOfBorder(x, y) { return (x < 0 || x > GRIDW - 1 || y < 0 || y > GRIDH - 1) };
+function atCorner(x, y) { return ((x == 0 && y == 0) || (x == 0 && y == GRIDH - 1) || (x == GRIDW - 1 && y == 0) || (x == GRIDW - 1 && y == GRIDH - 1)) };
+function atBorder(x, y) { return (x == 0 || y == 0 || x == GRIDW - 1 || y == GRIDH - 1) };
 
 function deleteParticules(x = MOUSEX, y = MOUSEY, radius = 10, type = null, isDisc = true) {
     const radiusSquared = radius * radius;
@@ -42,7 +44,7 @@ function launchParticules(type = 'SAND', x = MOUSEX, y = MOUSEY, radius = BRUSHS
 
 function deleteParticulesAtMouse()
 {
-	deleteParticules(MOUSEX - BRUSHSIZE / 2, MOUSEY - BRUSHSIZE / 2, BRUSHSIZE, null, BRUSHTYPE == 'DISC');
+	deleteParticules(MOUSEX - BRUSHSIZE / 2 + PIXELSIZE, MOUSEY - BRUSHSIZE / 2 + PIXELSIZE, BRUSHSIZE, null, BRUSHTYPE == 'DISC');
 }
 
 function deleteAllParticules(type = null)
@@ -63,20 +65,55 @@ function launchParticlesRect(type, xp, yp, w, h) {
 	}
 }
 
-function exciteRadius(x = MOUSEGRIDX, y = MOUSEGRIDY, radius = BRUSHSIZE * 2, intensity = 2)
-{
-	const radiusSquared = radius * radius;
-	for (let posY = -radius; posY <= radius; posY++) {
-		for (let posX = -radius; posX <= radius; posX++) {
-			if ((posX * posX + posY * posY) <= radiusSquared) {
-				let px = pxAtP(x, y);
-				if (!px) continue;
-				px.velY = -intensity;
-				px.updatePosition(px.x + Math.sign(px.velX) * 3, px.y + Math.sign(px.velY) * 3);
-			}
-		}
-	}
+
+function vibrateRadius(cx = MOUSEGRIDX, cy = MOUSEGRIDY, radius = BRUSHSIZE * 2, intensity = 5) {
+  const r2 = radius * radius;
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      if (dx*dx + dy*dy > r2) continue;
+      const gx = cx + dx, gy = cy + dy;
+      if (gx < 0 || gy < 0 || gx >= GRIDW || gy >= GRIDH) continue;
+      const p = pxAtP(gx, gy);
+		if (!p) continue;
+		p.velX = f_range(-intensity, intensity + 1);
+		p.velY = f_range(-intensity, intensity + 1);
+    }
+  }
 }
+
+function exciteRadius(cx = MOUSEGRIDX, cy = MOUSEGRIDY, radius = BRUSHSIZE * 2, intensity = 5) {
+  const r2 = radius * radius;
+  const moved = new Set();
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      if (dx*dx + dy*dy > r2) continue;
+      const gx = cx + dx, gy = cy + dy;
+      if (gx < 0 || gy < 0 || gx >= GRIDW || gy >= GRIDH) continue;
+      const p = pxAtP(gx, gy);
+		if (!p) continue;
+      const pid = p.id != null ? p.id : (gy * GRIDW + gx);
+      if (moved.has(pid)) continue;
+
+      const dist = Math.hypot(dx, dy) || 1;
+      const sgnX = dx === 0 ? 0 : (dx > 0 ? 1 : -1);
+      const sgnY = dy === 0 ? 0 : (dy > 0 ? 1 : -1);
+      const steps = Math.max(1, Math.round(intensity * (1 - dist / radius) * 8));
+
+      let nx = p.x, ny = p.y;
+      for (let s = 1; s <= steps; s++) {
+        const tx = p.x + sgnX * s;
+        const ty = p.y + sgnY * s;
+        if (isOutOfBorder(tx, ty)) break;
+        if (!pxAtP(tx, ty)) { nx = tx; ny = ty; } else break;
+      }
+      if (nx !== p.x || ny !== p.y) {
+        p.updatePosition(nx, ny);
+        moved.add(pid);
+      }
+    }
+  }
+}
+
 
 function resetParticles()
 {

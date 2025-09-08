@@ -59,19 +59,32 @@ p.setType = function(newType)
 	this.spreadAmount = this.properties.spread;
 	this.updT = this.properties.updT;
 	this.inWater = false;
-	this.setColor(
-		this.physT != 'LIQUID' || this.type == 'LAVA' ? randomizeColor(this.properties.color) : this.properties.color);
-	this.xDir = r_range(0, 2) == 0 ? -1 : 1;
-	this.yDir = r_range(0, 2) == 0 ? -1 : 1;
+	if (this.type == 'FISH') {
+		let clrs = ["rgba(135, 60, 163, 1)", "rgba(11, 93, 61, 1)", this.properties.color];
+		let baseColor = clrs[r_range(0, clrs.length)];
+		this.setColor(baseColor);
+	} else this.setColor(this.type != 'WOOD' && this.physT != 'LIQUID' || this.type == 'LAVA' ?
+		randomizeColor(this.properties.color) : this.properties.color);
+	this.xDir = rdir();
+	this.yDir = rdir();
+	this.heigth = 0;
+	this.child = null;
+	if (this.type == 'SHROOM') {
+		this.isGrower = this.id % 4 == 0;
+		this.maxGrowth = r_range(2, 20);
+		this.growSpeed = r_range(2, 6);
+	}
 	if (this.updT == 'STATIC') { this.velY = 0; this.velX = 0; }
-	if (this.type == 'PLANT' || this.type == 'FISH')
+	if (this.type == 'PLANT')
 	{
 		this.velX = 0; this.velY = 0;
 		this.dirAng = Math.atan2(f_range(-1,1), f_range(-1,1));
 		this.oscPhase = Math.random() * Math.PI * 2;
 		this.oscSpeed = f_range(0.0025, 0.006);
-		this.oscAmp = this.type == 'FISH' ? f_range(.3, 1) : f_range(2, 6);
+		this.oscAmp = f_range(2, 6);
 	}
+	this.transformType = null;
+	if (this.type == 'ANTEGG') this.transformType = 'ANT';
 	else if (this.type == 'COAL') { this.velX = 0; }
 }
 

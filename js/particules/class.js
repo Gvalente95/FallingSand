@@ -8,10 +8,11 @@ class Particle{
 		if (pxAtPos)
 		{
 			if (type == pxAtPos.type) { this.toRemove(); return; }
-			else if (this.properties.physT == 'GAS' && type != 'STEAM')
+			else if (type == 'SHROOM' && (pxAtPos.physT == 'SOLID' || pxAtPos.physT == 'STATIC')) {color = pxAtPos.color;}
+			if (this.properties.physT == 'GAS' && type != 'STEAM')
 			{
-				if (pxAtPos.physT == 'WATER' && type == 'FIRE') {
-					pxAtPos.replace('FIRE');
+				if (pxAtPos.physT == 'LIQUID' && type == 'FIRE') {
+					pxAtPos.replace('STEAM');
 				}
 				else if (type != pxAtPos.type && shouldBurnParticle(type, pxAtPos)) pxAtPos.setToFire();
 				return (this.toRemove(), 0);
@@ -47,14 +48,16 @@ class Particle{
 		grid[this.x][this.y] = this;
 		activeParticles.push(this);
 	}
-	updateVelocity()
-	{
-		if (this.type == 'ANT' && this.hasTouchedBorder) { return;}
+	updateVelocity() {
+		if (this.type == 'ANT' && this.hasTouchedBorder) return;
 		if (this.type == 'FISH' && this.inWater) return;
 		if (this.physT == 'STATIC') return;
 		let isGrounded = this.ground && (this.ground.physT == 'SOLID') && this.ground.velY == 0;
 		if (this.type == 'WATER' && this.ground && !pxAtP(this.x, this.y - 1) && dice(200) && this.ground.type == this.type)
+		{
 			this.setType('BUBBLE');
+			this.transformType = 'WATER';
+		}
 		if (this.ground && this.ground.physT == 'LIQUID' && this.physT == 'SOLID')
 		{
 			this.velY *= .7;
@@ -75,7 +78,12 @@ class Particle{
 
 	updateMovement() {
 		if (this.type == 'ANT' && this.hasTouchedBorder) return;
-		if (this.type == 'FISH' && this.inWater) return;
+		if (this.type == 'PLANT' || (this.type == 'FISH' && this.inWater && this.timeInWater < 30)) {
+				this.newX = Math.round(this.x + (this.velX * SIMSPEED));
+				this.newY = Math.round(this.y + (this.velY * SIMSPEED));
+			return ;
+		}
+
 		let newX = this.x + (this.velX * SIMSPEED * (dt));
 		let newY = this.y + (this.velY * SIMSPEED * (dt));
 		let xDiff = newX - this.x, yDiff = newY - this.y;
@@ -84,14 +92,14 @@ class Particle{
 		let yStep = steps > 0 ? yDiff / steps : 0;
 		let curX = this.x, curY = this.y;
 		let lastValidx = curX, lastValidy = curY;
-		if (this.type === 'PLANT' || (this.type == 'FISH' && this.inWater)) return (this.newX = Math.round(newX), this.newY = Math.round(newY), 0);
 		for (let i = 0; i < steps; i++) {
 			curX += xStep; curY += yStep;
 			let realX = Math.round(curX); let realY = Math.round(curY);
 			if (isOutOfBorder(realX, realY)) { curX = lastValidx; curY = lastValidy; break; }
 			let pxAtPos = pxAtP(realX, realY, this);
-			if (!pxAtPos){ lastValidx = curX; lastValidy = curY; continue; }
-			if (this.douse) pxAtPos.setWet(100, this.type);
+			if (!pxAtPos) { lastValidx = curX; lastValidy = curY; continue; }
+			if (this.type == 'FISH' && pxAtPos.physT == 'LIQUID') continue;
+			if (this.douse && pxAtPos.type != 'FISH') { if (pxAtPos.brnpwr) this.setType('STEAM'); else pxAtPos.setWet(100, this.type);}
 			if (shouldBurn(this, pxAtPos)) {pxAtPos.setToFire();}
 			if (shouldBurn(pxAtPos, this)) this.setToFire();
 			else if (this.physT === 'GAS' && pxAtPos.physT === 'LIQUID' && pxAtPos.y < this.y) {
@@ -116,6 +124,7 @@ class Particle{
 			else if (this.cor && this.cor > pxAtPos.dns && dice(1001 - this.cor + (pxAtPos.dns)))
 			{
 				pxAtPos.replace('BUBBLE');
+				pxAtPos.transformType = this.type;
 				curX -= xStep; curY -= yStep;
 				break;
 			}
@@ -131,7 +140,8 @@ class Particle{
 	{
 		if (!this.active) return;
 		let px = pxAtP(newX, newY, this);
-		if (this.physT === 'GAS' && px) return (this.toRemove(), 0);
+		if (px && this.physT === 'GAS') return (this.toRemove(), 0);
+		else if (px) { return (this.swap(px)); }
 		const clampedX = Math.floor(clamp(newX, 0, GRIDW - 1));
 		const clampedY = Math.floor(clamp(newY, 0, GRIDH - 1));
 		if (clampedX != newX || clampedY != newY) this.velX = 0;
@@ -144,14 +154,12 @@ class Particle{
 		grid[this.x][this.y] = this;
 		return (1);
 	}
-	updatelt(){
+	updateLifeTime(){
 		this.timeAlive = now - this.startTime;
 		if (this.timeAlive > this.lt)
 		{
-			if (this.type == 'ANTEGG'){
-				let npx = new Particle(this.x , this.y, 'ANT');
-			}
-			else if (this.type == 'MAGMA') return;
+			if (this.transformType) return (this.replace(this.transformType));
+			if (this.type == 'MAGMA') return;
 			else if (this.physT == 'SOLID') {
 				let y = this.y - 1;
 				let p = pxAtP(this.x, y);
@@ -171,7 +179,7 @@ class Particle{
 		if (this.prvP.length > TRAILAMOUNT) this.prvP.shift();
 		this.updateState();
 		if (this.frozen) return;
-		this.updatelt();
+		this.updateLifeTime();
 		this.updateType();
 	}
 

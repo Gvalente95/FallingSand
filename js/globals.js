@@ -13,7 +13,8 @@ const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 // PARAMS
 PIXELSIZE = 4;
 BRUSHSIZE = 8;
-MAXPARTICLES = 100000;
+BRUSHCOLOR = null;
+MAXPARTICLES = 200000;
 MAXBRUSHSIZE = 40;
 XDRAG = .1;
 GRAVITY = .1;
@@ -21,13 +22,14 @@ SIMSPEED = 1;
 TYPEINDEX = 0;
 TRAILAMOUNT = 10;
 RAINPOW = 50;
-BRUSHCUT = false;
-PICKACTIVE = false;
+
+BRUSHACTION = null;
 ISRAINING = false;
 SHOULDCUT = false;
 const BRUSHTYPES = Object.freeze({ DISC: 'DISC', RECT: 'RECT'})
 BRUSHTYPE = BRUSHTYPES.RECT;
 const BrushKeys = Object.keys(BRUSHTYPES);
+const FLOCK = { r: 10, sep: 1.2, ali: 0.8, coh: 0.35, maxSpd: 1.8, maxAcc: 0.15 };
 
 //	CANVAS
 CANVW = window.innerWidth;
@@ -76,21 +78,22 @@ let PARTICLE_PROPERTIES = {
 ['ACID']:	{ color: 'rgba(131, 35, 163, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, cor: 1000, physT:'LIQUID',updT: 'DYNAMIC', dns: 1.9,	spread: 6,	},
 ['CHEMX']:	{ color: 'rgba(16, 96, 28, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, cor: 1500, physT:'LIQUID',updT: 'DYNAMIC', dns: 2.2,	spread: 6,	},
 ['BUBBLE']:	{ color: 'rgba(255, 255, 255, 1)',	lt: 1000,		brn: 0,		brnpwr: 0,		douse: 1, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 1,	spread: 10,	},
-['WATER']:	{ color: 'rgba(0, 72, 255, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 2,	spread: 15,	},
+['WATER']:	{ color: 'rgba(0, 191, 255, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 2,	spread: 15,	},
 ['LAVA']:	{ color: 'rgba(255, 0, 0, 1)',		lt: Infinity,	brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 2.1,	spread: 5,	},
 ['BOLT']:	{ color: 'rgba(212, 255, 0, 1)',	lt: 400,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 100,	spread: 10,	},
 ['FIRE']:	{ color: 'rgba(214, 113, 40, 1)',	lt: 400,		brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 10,	},
 ['SMOKE']:	{ color: 'rgba(106, 106, 106, 1)',	lt: 600,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 10,	},
 ['CLOUD']:	{ color: 'rgba(255, 255, 255, 1)',	lt: 20000,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 2,	},
 ['STEAM']:	{ color: 'rgba(237, 211, 211, 1)',	lt: 6000,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 10,	},
-['PLANT']:	{ color: 'rgba(45, 119, 83, 1)', 	lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, cor: 0, physT: 'STATIC', 	updT: 'ALIVE', 	 dns: 4, 	spread: 10, },
+['PLANT']:	{ color: 'rgba(45, 119, 83, 1)', 	lt: Infinity, 	brn: 960, 	brnpwr: 0, 		douse: 0, cor: 0, physT: 'STATIC', 	updT: 'ALIVE', 	 dns: 4, 	spread: 10, },
+['SHROOM']:	{ color: 'rgba(45, 119, 83, 1)', 	lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 4, 	spread: 10, },
 ['BLOB']: 	{ color: 'rgba(192, 144, 190, 1)', lt: Infinity, 	brn: 999, 	brnpwr: 0,		douse: 0, cor: 0, physT: 'STATIC', updT: 'DYNAMIC',  dns: 25, 	spread: 10, },
 ['ANT']:	{ color: 'rgba(185, 115, 115, 1)',	lt: Infinity,	brn: 970,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'ALIVE', 	 dns: 25,	spread: 10,	},
-['ANTEGG']:	{ color: 'rgba(226, 224, 206, 1)',	lt: 5000,		brn: 970,	brnpwr: 0,		douse: 0, cor: 0, physT: 'STATIC',	updT: 'ALIVE', 	 dns: 25,	spread: 10,	},
+['ANTEGG']:	{ color: 'rgba(226, 224, 206, 1)',	lt: 5000,		brn: 970,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'ALIVE', 	 dns: 25,	spread: 10,	},
 ['FISH']:	{ color: 'rgba(27, 80, 133, 1)',	lt: Infinity,	brn: 970,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'ALIVE', 	 dns: 25,	spread: 10,	},
 ['FROST']:	{ color: 'rgba(126, 166, 205, 1)',	lt: Infinity,	brn: 999,	brnpwr: 0,		douse: 0, cor: 0, physT: 'STATIC',	updT: 'DYNAMIC', dns: 10,	spread: 2,	},
 ['TORCH']:	{ color: 'rgba(255, 0, 0, 1)',		lt: Infinity,	brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'STATIC',	updT: 'STATIC',  dns: 30,	spread: 10,	},
-['WOOD']:	{ color: 'rgba(74, 54, 10, 1)',	lt: Infinity,	brn: 950,	brnpwr: 0,		douse: 0, cor: 0, physT: 'STATIC',	updT: 'STATIC',  dns: 40,	spread: 10,	},
+['WOOD']:	{ color: 'rgba(68, 60, 44, 1)',	lt: Infinity,	brn: 950,	brnpwr: 0,		douse: 0, cor: 0, physT: 'STATIC',	updT: 'STATIC',  dns: 40,	spread: 10,	},
 };
 let particleKeys = Object.keys(PARTICLE_PROPERTIES);
 

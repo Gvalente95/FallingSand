@@ -24,7 +24,7 @@ function initParamHeader(yPos, height)
 
 	let sliders = [];
 	sliders.push(createVerticalPressSlider("Brush Sz", x + spread * n++, 0, 1, 100, 1, BRUSHSIZE, setNewBrushSize));
-	sliders.push(createVerticalPressSlider("Px Size", x + spread * n++, 0, 2, 19, 1, PIXELSIZE, setNewPixelSize));
+	sliders.push(createVerticalPressSlider("Px Size", x + spread * n++, 0, 2, 19, .1, PIXELSIZE, setNewPixelSize));
 	sliders.push(createVerticalPressSlider("Speed", x + spread * n++, 0, .2, 2.2, .2, SIMSPEED, setNewSpeed));
 	sliders.push(createVerticalPressSlider("Gravity", x + spread * n++, 0, 1, -1, .1, GRAVITY, setNewGravity));
 	sliders.push(createVerticalPressSlider("Rain Pow", x + spread * n++, 0, 1, 100, 1, RAINPOW, setRAINPOW));
@@ -34,10 +34,10 @@ function initParamHeader(yPos, height)
 	return (yPos + height);
 }
 
-let pauseButton = null;
-let pickButton = null;
 let rewButton = null;
-let cutButton = null;
+let pauseButton = null;
+
+let brushActionButtons = [];
 function initActionHeader(yPos, color = 'red', height = 40)
 {
 	let xMargin = 65;
@@ -47,20 +47,23 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	const p = "ressources/img/white/";
 
 	let baseColor = "rgba(33, 23, 37, 1)"
-	let butLen = 10;
-	let butW = 27;
+	let butLen = 11;
+	let butW = 30;
 	let actionHeader = addHeader(yPos, color, height, null, butLen * butW);
 	actionHeader.style.left = "0px";
 	rewButton = initButton("Prev", 5 + xMargin * nn++, 0, baseColor, goToPrevFrame, null, actionHeader, null, '1', p + "prev.png");
 	pauseButton = initButton("Pause", 5 + xMargin * nn++, 0, baseColor, switchPause, -1, actionHeader, false, '2', p + "pause.png");
 	initButton("Next", 5 + xMargin * nn++, 0, baseColor, goToNextFrame, null, actionHeader, null, '3', p + "next.png");
-	initButton("Fall", 5 + xMargin * nn++, 0, baseColor, switchRain, null, actionHeader, false, 'f', p + "drop.png");
-	cutButton = initButton("Cut", 5 + xMargin * nn++, 0, baseColor, switchCut, null, actionHeader, false, "c", p + "eraser.png", wp + "eraser.png");
+	initButton("Rain", 5 + xMargin * nn++, 0, baseColor, switchRain, null, actionHeader, false, 'Enter', p + "drop.png");
+	brushActionButtons.push(initButton("Cut", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'CUT', actionHeader, false, "c", p + "eraser.png", wp + "eraser.png"));
 	initButton("Clear", 5 + xMargin * nn++, 0, baseColor, resetParticles, PIXELSIZE, actionHeader, null, 'r', p + "broom.png");
-	pickButton = initButton("Pick", 5 + xMargin * nn++, 0, baseColor, switchPick, null, actionHeader, false, "p", p + "eyedropper.png", wp + "eyedropper.png");
+	brushActionButtons.push(initButton("Pick", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'PICK', actionHeader, false, "p", p + "eyedropper.png", wp + "eyedropper.png"));
+	brushActionButtons.push(initButton("Vibrate", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'VIBRATE', actionHeader, false, "v", p + "vibrate.png", wp + "vibrate.png"));
+	brushActionButtons.push(initButton("Excite", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'EXCITE', actionHeader, false, "e", p + "excite.png", wp + "excite.png"));
 	initButton("Grid", 5 + xMargin * nn++, 0, baseColor, switchGridMode, null, actionHeader, true, "g", p + "grid.png");
 	initButton("Brush", 5 + xMargin * nn++, 0, baseColor, setNewBrushType, null, actionHeader, true, 'b', p + "disk.png");
 	initButton("Emitter", 5 + xMargin * nn++, 0, baseColor, spawnEmitterAtMouse, null, actionHeader, null, 'l', p + "emit.png");
+	initButton("Fill", 5 + xMargin * nn++, 0, baseColor, fillScreen, null, actionHeader, false, 'f', p + "fill.png");
 	return (yPos + height);
 }
 
@@ -84,7 +87,7 @@ function initParticlePagesHeader(y) {
 		famButton.label = name;
 
 		const elementsY = y + 45;
-		const elementsHeader = addHeader(elementsY, null, 40, null, 0);
+		const elementsHeader = addHeader(elementsY, null, 40, null, 1);
 
 		let xp = 0;
 		if (name === "CUSTOM") {
@@ -99,13 +102,15 @@ function initParticlePagesHeader(y) {
 				famButton.buttons.push(btn);
 			}
 		}
-		const rowContentW = Math.max(10, xp * buttonSpread + 10);
-		const rowDragW = Math.max(0, rowContentW - CANVW);
-		elementsHeader.style.width = rowContentW + "px";
-		const curLeft = parseFloat(getComputedStyle(elementsHeader).left) || 0;
-		const minLeft = -rowDragW;
-		const maxLeft = 0;
-		elementsHeader.style.left = Math.max(minLeft, Math.min(maxLeft, curLeft)) + "px";
+		if (famButton.buttons.length > 6) {
+			const rowContentW = Math.max(10, (xp - 6) * buttonSpread);
+			const rowDragW = Math.max(0, rowContentW - CANVW);
+			elementsHeader.style.width = rowContentW + "px";
+			const curLeft = parseFloat(getComputedStyle(elementsHeader).left) || 0;
+			const minLeft = -rowDragW;
+			const maxLeft = 0;
+			elementsHeader.style.left = Math.max(minLeft, Math.min(maxLeft, curLeft)) + "px";
+		}
 		uiPagesButtons.push(famButton);
 	}
 	const curLeftTabs = parseFloat(getComputedStyle(pageHeader).left) || 0;

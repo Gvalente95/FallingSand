@@ -2,10 +2,11 @@ function updateInput()
 {
 	PXATMOUSE = pxAtP(MOUSEGRIDX, MOUSEGRIDY);
 	if (MOUSEPRESSED && !isTwoFingerTouch) {
-		if ((BRUSHCUT && SHOULDCUT) || KEYS['Shift']) deleteParticulesAtMouse();
+		if ((BRUSHACTION == 'CUT' && SHOULDCUT) || KEYS['Shift']) deleteParticulesAtMouse();
+		else if (BRUSHACTION == 'EXCITE') exciteRadius();
+		else if (BRUSHACTION == 'VIBRATE') vibrateRadius();
 		else launchParticules(particleKeys[TYPEINDEX]);
 	}
-	if (KEYS['u']) exciteRadius();
 	if (KEYS['Backspace']) deleteParticulesAtMouse();
 	if (KEYS['x'] && PXATMOUSE) deleteAllParticules(PXATMOUSE.type);
 }

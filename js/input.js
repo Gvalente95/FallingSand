@@ -4,8 +4,8 @@ canvas.addEventListener('mousedown', (e) => {
 	MOUSEX = e.clientX;
 	MOUSEY = e.clientY;
 	CLICKCOLOR = getRandomColor();
-	if (PICKACTIVE && PXATMOUSE) { setNewType(getCurTypeIndex(PXATMOUSE.type)); }
-	if (BRUSHCUT) { SHOULDCUT = true};
+	if (BRUSHACTION == 'PICK' && PXATMOUSE) setNewType(getCurTypeIndex(PXATMOUSE.type));
+	if (BRUSHACTION == 'CUT') { SHOULDCUT = true};
 	setTimeout(() => { MOUSECLICKED = false }, 50);
 });
 
@@ -75,8 +75,9 @@ window.addEventListener('resize', () => {
 
 canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
-    const delta = e.deltaY;
-    BRUSHSIZE = clamp(BRUSHSIZE - delta * 0.1, 1, MAXBRUSHSIZE);
+	const delta = e.deltaY;
+	if (KEYS['Shift']) setNewPixelSize(clamp(PIXELSIZE + delta * .1, 1, 19));
+	else BRUSHSIZE = clamp(BRUSHSIZE - delta * 0.1, 1, MAXBRUSHSIZE);
 });
 
 

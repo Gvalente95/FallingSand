@@ -43,6 +43,7 @@ p.setToFire = function()
 
 p.setWet = function(wetAmount = 100, type = 'WATER') {
 	if (this.physT != 'SOLID') return (0);
+	if (this.type == 'SHROOM' || this.type == 'FISH') return (0);
 	if (this.brnpwr) return (0);
 	if (this.wet) { this.wet = wetAmount; this.wetType = type; return (1); }
 	if (type != 'OIL') this.burning = 0;
@@ -69,8 +70,10 @@ p.updateWet = function () {
 	}
 	if (dice(5000)) {
 		let pxAb = pxAtP(this.x, this.y - 1);
-		if (pxAb && pxAb.type === this.wetType)
-			pxAb.replace('BUBBLE');			
+		if (pxAb && pxAb.type === this.wetType) {
+			pxAb.replace('BUBBLE');
+			pxAb.transformType = this.wetType;
+		}
 	}
 }
 

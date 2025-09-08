@@ -22,6 +22,9 @@ p.updateLiquid = function (curX, curY, spreadAm = this.spreadAmount) {
 			let xp = curX + (i * this.xDir);
 			if (xp < 0 || xp >= GRIDW) { this.xDir *= -1; break; }
 			let p = pxAtP(xp, curY, this);
+			if (p && (p.type === 'SHROOM' || p.type == 'FISH')) {
+				continue;
+			}
 			if (p && p.physT != 'LIQUID')
 				break;
 			if (p && p.physT == 'LIQUID' && p.type != this.type && i <= 4)
@@ -57,8 +60,8 @@ p.FireEffect = function (curX, curY)
 				else {
 					this.lt = 50;
 					if (px.y > 0 && dice(20)) {
-						new Particle(px.x, px.y - 1, px.type == 'WATER' ? 'STEAM' : 'SMOKE');
-						px.setType('BUBBLE');
+						px.replace('BUBBLE');
+						px.transformType = px.type == 'WATER' ? 'STEAM' : 'SMOKE';
 					}
 				}
 				continue;
