@@ -1,4 +1,4 @@
-function randomizeColor(color) {
+function randomizeColor(color, range = 10) {
     const namedColors = {
         'yellow': '#FFFF00',
         'blue': '#0000FF',
@@ -26,7 +26,6 @@ function randomizeColor(color) {
         g = parseInt(hexColor.substr(2, 2), 16);
         b = parseInt(hexColor.substr(4, 2), 16);
     }
-    const range = 10;
     r = Math.max(0, Math.min(255, r + Math.floor(Math.random() * (2 * range + 1)) - range));
     g = Math.max(0, Math.min(255, g + Math.floor(Math.random() * (2 * range + 1)) - range));
     b = Math.max(0, Math.min(255, b + Math.floor(Math.random() * (2 * range + 1)) - range));
@@ -138,4 +137,36 @@ function getMountainColor() {
 
 function getRandomColor() {
   	return `rgb(${r_range(0, 255)}, ${r_range(0, 255)}, ${r_range(0, 255)})`;
+}
+
+
+
+function recolorImage(imgPath, tintColor, callback) {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = imgPath;
+    img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const rgb = tintColor.match(/\d+/g).map(Number);
+        for (let i = 0; i < data.length; i += 4) {
+            if (data[i + 3] > 0) { // skip fully transparent pixels
+                data[i] = rgb[0];
+                data[i + 1] = rgb[1];
+                data[i + 2] = rgb[2];
+            }
+        }
+        ctx.putImageData(imageData, 0, 0);
+        callback(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => {
+        console.error("Failed to load image:", imgPath);
+        callback(null);
+    };
 }

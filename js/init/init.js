@@ -2,20 +2,26 @@
 let paramheader = null;
 let infoMouse = null;
 function initInfoText() {
-	infoText = document.createElement("label");
-	infoText.className = "infoText";
-	infoText.style.top = "0px";
-	infoText.style.left = "5px";
-	infoText.style.position = "fixed";
-	document.body.appendChild(infoText);
-	infoMouse = document.createElement("label");
-	infoMouse.className = "infoText";
-	infoMouse.style.textContent = "";
-	infoMouse.style.left = "5px";
-	infoMouse.style.position = "fixed";
-	infoMouse.style.top = "20px";
-	document.body.appendChild(infoMouse);
+  infoText = document.createElement("label");
+  infoText.className = "infoText";
+  infoText.style.position = "fixed";
+  infoText.style.top = "0px";
+  infoText.style.left = "5px";
+  infoText.style.whiteSpace = "pre";
+  infoText.style.fontFamily = "monospace";
+  document.body.appendChild(infoText);
+
+  infoMouse = document.createElement("label");
+  infoMouse.className = "infoText";
+  infoMouse.style.position = "fixed";
+  infoMouse.style.top = "20px";
+  infoMouse.style.left = "5px";
+  infoMouse.style.whiteSpace = "pre";
+  infoMouse.style.fontFamily = "monospace";
+  infoMouse.textContent = "";
+  document.body.appendChild(infoMouse);
 }
+
 function initParamHeader(yPos, height)
 {
 	let spread = 95;
@@ -23,7 +29,7 @@ function initParamHeader(yPos, height)
 	let n = 0;
 
 	let sliders = [];
-	sliders.push(createVerticalPressSlider("Brush Sz", x + spread * n++, 0, 1, 100, 1, BRUSHSIZE, setNewBrushSize));
+	sliders.push(createVerticalPressSlider("Brush Sz", x + spread * n++, 0, 2, 100, 1, BRUSHSIZE, setNewBrushSize));
 	sliders.push(createVerticalPressSlider("Px Size", x + spread * n++, 0, 2, 19, .1, PIXELSIZE, setNewPixelSize));
 	sliders.push(createVerticalPressSlider("Speed", x + spread * n++, 0, .2, 2.2, .2, SIMSPEED, setNewSpeed));
 	sliders.push(createVerticalPressSlider("Gravity", x + spread * n++, 0, 1, -1, .1, GRAVITY, setNewGravity));
@@ -57,9 +63,10 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	initButton("Rain", 5 + xMargin * nn++, 0, baseColor, switchRain, null, actionHeader, false, 'Enter', p + "drop.png");
 	brushActionButtons.push(initButton("Cut", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'CUT', actionHeader, false, "c", p + "eraser.png", wp + "eraser.png"));
 	initButton("Clear", 5 + xMargin * nn++, 0, baseColor, resetParticles, PIXELSIZE, actionHeader, null, 'r', p + "broom.png");
-	brushActionButtons.push(initButton("Pick", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'PICK', actionHeader, false, "p", p + "eyedropper.png", wp + "eyedropper.png"));
+	brushActionButtons.push(initButton("Pick", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'PICK', actionHeader, false, "i", p + "eyedropper.png", wp + "eyedropper.png"));
 	brushActionButtons.push(initButton("Vibrate", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'VIBRATE', actionHeader, false, "v", p + "vibrate.png", wp + "vibrate.png"));
-	brushActionButtons.push(initButton("Excite", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'EXCITE', actionHeader, false, "e", p + "excite.png", wp + "excite.png"));
+	brushActionButtons.push(initButton("Push", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'PUSH', actionHeader, false, "p", p + "push.png", wp + "push.png"));
+	brushActionButtons.push(initButton("Explode", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'EXPLODE', actionHeader, false, "e", p + "explosion.png", wp + "explosion.png"));
 	initButton("Grid", 5 + xMargin * nn++, 0, baseColor, switchGridMode, null, actionHeader, true, "g", p + "grid.png");
 	initButton("Brush", 5 + xMargin * nn++, 0, baseColor, setNewBrushType, null, actionHeader, true, 'b', p + "disk.png");
 	initButton("Emitter", 5 + xMargin * nn++, 0, baseColor, spawnEmitterAtMouse, null, actionHeader, null, 'l', p + "emit.png");
@@ -98,7 +105,7 @@ function initParticlePagesHeader(y) {
 				const key = particleKeys[v];
 				const prop = PARTICLE_PROPERTIES[key];
 				if (!hasTag(key, name)) continue;
-				const btn = initButton( key, 5 + xp++ * buttonSpread, 0, prop.color, setNewType, v, elementsHeader);
+				const btn = initButton( key, 5 + xp++ * buttonSpread, 0, prop.color, setNewType, v, elementsHeader, null, null, 'ressources/img/WHITE/p2.png', null, false, prop.color);
 				famButton.buttons.push(btn);
 			}
 		}

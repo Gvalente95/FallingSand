@@ -7,35 +7,55 @@ function showGradial()
 }
 
 function showShroomHead(prt, x, y) {
-	prt.isLoop = 1;
-	showParticle(prt, x - 1, y, 1, 'rgba(159, 47, 47, 1)');
-	showParticle(prt, x + 1, y, 1, 'rgba(150, 39, 39, 0.99)');
-	showParticle(prt, x, y - 1, 1, 'rgba(143, 46, 46, 1)');
-	prt.isLoop = 0;
+	let h = clamp(prt.heigth / 10, 2, 6);
+	let w = Math.round(h * .75);
+
+	let baseColor = prt.headColor;
+
+	let startY = y - h + 1;
+	let startX = x - w / 2;
+	let curW = w;
+	for (let yy = 0; yy < h; yy++){
+		let drawX = startX * PIXELSIZE;
+		let drawY = startY * PIXELSIZE;
+		ctx.fillStyle = baseColor;
+		ctx.fillRect(drawX, drawY, curW * PIXELSIZE, PIXELSIZE);
+		startX--;
+		startY++;
+		curW += 2;
+	}
 }
 
+let prvFillColor = null;
 function showParticle(prt, x, y, alpha, color = prt.color) {
-	if (p.frozen) color = addColor(color, 'rgba(146, 195, 205, 1)', .4);
-	if (prt.type == 'SHROOM' && prt.digType) color = addColor(PARTICLE_PROPERTIES[prt.digType].color, 'rgba(0,0,0,1)', .1);
-	if (prt.type == 'SHROOM' && prt.isGrower && !prt.isLoop && !prt.parent && prt.hasTouchedBorder) {
+	if (prt.type == 'TNT') {
+		let timeLeft = prt.lt - prt.timeAlive;
+		color = addColor(PARTICLE_PROPERTIES[prt.type].color, 'rgba(255, 0, 0, 1)', 1 - (timeLeft / prt.lt));
+	}
+	if (prt.isShroom && prt.digType) color = PARTICLE_PROPERTIES[prt.digType].color;
+	if (prt.isShroom && prt.isGrower && !prt.isLoop && !prt.parent && prt.hasTouchedBorder) {
 		let px = pxAtP(x, y - 1, prt);
 		if (px && px.type == prt.type) {
-			ctx.fillStyle = prt.digType ? color : 'rgba(33, 132, 64, 1)';
+			ctx.fillStyle = prt.digType ? color : prt.baseColor;
 			ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, PIXELSIZE, PIXELSIZE);
 			return;
 		}
 		showShroomHead(prt, x, y);
+		return;
 	}
-	// else if (prt.type == 'PLANT' && !prt.isLoop && !prt.parent) showShroomHead(prt, x, y);
 	if (prt.physT == 'GAS') alpha = Math.max(0, 1 - prt.timeAlive / prt.lt);
-	ctx.fillStyle = ((prt.type == 'WATER' && !prt.frozen) ? waterShades[prt.y].color : color);
+	if (prt.type == 'WATER' && !prt.frozen) color = waterShades[prt.y];
+	if (color != prvFillColor) {
+		ctx.fillStyle = ((prt.type == 'WATER' && !prt.frozen) ? waterShades[prt.y].color : color);
+		prvFillColor = color;
+	}
 	if (alpha != 1) ctx.fillStyle = `rgba(${prt.rgb}, ${alpha})`;
 	ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, PIXELSIZE, PIXELSIZE);
 }
 
 function render() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let p of activeParticles) showParticle(p, p.x, p.y, 1);
+	for (let i = 0; i < activeParticles.length; i++) showParticle(activeParticles[i], activeParticles[i].x, activeParticles[i].y, 1);
 	if (((settingBrushSize) || (!isMobile && !MOUSEPRESSED) || (isMobile && MOUSEPRESSED))) {
 		let px = settingBrushSize ? CANVW / 2 : MOUSEGRIDX * PIXELSIZE; py = settingBrushSize ? CANVH / 2 : MOUSEGRIDY * PIXELSIZE;
 		let rad = BRUSHSIZE * PIXELSIZE;
@@ -46,12 +66,7 @@ function render() {
 			drawRect(px - rad, py - rad, rad * 2, rad * 2, color, "#575757b0", 2);
 	}
 	if (gridMode) { ctx.drawImage(gridLayer, 0, 0); }
-
-	if(PXATMOUSE) infoMouse.style.color = PXATMOUSE.color;
-	infoText.textContent = `x${MOUSEX},y${MOUSEY} ${'   '}	Pxls: ${activeParticles.length} Tm:${time} Fps:${fps}`;
-	infoMouse.textContent = PXATMOUSE ?
-		`Elem: ${PXATMOUSE.type} - 
-		TimeAlive: ${Number(PXATMOUSE.timeAlive / 1000).toFixed(1)}` : '';
+	updateHUD();
 }
 
 function drawRect(x, y, width, height, color, strokeColor, lineWidth) {

@@ -1,5 +1,4 @@
 p.updateBurn = function () {
-	this.warm = 100;
 	if (this.frozen) { this.frozen -= 50; this.burning = 0; }
 	if (--this.burning <= 0)
 	{
@@ -30,7 +29,8 @@ p.stopFire = function ()
 }
 p.setToFire = function()
 {
-	if (this.frozen) { this.frozen -= 50; return; }
+	if (this.type == 'TNT') this.lt = 0;
+	if (this.frozen) { this.unFreeze(50); return; }
 	this.warm = 200;
 	if (this.wet > 50 && this.wetType != 'OIL') { this.wet -= 50; return; }
 	if (this.burning) return;
@@ -44,19 +44,19 @@ p.setToFire = function()
 
 p.setWet = function(wetAmount = 100, type = 'WATER') {
 	if (this.physT != 'SOLID') return (0);
-	if (this.type == 'SHROOM' || this.type == 'FISH') return (0);
+	if (this.isShroom || this.type == 'FISH') return (0);
 	if (this.brnpwr) return (0);
 	if (this.wet) { this.wet = wetAmount; this.wetType = type; return (1); }
 	if (type != 'OIL') this.burning = 0;
-	this.setColor(addColor(PARTICLE_PROPERTIES[this.type].color, PARTICLE_PROPERTIES[type].color, .3));
-	this.wet = wetAmount;
 	this.wetType = type;
+	this.wet = wetAmount;
+	this.setColor(addColor(this.baseColor, PARTICLE_PROPERTIES[this.wetType].color, .3));
 	return (1);
 }
 
 p.updateWet = function () {
 	if (this.burning) { if (this.wetType == 'OIL') this.wet = 0; else this.stopFire();}
-	if (time % 10 == 0 && --this.wet <= 0) this.setColor();
+	if (time % 10 == 0 && --this.wet <= 0) { this.setColor(); return;}
 	else if (this.wet > 80)
 	{
 		let depth = 2;
@@ -82,25 +82,25 @@ p.setFrozen = function (freezeAmount) {
 	if (this.burning || this.warm) return;
 	if (this.frozen) { this.frozen = freezeAmount; return; }
 	this.frozen = freezeAmount;
-	// this.setColor(randomizeColor('rgba(140, 184, 208, 0)'));
+	this.setColor(addColor(this.baseColor, 'rgba(146, 195, 205, 1)', .3));
 }
 
 p.unFreeze = function(warmAmount = 5){
 	this.frozen = 0;
 	this.warm = warmAmount;
-	// this.setColor();
+	this.setColor();
 }
 
-p.updateFrost = function () {
+p.updateFreeze = function () {
 	
-	this.applyFrost('FROST', this.frozen);
-	if (--this.frozen <= 0 || this.warm || this.burning) this.unFreeze();
+	if (this.warm || this.burning) this.unFreeze();
+	else this.applyFrost('FROST');
 }
 
 p.updateState = function()
 {
 	if (this.warm) this.warm--;
-	if (this.frozen) this.updateFrost();
+	if (this.frozen) this.updateFreeze();
 	if (this.wet) this.updateWet();
 	if (this.burning) this.updateBurn();
 }

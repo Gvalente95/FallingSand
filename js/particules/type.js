@@ -45,14 +45,26 @@ p.updatePlant = function(curX, curY){
 p.updateFrost = function(curX, curY){
 	if (this.timeAlive < 200 * this.fseed)
 		this.setColor(addColor(this.properties.color, 'rgba(92, 145, 198, 1)', this.timeAlive / 200 * this.fseed));
-	this.applyFrost('FROST', 1000);
+	this.applyFrost('FROST', 20);
 	// this.updatePosition(curX, curY);
 }
 
 p.updateAnt = function (curX, curY) {
 	if (this.burning) return;
-	if (this.wet || this.physT == 'LIQUID') {
-		return (this.updatePosition(curX, curY));
+	if (this.inWater) {
+		if (this.inWater == 100) this.xDir = rdir();
+		else if (this.inWater > 100) {
+			this.velY = -1;
+			if (dice(2)) {
+				let rx = pxAtP(this.x + this.xDir, this.y, this);
+				if (rx && rx.physT == 'LIQUID') this.swap(rx);
+			}
+			let px = pxAtP(this.x, this.y - 1, this);
+			if (px && px.physT == 'LIQUID') return (this.swap(px));
+			if (!pxAtP(this.x, this.y + 1, this)) return (this.updatePosition(this.x, this.y + 1));
+			return;
+		}
+		else this.velX = 0, this.xDir = 0;
 	}
 	if (!this.hasTouchedSurface) {
 		this.hasTouchedSurface = (this.y >= GRIDH - 1) || (this.ground && this.ground.type != this.type);
@@ -114,8 +126,8 @@ p.updateAnt = function (curX, curY) {
 		if (px) this.yDir = -1;
 	}
 	if (px) {
-		if (px.physT == 'LIQUID' || px.wet) { this.physT = 'LIQUID'; return; }
-		if (px.type == 'ANT' || px.type == 'ANTEGG') {
+		if (px.physT == 'LIQUID' || px.wet) { this.inWater++;  }
+		if (px.type == 'ANT' || px.type == 'ANTEGG' || px.physT == 'LIQUID') {
 			this.swap(px);
 			return;
 		}
@@ -125,8 +137,7 @@ p.updateAnt = function (curX, curY) {
 					let npx = pxAtP(px.x + x, px.y + y, this);
 					if (npx) {
 						npx.physT = 'STATIC';
-						npx.setColor(addColor(PARTICLE_PROPERTIES[npx.type].color, "rgba(0,0,0,1)", .1));
-
+						// npx.setColor(addColor(PARTICLE_PROPERTIES[npx.type].color, "rgba(0,0,0,1)", .1));
 					}
 				}
 			}
@@ -172,7 +183,7 @@ p.updateFish = function(){
 		}
 	}
 	if (++this.timeInWater < 30) {
-		this.velY *= .95;
+		this.velY *= .9;
 		if (dice(10)) this.velX = rdir();
 		let px = pxAtP(this.newX, this.newY, this);
 		if (px && px.physT == 'LIQUID') this.swap(px);
@@ -195,11 +206,11 @@ p.updateFish = function(){
 		} return out;
 	};
 	if(this.velX==null){ this.velX=f_range(-1,1); this.velY=f_range(-1,1); }
-	if (dice(300) || (this.x < 10 && this.velX < 0) || (this.x > GRIDW - 11 && this.velX > 0))
+	if ((this.x < 10 && this.velX < 0) || (this.x > GRIDW - 11 && this.velX > 0))
 		this.velX *= -1;
 	if (this.y <= 10 && this.velY < 0) this.velY = 1;
 	else if (this.y >= GRIDH - 11 && this.velY > 0) this.velY = -1;
-	if (!this.velX && dice(100)) { this.velX = rdir(); new Particle(this.x, this.y - 1, 'BUBBLE'); }
+	if (!this.velX) this.velX = f_range(-1, 1);
 	const nn = getNeighbors(this.x, this.y, this.type, FLOCK.r, this.color);
 	if (!nn.length) {
 		this.velX = this.xDir;
@@ -268,52 +279,63 @@ p.updateShroom = function (curX, curY) {
 			if (down && (down.hasTouchedBorder || ((down.physT == 'SOLID' || down.physT == 'STATIC') && down.type != this.type))) this.hasTouchedBorder = true;
 		}
 		if (!this.hasTouchedBorder) return (this.updatePosition(curX, curY));
-		if (this.isGrower) this.centerX = this.x;
 	}
-	if (!this.isGrower || this.parent) {
-		return;
+	if (this.parent && !this.child && (curX != this.x || curY != this.y)) {
+		this.parent.toRemove();
+		this.updatePosition(curX, curY);
 	}
-	if (dice(this.growSpeed)) {
-		let px = this.x; let py = this.y;
-		if (dice(4) && 0) {
-			if (dice(2)) px += rdir();
-			else py += rdir();
-		}
-		else { py--; if (dice(5)) px += rdir(); }
-		let up = pxAtP(px, py, this);
-		if (up && (up.type != this.type && (up.physT == 'SOLID' || up.physT == 'STATIC'))) {
-			this.digType = up.type;
+	if (!this.isGrower || this.parent) return;
+	if (!dice(this.growSpeed)) return;
+	let px = this.x; let py = this.y;
+	if (dice(4) && 0) {
+		if (dice(2)) px += rdir();
+		else py += rdir();
+	}
+	else { py--; if (dice(5)) px += rdir(); }
+	let up = pxAtP(px, py, this);
+	if (up && (up.type != this.type && (up.physT == 'SOLID' || up.physT == 'STATIC'))) {
+		this.digType = up.type;
+		up.toRemove();
+		up = null;
+		this.maxHeight = this.heigth + r_range(2, this.heigth / 3);
+	}
+	else this.digType = null;
+	if (up) {
+		if (up.type == 'WATER' && this.type != 'SHROOM') return;
+		if (up.cor && this.type == 'SHROOM') return;
+	}
+	if ((!up && this.heigth < this.maxHeight) || (up && up.physT == 'LIQUID')) {
+		if (up)
+		{
+			this.inWater = true;
+			this.maxHeight = this.heigth + r_range(2, this.heigth / 3);
 			up.toRemove();
 			up = null;
-			this.heigth = 0;
 		}
-		else this.digType = null;
-		if ((!up && this.heigth < this.maxGrowth) || (up && up.physT == 'LIQUID')) {
-			if (up) { this.inWater = true; this.heigth = 0; up.toRemove();}
-			let newHead = new Particle(px, py, 'SHROOM');
-			newHead.setColor("rgba(252, 0, 0, 1)");
-			newHead.hasTouchedBorder = true;
-			newHead.isGrower = this.isGrower;
-			newHead.growSpeed = this.growSpeed;
-			newHead.digType = this.digType;
-			newHead.maxGrowth = this.maxGrowth;
-			newHead.timeAlive = this.timeAlive;
-			newHead.ground = this;
-			newHead.velX = newHead.velY = 0;
-			newHead.id = this.id;
-			newHead.child = this;
-			newHead.heigth = this.heigth + 1;
-			this.setColor(PARTICLE_PROPERTIES[this.digType ? this.digType : this.type].color);
-			this.parent = newHead;
-		}
+		let newHead = new Particle(px, py, this.type);
+		newHead.hasTouchedBorder = true;
+		newHead.isGrower = this.isGrower;
+		newHead.growSpeed = this.growSpeed;
+		newHead.digType = this.digType;
+		newHead.maxHeight = this.maxHeight;
+		newHead.timeAlive = this.timeAlive;
+		newHead.ground = this;
+		newHead.velX = newHead.velY = 0;
+		newHead.yLimit = this.yLimit;
+		newHead.headColor = this.headColor;
+		newHead.id = this.id;
+		newHead.child = this;
+		newHead.heigth = this.heigth + 1;
+		if (this.child) this.setColor(addColor(this.baseColor, 'rgba(255, 255, 255, 1)', Math.max(this.heigth * .02), 1));
+		this.parent = newHead;
 	}
 }
 
-
-p.updateType = function(){
+p.updateType = function () {
+	if (this.cor) this.applyCorrosion();
 	if (this.type === 'WOOD') return;
 	if (this.type === 'CLOUD') return this.updateCloud();
-	if (this.type === 'SHROOM' && this.hasTouchedBorder) return (this.updateShroom());
+	if (this.isShroom && this.hasTouchedBorder) return (this.updateShroom(this.x, this.y));
 	else if (this.type == 'TORCH' && dice(10))
 		new Particle(this.x, this.y - 1, 'FIRE');
 	else if (this.type == 'STEAM' && this.y < 50 && dice(5))
@@ -325,7 +347,7 @@ p.updateType = function(){
 		if (this.physT == 'LIQUID') this.updateLiquid(this.newX, this.newY);
 	}
 	if (this.type == 'FROST') this.updateFrost(this.newX, this.newY);
-	else if (this.type == 'SHROOM') this.updateShroom(this.newX, this.newY);
+	else if (this.isShroom) this.updateShroom(this.newX, this.newY);
 	else if (this.type == 'ANT') this.updateAnt(this.newX, this.newY);
 	else if (this.type == 'FIRE' || this.type === 'TORCH') this.FireEffect(this.newX, this.newY);
 	else if (this.type == 'MAGMA') this.MagmaEffect(this.newX, this.newY);

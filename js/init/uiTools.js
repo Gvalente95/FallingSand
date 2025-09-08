@@ -323,7 +323,7 @@ function initImageDiv(imgPath, x, y, color, parent = document.body) {
 	return (div);
 }
 
-function initButton(label, x, y, color, onChange, value = null, parent = document.body, isSwitch = null, keyToggle = null, imgPath = null, mouseFollowImg = null, clrText = false) {
+function initButton(label, x, y, color, onChange, value = null, parent = document.body, isSwitch = null, keyToggle = null, imgPath = null, mouseFollowImg = null, clrText = false, imgClr = null) {
 	function formatKeyLabel(k){
 	if(!k) return "";
 	const map={
@@ -347,7 +347,7 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	div.style.color = 'rgba(213, 213, 213, 1)';
 	div.style.position = div.style.position || "absolute";
 	div.style.boxSizing = "border-box";
-	if (isMobile || !imgPath) {
+	if (1) {
 		div.style.display = "flex";
 		div.style.alignItems = "center";
 		div.style.justifyContent = "center";
@@ -360,7 +360,6 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 		const minWidth = Math.max(50, fontSize * (label.length * 0.7));
 		div.style.minWidth = minWidth + "px";
 		div.textContent = label;
-		div.textContent = label;
 	}
 	div.label = label;
 	div.value = value;
@@ -370,11 +369,13 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	div.setAttribute("tabindex", "0");
 
 	if (imgPath) {
-		const img = new Image();
-		img.onload = ()=>{ div.style.background = `${color} url("${imgPath}") calc(50% - 10px) center/contain no-repeat`; };
-		img.onerror = ()=>{ div.style.setProperty('--btn-bg', color); div.style.backgroundColor = color; };
-		img.src = imgPath;
-		img.backgroundColor = "white";
+		 {
+			const img = new Image();
+			img.onload = ()=>{ div.style.background = `${color} url("${imgPath}") calc(50% - 10px) center/contain no-repeat`; };
+			img.onerror = ()=>{ div.style.setProperty('--btn-bg', color); div.style.backgroundColor = color; };
+			img.src = imgPath;
+			img.backgroundColor = "red";
+		}
 		if (mouseFollowImg) {
 			div.cursorImg = initImageDiv(mouseFollowImg, CANVW / 2, CANVH / 2, "rgba(0,0,0,0)", document.body);
 			div.cursorImg.style.display = "none";
@@ -498,6 +499,7 @@ function updateUi()
 function switchUiPage(newPageIndex) {uiPageIndex = newPageIndex;}
 function setNewType(newIndex)
 {
+	switchBrushAction(null);
 	TYPEINDEX = newIndex;
 	for (const b of uiPagesButtons[uiPageIndex].buttons) {
 		if (b.label == particleKeys[newIndex]) {typeButton = b;

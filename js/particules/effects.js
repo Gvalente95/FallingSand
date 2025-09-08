@@ -22,7 +22,7 @@ p.updateLiquid = function (curX, curY, spreadAm = this.spreadAmount) {
 			let xp = curX + (i * this.xDir);
 			if (xp < 0 || xp >= GRIDW) { this.xDir *= -1; break; }
 			let p = pxAtP(xp, curY, this);
-			if (p && (p.type === 'SHROOM' || p.type == 'FISH')) {
+			if (p && (p.isShroom || p.type == 'FISH' || p.type == 'ANT')) {
 				continue;
 			}
 			if (p && p.physT != 'LIQUID')
@@ -131,27 +131,32 @@ p.LavaEffect = function(curX, curY)
 	}
 	}
 }
-p.PropagateExplosion = function(x, y, typeToExplode, newType = 'MAGMA', depth = 10)
-{
-	if (depth <= 0) return;
-	let px = pxAtP(x, y, this);
-	if (!px || (px.type != typeToExplode)) return;
-	if (px.type != newType) px.setType(newType);
-	this.PropagateExplosion(x + 1, y, typeToExplode, newType, depth--);
-	this.PropagateExplosion(x - 1, y, typeToExplode, newType, depth--);
-	this.PropagateExplosion(x, y - 1, typeToExplode, newType, depth--);
-	this.PropagateExplosion(x, y + 1, typeToExplode, newType, depth--);
-}
 
-p.applyFrost = function (ignoreType = null, frostAmount = this.frozen) {
+p.applyFrost = function (ignoreType = null, frostAmount = this.frozen - 1) {
     const dirs = [[1, 0],[-1, 0],[0, 1],[0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
     const rdir = dirs[Math.floor(Math.random() * dirs.length)];
     const nx = this.x + rdir[0];
     const ny = this.y + rdir[1];
     if (nx < 0 || nx >= GRIDW || ny < 0 || ny >= GRIDH) return;
-    const px = pxAtP(nx, ny, this);
-    if (!px || px.frozen) return;
+	const px = pxAtP(nx, ny, this);
+    if (!px || px == this || px.frozen) return;
     if (ignoreType && px.type === ignoreType) return;
-	if (px.brnpwr || px.warm) { if (this.frozen && dice(10)) {this.unFreeze(px.warm); this.warm = 500;} }
+	if (px.brnpwr) { if (this.frozen && dice(10)) {this.unFreeze(px.warm); this.warm = 500;} }
     else  px.setFrozen(frostAmount);
 };
+
+p.applyCorrosion = function(){
+	for (let x = -2; x < 2; x++){
+		for (let y = -2; y < 2; y++){
+			let px = pxAtP(this.x + x, this.y + y, this);
+			if (!px) continue;
+			if (px.type == this.type) continue;
+			if (px.physT == 'LIQUID') continue;
+			if (px.cor >= this.cor) continue;
+			if (this.cor <= px.dns) continue;
+			if (!dice(1001 - this.cor + (px.dns))) continue;
+			px.replace('BUBBLE');
+			px.transformType = this.type;
+		}
+	}
+}

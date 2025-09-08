@@ -12,7 +12,7 @@ function deleteParticules(x = MOUSEX, y = MOUSEY, radius = 10, type = null, isDi
 				let gridX = Math.floor((px) / PIXELSIZE);
 				let gridY = Math.floor(py / PIXELSIZE);
 				const p = pxAtP(gridX, gridY);
-				if (p && (!type || p.type == type)) destroyedParticles.push(p);
+				if (p && (!type || p.type == type)) p.toRemove();
             }
         }
 	}
@@ -49,8 +49,9 @@ function deleteParticulesAtMouse()
 
 function deleteAllParticules(type = null)
 {
-	for (const p of activeParticles)
+	for (let i = 0; i < activeParticles.length; i++)
 	{
+		let p = activeParticles[i];
 		if (!type || p.type == type)
 			destroyedParticles.push(p);
 	}
@@ -81,7 +82,7 @@ function vibrateRadius(cx = MOUSEGRIDX, cy = MOUSEGRIDY, radius = BRUSHSIZE * 2,
   }
 }
 
-function exciteRadius(cx = MOUSEGRIDX, cy = MOUSEGRIDY, radius = BRUSHSIZE * 2, intensity = 5) {
+function pushRadius(cx = MOUSEGRIDX, cy = MOUSEGRIDY, radius = BRUSHSIZE * 2, intensity = 5) {
   const r2 = radius * radius;
   const moved = new Set();
   for (let dy = -radius; dy <= radius; dy++) {
@@ -114,10 +115,34 @@ function exciteRadius(cx = MOUSEGRIDX, cy = MOUSEGRIDY, radius = BRUSHSIZE * 2, 
   }
 }
 
+function explodeRadius(cx = MOUSEGRIDX, cy = MOUSEGRIDY, radius = BRUSHSIZE, intensity = 2, setToFire = 0, ignoreType = null) {
+	const r2 = radius * radius;
+	let xPushLimits = [intensity * .01, intensity * .09];
+	let yPushLimits = [intensity * .1, intensity * .14];
+	for (let dy = -radius; dy <= radius; dy++) {
+	for (let dx = -radius; dx <= radius; dx++) {
+			if (dx*dx + dy*dy > r2) continue;
+			const gx = cx + dx, gy = cy + dy;
+			if (gx < 0 || gy < 0 || gx >= GRIDW || gy >= GRIDH) continue;
+			const p = pxAtP(gx, gy);
+			if (!p) continue;
+			if (ignoreType && p.type == ignoreType) continue;
+			if (p.type == 'TNT') p.lt = 0;
+			let ddy = dy;
+			let ddx = dx;
+			if (dy >= -1) {
+				ddy = -radius;
+			}
+			p.velX = ddx * f_range(xPushLimits[0], xPushLimits[1]);
+			p.velY = ddy * f_range(yPushLimits[0], yPushLimits[1]);
+			if (setToFire && dice(2000)) p.setToFire(setToFire);
+		}
+	}
+}
 
 function resetParticles()
 {
-	for (const pe of particleEmitters) pe.onRemove();
+	for (let i = 0; i < particleEmitters.length; i++) particleEmitters[i].onRemove();
 	particleEmitters = [];
 	deleteAllParticules();
 	activeParticles = [];

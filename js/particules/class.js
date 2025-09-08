@@ -8,7 +8,7 @@ class Particle{
 		if (pxAtPos)
 		{
 			if (type == pxAtPos.type) { this.toRemove(); return; }
-			else if (type == 'SHROOM' && (pxAtPos.physT == 'SOLID' || pxAtPos.physT == 'STATIC')) {color = pxAtPos.color;}
+			else if ((type == 'SHROOM' || type == 'SHROOMX') && (pxAtPos.physT == 'SOLID' || pxAtPos.physT == 'STATIC')) {color = pxAtPos.color;}
 			if (this.properties.physT == 'GAS' && type != 'STEAM')
 			{
 				if (pxAtPos.physT == 'LIQUID' && type == 'FIRE') {
@@ -29,7 +29,6 @@ class Particle{
 		this.lt = lt;
 		this.startTime = now;
 		this.timeAlive = 0;
-		this.growSpeed = r_range(1, 3);
 		this.wet = 0;
 		this.warm = 0;
 		this.frozen = 0;
@@ -49,94 +48,98 @@ class Particle{
 		activeParticles.push(this);
 	}
 	updateVelocity() {
-		if (this.type == 'ANT' && this.hasTouchedBorder) return;
-		if (this.type == 'FISH' && this.inWater) return;
-		if (this.physT == 'STATIC') return;
-		let isGrounded = this.ground && (this.ground.physT == 'SOLID') && this.ground.velY == 0;
-		if (this.type == 'WATER' && this.ground && !pxAtP(this.x, this.y - 1) && dice(200) && this.ground.type == this.type)
-		{
+		if (this.physT === 'STATIC') return;
+		if (this.type === 'ANT' && this.hasTouchedBorder) return;
+		if (this.type === 'FISH' && this.inWater) return;
+		const g = this.ground;
+		const grounded = g && g.physT === 'SOLID' && g.velY === 0;
+		if (this.type === 'WATER' && g && !pxAtP(this.x, this.y - 1) && dice(200) && g.type === this.type) {
 			this.setType('BUBBLE');
 			this.transformType = 'WATER';
 		}
-		if (this.ground && this.ground.physT == 'LIQUID' && this.physT == 'SOLID')
-		{
-			this.velY *= .7;
-			let minV = (4 - this.ground.dns) * .5;
+		if (g && g.physT === 'LIQUID' && this.physT === 'SOLID') {
+			this.velY *= 0.7;
+			const minV = (4 - g.dns) * 0.5;
 			if (this.velY < minV) this.velY = minV;
-			if (this.velY < .3 && dice(5)) this.velY = .3;
-		}
-		else if (isGrounded && this.physT != 'GAS' && this.updT != 'ALIVE')
-		{
-			this.velY = (this.ground.type == 'WOOD' ? 1 : 0);
+			if (this.velY < 0.3 && dice(5)) this.velY = 0.3;
+		} else if (grounded && this.physT !== 'GAS' && this.updT !== 'ALIVE') {
+			this.velY = g.type === 'WOOD' ? 1 : 0;
 			this.velX *= (1 - XDRAG);
-			if (Math.abs(this.velX) < .01) this.velX = 0;
+			if (this.velX > -0.01 && this.velX < 0.01) this.velX = 0;
+		}	else if (this.physT !== 'GAS' && !g) this.velY += GRAVITY;
+		else if (this.type === 'STEAM' || this.type === 'CLOUD' || (this.id % 5) === 0) {
+			this.velX = getSin(now * 0.002, 5, 0.9, this.id * 0.3);
 		}
-		else if (this.physT != 'GAS') this.velY += GRAVITY;
-		else if ((this.type == 'STEAM' || this.type == 'CLOUD') || this.id % 5 == 0)
-			this.velX = getSin(now * .002, 5, .9, this.id * .3);
 	}
-
+	
 	updateMovement() {
-		if (this.type == 'ANT' && this.hasTouchedBorder) return;
-		if (this.type == 'PLANT' || (this.type == 'FISH' && this.inWater && this.timeInWater < 30)) {
-				this.newX = Math.round(this.x + (this.velX * SIMSPEED));
-				this.newY = Math.round(this.y + (this.velY * SIMSPEED));
-			return ;
+		if (this.type === 'ANT' && this.hasTouchedBorder && !this.inWater) return;
+		if (this.type === 'PLANT' || (this.type === 'FISH' && this.inWater && this.timeInWater < 30)) {
+			const k = SIMSPEED;
+			this.newX = Math.round(this.x + this.velX * k);
+			this.newY = Math.round(this.y + this.velY * k);
+			return;
 		}
 
-		let newX = this.x + (this.velX * SIMSPEED * (dt));
-		let newY = this.y + (this.velY * SIMSPEED * (dt));
-		let xDiff = newX - this.x, yDiff = newY - this.y;
+		const k = SIMSPEED * dt;
+		let newX = this.x + this.velX * k;
+		let newY = this.y + this.velY * k;
+
+		const xDiff = newX - this.x;
+		const yDiff = newY - this.y;
 		let steps = Math.ceil(Math.max(Math.abs(xDiff), Math.abs(yDiff)));
-		let xStep = steps > 0 ? xDiff / steps : 0;
-		let yStep = steps > 0 ? yDiff / steps : 0;
+		const xStep = steps > 0 ? xDiff / steps : 0;
+		const yStep = steps > 0 ? yDiff / steps : 0;
+
 		let curX = this.x, curY = this.y;
-		let lastValidx = curX, lastValidy = curY;
+		let lastX = curX, lastY = curY;
+		const GW = GRIDW, GH = GRIDH;
+		const side = rdir();
+
 		for (let i = 0; i < steps; i++) {
 			curX += xStep; curY += yStep;
-			let realX = Math.round(curX); let realY = Math.round(curY);
-			if (isOutOfBorder(realX, realY)) { curX = lastValidx; curY = lastValidy; break; }
-			let pxAtPos = pxAtP(realX, realY, this);
-			if (!pxAtPos) { lastValidx = curX; lastValidy = curY; continue; }
-			if (this.type == 'FISH' && pxAtPos.physT == 'LIQUID') continue;
-			if (this.douse && pxAtPos.type != 'FISH') { if (pxAtPos.brnpwr) this.setType('STEAM'); else pxAtPos.setWet(100, this.type);}
-			if (shouldBurn(this, pxAtPos)) {pxAtPos.setToFire();}
-			if (shouldBurn(pxAtPos, this)) this.setToFire();
-			else if (this.physT === 'GAS' && pxAtPos.physT === 'LIQUID' && pxAtPos.y < this.y) {
-				this.swap(pxAtPos); curX = this.x; curY = this.y; break;
+			const realX = Math.round(curX), realY = Math.round(curY);
+
+			if (realX < 0 || realX >= GW || realY < 0 || realY >= GH) { curX = lastX; curY = lastY; break; }
+
+			const hit = pxAtP(realX, realY, this);
+			if (!hit) { lastX = curX; lastY = curY; continue; }
+			if (this.type === 'FISH' && hit.physT === 'LIQUID') continue;
+			if (this.type === 'ANT' && hit.physT === 'LIQUID' && this.inWater > 100) continue;
+			if (this.douse && hit.type !== 'FISH') { if (hit.brnpwr) this.setType('STEAM'); else hit.setWet(100, this.type); }
+			if (shouldBurn(this, hit)) { hit.setToFire(); }
+			if (shouldBurn(hit, this)) this.setToFire();
+			else if (this.physT === 'GAS' && hit.physT === 'LIQUID' && hit.y < this.y) {
+			this.swap(hit); curX = this.x; curY = this.y; break;
 			}
-			else if (this.physT === 'LIQUID' && pxAtPos.physT === 'LIQUID') {
-				const a = this.type, b = pxAtPos.type;
-				if ((a === 'LAVA' && b === 'WATER') || (a === 'WATER' && b === 'LAVA')) {
-					if (a === 'LAVA') (dice(5) ? this.setType('COAL') : pxAtPos.setType('STEAM'));
-					else this.setType('STEAM');
-					curX -= xStep; curY -= yStep; break;
-				}
-				if (pxAtPos.dns < this.dns) { this.swap(pxAtPos); curX = this.x; curY = this.y; break; }
+			else if (this.physT === 'LIQUID' && hit.physT === 'LIQUID') {
+			const a = this.type, b = hit.type;
+			if ((a === 'LAVA' && b === 'WATER') || (a === 'WATER' && b === 'LAVA')) {
+				if (a === 'LAVA') (dice(5) ? this.setType('COAL') : hit.setType('STEAM'));
+				else this.setType('STEAM');
+				curX -= xStep; curY -= yStep; break;
 			}
-			else if (this.physT == 'SOLID' && pxAtPos.physT == 'LIQUID')
-			{
-				if (i != steps - 1) continue;
-				this.swap(pxAtPos);
-				curX = this.x; curY = this.y;
-				break;
+			if (hit.dns < this.dns) { this.swap(hit); curX = this.x; curY = this.y; break; }
 			}
-			else if (this.cor && this.cor > pxAtPos.dns && dice(1001 - this.cor + (pxAtPos.dns)))
-			{
-				pxAtPos.replace('BUBBLE');
-				pxAtPos.transformType = this.type;
-				curX -= xStep; curY -= yStep;
-				break;
+			else if (this.physT === 'SOLID' && hit.physT === 'LIQUID') {
+			if (i !== steps - 1) continue;
+			this.swap(hit); curX = this.x; curY = this.y; break;
 			}
-			let leftR = dice(2) ? -1 : 1;
-			let px = pxAtP(realX + leftR, realY, this);
-			if (!px && (realX + leftR >= 0 && realX + leftR < GRIDW)) curX += leftR;
-			else if (!pxAtP(realX - leftR, realY, this) && (realX - leftR >= 0 && realX - leftR < GRIDW)) curX -= leftR;
-			else {curX -= xStep;curY -= yStep; break;}
+			const lx = realX + side;
+			if (lx >= 0 && lx < GW) {
+			const s = pxAtP(lx, realY, this);
+			if (!s) { curX += side; continue; }
+			}
+			const rx = realX - side;
+			if (rx >= 0 && rx < GW && !pxAtP(rx, realY, this)) { curX -= side; continue; }
+
+			curX -= xStep; curY -= yStep; break;
 		}
-		this.newX = Math.round(curX); this.newY = Math.round(curY);
+		this.newX = Math.round(curX);
+		this.newY = Math.round(curY);
 	}
-	updatePosition(newX, newY, nullifyThis = true, checkIfNull = true)
+
+	updatePosition(newX, newY, nullifyThis = true)
 	{
 		if (!this.active) return;
 		let px = pxAtP(newX, newY, this);
@@ -160,6 +163,14 @@ class Particle{
 		{
 			if (this.transformType) return (this.replace(this.transformType));
 			if (this.type == 'MAGMA') return;
+			if (this.type == 'TNT') {
+				explodeRadius(this.x, this.y, 5, 6, 5);
+				if (dice(10)) {
+					this.setType('COAL');
+					this.setToFire(40);
+					return;	
+				}
+			}
 			else if (this.physT == 'SOLID') {
 				let y = this.y - 1;
 				let p = pxAtP(this.x, y);
@@ -175,8 +186,8 @@ class Particle{
 	}
 	update() {
 		if (!this.active) return;
-		this.prvP.push([this.x, this.y, this.velX, this.velY]);
-		if (this.prvP.length > TRAILAMOUNT) this.prvP.shift();
+		// this.prvP.push([this.x, this.y, this.velX, this.velY]);
+		// if (this.prvP.length > TRAILAMOUNT) this.prvP.shift();
 		this.updateState();
 		if (this.frozen) return;
 		this.updateLifeTime();
@@ -185,6 +196,8 @@ class Particle{
 
 	toRemove(){
 		this.x = -100; this.y = -100; this.active = false;
+		if (this.parent) {if (this.isShroom) this.parent.toRemove(); else this.parent.child = null;}
+		if (this.child) this.child.parent = null;
 		destroyedParticles.push(this);
 	}
 	onRemove(){
@@ -195,11 +208,6 @@ class Particle{
 	}
 };
 const p = Particle.prototype;
-
-
-
-
-
 
 class ParticleEmitter{
 	constructor(x, y, type)
@@ -221,7 +229,7 @@ class ParticleEmitter{
 	{
 		let index = particleEmitters.indexOf(this);
 		if (index != -1) particleEmitters.splice(index, 1);
-		for (const key in this) this[key] = null;
+		// for (const key in this) this[key] = null;
 	}
 }
 

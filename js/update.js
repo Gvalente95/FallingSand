@@ -3,8 +3,9 @@ function updateInput()
 	PXATMOUSE = pxAtP(MOUSEGRIDX, MOUSEGRIDY);
 	if (MOUSEPRESSED && !isTwoFingerTouch) {
 		if ((BRUSHACTION == 'CUT' && SHOULDCUT) || KEYS['Shift']) deleteParticulesAtMouse();
-		else if (BRUSHACTION == 'EXCITE') exciteRadius();
+		else if (BRUSHACTION == 'PUSH') pushRadius();
 		else if (BRUSHACTION == 'VIBRATE') vibrateRadius();
+		else if (BRUSHACTION == 'EXPLODE') explodeRadius();
 		else launchParticules(particleKeys[TYPEINDEX]);
 	}
 	if (KEYS['Backspace']) deleteParticulesAtMouse();
@@ -13,7 +14,7 @@ function updateInput()
 
 function flushDestroyedParticles()
 {
-	for (let particle of destroyedParticles) particle.onRemove();
+	for (let i = 0; i < destroyedParticles.length; i++) destroyedParticles[i].onRemove();
 	destroyedParticles = [];
 }
 
@@ -51,8 +52,8 @@ function update(loop = !inPause) {
 	time++;
 	if (ISREWINDING) { goToPrevFrame(); }
 	else {
-		for (let particleEmitter of particleEmitters) particleEmitter.update();
-		for (let particle of activeParticles) particle.update();
+		for (let i = 0; i < particleEmitters.length; i++) particleEmitters[i].update();
+		for (let i = 0; i < activeParticles.length; i++) activeParticles[i].update();
 	}
 	flushDestroyedParticles();
 	if (ISRAINING)

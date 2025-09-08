@@ -32,7 +32,7 @@ p.hasTouchedSurfaceCheck = function()
 p.setVel = function (newX = 0, newY = 0) { this.velX = newX; this.velY = newY; }
 
 p.setColor = function(color = this.properties.color) {
-    this.color = color;
+	this.color = color;
     if (color.startsWith("rgb")) {
         const rgb = color.match(/\d+/g);
         this.rgb = `${rgb[0]},${rgb[1]},${rgb[2]}`;
@@ -48,10 +48,11 @@ p.replace = function(newType){
 p.setType = function(newType)
 {
 	this.type = newType;
+	this.isShroom = this.type == 'SHROOM' || this.type == 'SHROOMX';
 	this.properties = PARTICLE_PROPERTIES[newType];
+	this.lt = this.properties.lt * f_range(.5, 1.5);
 	this.douse = this.properties.douse;
 	this.physT = this.properties.physT;
-	this.lt = this.properties.lt * f_range(.5, 1.5);
 	this.brn = this.properties.brn;
 	this.brnpwr = this.properties.brnpwr;
 	this.cor = this.properties.cor;
@@ -59,32 +60,38 @@ p.setType = function(newType)
 	this.spreadAmount = this.properties.spread;
 	this.updT = this.properties.updT;
 	this.inWater = false;
+	this.ground = null;
+	this.xDir = rdir(); this.yDir = rdir();
+	this.heigth = 0;
+	this.parent = null;
+	this.child = null;
+	this.transformType = null;
+	if (this.updT == 'STATIC') { this.velY = 0; this.velX = 0; }
 	if (this.type == 'FISH') {
 		let clrs = ["rgba(135, 60, 163, 1)", "rgba(11, 93, 61, 1)", this.properties.color];
-		let baseColor = clrs[r_range(0, clrs.length)];
-		this.setColor(baseColor);
-	} else this.setColor(this.type != 'WOOD' && this.physT != 'LIQUID' || this.type == 'LAVA' ?
-		randomizeColor(this.properties.color) : this.properties.color);
-	this.xDir = rdir();
-	this.yDir = rdir();
-	this.heigth = 0;
-	this.child = null;
-	if (this.type == 'SHROOM') {
+		this.setColor(clrs[r_range(0, clrs.length)]);
+	}
+	else if (this.isShroom) {
+		this.headColor = randomizeColor(this.properties.color, 50);
+		this.setColor(randomizeColor(newType == 'SHROOMX' ? 'rgba(71, 45, 119, 1)' : 'rgba(45, 119, 83, 1)'));
+		this.isGrowing = false;
 		this.isGrower = this.id % 4 == 0;
-		this.maxGrowth = r_range(2, 20);
+		this.maxHeight = r_range(2, 20);
 		this.growSpeed = r_range(2, 6);
 	}
-	if (this.updT == 'STATIC') { this.velY = 0; this.velX = 0; }
+	else this.setColor(this.type != 'WOOD' && this.physT != 'LIQUID' || this.type == 'LAVA' ?
+		randomizeColor(this.properties.color) : this.properties.color);
+	this.baseColor = this.color;
 	if (this.type == 'PLANT')
 	{
+		this.growSpeed = r_range(1, 3);
 		this.velX = 0; this.velY = 0;
 		this.dirAng = Math.atan2(f_range(-1,1), f_range(-1,1));
 		this.oscPhase = Math.random() * Math.PI * 2;
 		this.oscSpeed = f_range(0.0025, 0.006);
 		this.oscAmp = f_range(2, 6);
 	}
-	this.transformType = null;
-	if (this.type == 'ANTEGG') this.transformType = 'ANT';
+	else if (this.type == 'ANTEGG') this.transformType = 'ANT';
 	else if (this.type == 'COAL') { this.velX = 0; }
 }
 
@@ -115,6 +122,4 @@ function shouldBurnParticle(typeA, victim)
 	return (dice(sumChance));
 }
 
-function getSin(t, freq, amp, phase) {
-	return (Math.sin(t * freq + phase) * amp);
-}
+p.getNeigh = function (dir) {return (pxAtP(this.x + dir[0], this.y + dir[1], this));}

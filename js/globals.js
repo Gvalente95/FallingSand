@@ -17,8 +17,8 @@ BRUSHCOLOR = null;
 MAXPARTICLES = 200000;
 MAXBRUSHSIZE = 40;
 XDRAG = .1;
-GRAVITY = .1;
-SIMSPEED = 1;
+GRAVITY = .5;
+SIMSPEED = .5;
 TYPEINDEX = 0;
 TRAILAMOUNT = 10;
 RAINPOW = 50;
@@ -48,6 +48,7 @@ let gridMode = true;
 let uiPageIndex = 0;
 let uiLayerIndex = 0;
 let gridCacheKey = "";
+
 canvas = document.createElement('canvas');
 canvas.style.backgroundColor = "black";
 ctx = canvas.getContext('2d');
@@ -70,7 +71,7 @@ let PARTICLE_PROPERTIES = {
 ['GLASS']:	{ color: 'rgba(208, 226, 239, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 90,	spread: 10,	},
 ['ROCK']:	{ color: 'rgba(76, 78, 1, 1)',		lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 95,	spread: 10,	},
 ['DIAMOND']:{ color: 'rgba(102, 203, 221, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 1000,	spread: 10,	},
-['TNT']:	{ color: 'rgba(37, 52, 57, 1)',	lt: Infinity,	brn: 999,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 50,	spread: 10,	},
+['TNT']:	{ color: 'rgba(74, 104, 115, 1)',	lt: 20000,		brn: 999,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 50,	spread: 10,	},
 ['COAL']:	{ color: 'rgba(68, 68, 68, 1)',	lt: 20000,		brn: 1,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 45,	spread: 2,	},
 ['RAINBOW']:{ color: 'rgba(255, 0, 234, 1)',	lt: Infinity,	brn: 100,	brnpwr: 0, 		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 10,	spread: 10,	},
 ['MAGMA']:	{ color: 'rgba(198, 64, 2, 1)',	lt: 12000,		brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 100,	spread: 10,	},
@@ -86,7 +87,8 @@ let PARTICLE_PROPERTIES = {
 ['CLOUD']:	{ color: 'rgba(255, 255, 255, 1)',	lt: 20000,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 2,	},
 ['STEAM']:	{ color: 'rgba(237, 211, 211, 1)',	lt: 6000,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 10,	},
 ['PLANT']:	{ color: 'rgba(45, 119, 83, 1)', 	lt: Infinity, 	brn: 960, 	brnpwr: 0, 		douse: 0, cor: 0, physT: 'STATIC', 	updT: 'ALIVE', 	 dns: 4, 	spread: 10, },
-['SHROOM']:	{ color: 'rgba(45, 119, 83, 1)', 	lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 4, 	spread: 10, },
+['SHROOM']: { color: 'rgba(218, 41, 31, 1)', 	lt: Infinity, brn: 999, brnpwr: 0, douse: 0, cor: 0, physT: 'SOLID', updT: 'ALIVE', dns: 4, spread: 10, },
+['SHROOMX']:{ color: 'rgba(209, 31, 218, 1)', lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, cor: 2000, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 4, 	spread: 10, },
 ['BLOB']: 	{ color: 'rgba(192, 144, 190, 1)', lt: Infinity, 	brn: 999, 	brnpwr: 0,		douse: 0, cor: 0, physT: 'STATIC', updT: 'DYNAMIC',  dns: 25, 	spread: 10, },
 ['ANT']:	{ color: 'rgba(185, 115, 115, 1)',	lt: Infinity,	brn: 970,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'ALIVE', 	 dns: 25,	spread: 10,	},
 ['ANTEGG']:	{ color: 'rgba(226, 224, 206, 1)',	lt: 5000,		brn: 970,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'ALIVE', 	 dns: 25,	spread: 10,	},
@@ -126,3 +128,5 @@ for (const k in PARTICLE_PROPERTIES) {
 	p.tags = [...s];
 	p.tagMask = tagMaskOf(p.tags);
 }
+
+const DIR = Object.freeze({ LEFT: [-1, 0], UP: [0, -1], DOWN: [0, 1], RIGHT: [1, 0] })
