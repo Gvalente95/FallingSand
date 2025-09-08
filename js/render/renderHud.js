@@ -7,7 +7,7 @@ function updateHUD(){
   const topNow = `x${MOUSEX},y${MOUSEY}   Pxls: ${activeParticles.length} Tm:${time} Fps:${fps}`;
   if (topNow !== lastTop) { infoText.textContent = topNow; lastTop = topNow; }
 
-  if (PXATMOUSE) {
+  if (PXATMOUSE && !isMobile) {
     const tm = (PXATMOUSE.timeAlive/1000);
     const tmStr = Math.round(tm*10)/10;
     const parts = [

@@ -115,7 +115,7 @@ function pushRadius(cx = MOUSEGRIDX, cy = MOUSEGRIDY, radius = BRUSHSIZE * 2, in
   }
 }
 
-function explodeRadius(cx = MOUSEGRIDX, cy = MOUSEGRIDY, radius = BRUSHSIZE, intensity = 2, setToFire = 0, ignoreType = null) {
+function explodeRadius(cx = MOUSEGRIDX, cy = MOUSEGRIDY, radius = BRUSHSIZE, intensity = 5, setToFire = 0, ignoreType = null) {
 	const r2 = radius * radius;
 	let xPushLimits = [intensity * .01, intensity * .09];
 	let yPushLimits = [intensity * .1, intensity * .14];
@@ -127,11 +127,12 @@ function explodeRadius(cx = MOUSEGRIDX, cy = MOUSEGRIDY, radius = BRUSHSIZE, int
 			const p = pxAtP(gx, gy);
 			if (!p) continue;
 			if (ignoreType && p.type == ignoreType) continue;
-			if (p.type == 'TNT') p.lt = 0;
+			if (p.expl) p.lt = 0;
 			let ddy = dy;
 			let ddx = dx;
-			if (dy >= -1) {
-				ddy = -radius;
+			if (dy >= -radius / 2) {
+				ddy = -radius / 2;
+				ddx = r_range(-radius, radius);
 			}
 			p.velX = ddx * f_range(xPushLimits[0], xPushLimits[1]);
 			p.velY = ddy * f_range(yPushLimits[0], yPushLimits[1]);

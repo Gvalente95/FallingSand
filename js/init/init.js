@@ -53,16 +53,16 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	const p = "ressources/img/WHITE/";
 
 	let clr = "rgba(33, 23, 37, 1)"
-	let butLen = 13;
-	let butW = 35;
-	let hdr = addHeader(yPos, color, height, null, butLen * butW);
+	let hdr = addHeader(yPos, color, height, null, 1);
 	hdr.style.left = "0px";
+
 	rewButton = initButton("Prev", 5 + xMargin * nn++, 0, clr, goToPrevFrame, null, hdr, null, '1', p + "prev.png", null, false, clr);
 	pauseButton = initButton("Pause", 5 + xMargin * nn++, 0, clr, switchPause, -1, hdr, false, '2', p + "pause.png", null, false, clr);
 	initButton("Next", 5 + xMargin * nn++, 0, clr, goToNextFrame, null, hdr, null, '3', p + "next.png", null, false, clr);
 	brushActionButtons.push(initButton("Cut", 5 + xMargin * nn++, 0, clr, switchBrushAction, 'CUT', hdr, false, "c", p + "eraser.png", wp + "eraser.png", null, false, clr));
-	brushActionButtons.push(initButton("Pick", 5 + xMargin * nn++, 0, clr, switchBrushAction, 'PICK', hdr, false, "i", p + "eyedropper.png", wp + "eyedropper.png", null, false, clr));
+	initButton("Fill", 5 + xMargin * nn++, 0, clr, fillScreen, null, hdr, null, 'f', p + "fill.png", null, false, clr);
 	initButton("Clear", 5 + xMargin * nn++, 0, clr, resetParticles, PIXELSIZE, hdr, null, 'r', p + "broom.png", null, false, clr);
+	brushActionButtons.push(initButton("Pick", 5 + xMargin * nn++, 0, clr, switchBrushAction, 'PICK', hdr, false, "i", p + "eyedropper.png", wp + "eyedropper.png", null, false, clr));
 	brushActionButtons.push(initButton("Vibrate", 5 + xMargin * nn++, 0, clr, switchBrushAction, 'VIBRATE', hdr, false, "v", p + "vibrate.png", wp + "vibrate.png", null, false, clr));
 	brushActionButtons.push(initButton("Push", 5 + xMargin * nn++, 0, clr, switchBrushAction, 'PUSH', hdr, false, "p", p + "push.png", wp + "push.png", null, false, clr));
 	brushActionButtons.push(initButton("Explode", 5 + xMargin * nn++, 0, clr, switchBrushAction, 'EXPLODE', hdr, false, "e", p + "explosion.png", wp + "explosion.png", null, false, clr));
@@ -70,7 +70,9 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	initButton("Grid", 5 + xMargin * nn++, 0, clr, switchGridMode, null, hdr, true, "g", p + "grid.png", null, false, clr);
 	initButton("Brush", 5 + xMargin * nn++, 0, clr, setNewBrushType, null, hdr, true, 'b', p + "disk.png", null, false, clr);
 	initButton("Emitter", 5 + xMargin * nn++, 0, clr, spawnEmitterAtMouse, null, hdr, null, 'l', p + "emit.png", null, false, clr);
-	initButton("Fill", 5 + xMargin * nn++, 0, clr, fillScreen, null, hdr, false, 'f', p + "fill.png", null, false, clr);
+	initButton("Hud", 5 + xMargin * nn++, 0, clr, switchHud, null, hdr, true, 'u', p + "info.png", null, false, clr);
+
+	fitHeaderDragWidth(hdr);
 	return (yPos + height);
 }
 
@@ -105,7 +107,7 @@ function initParticlePagesHeader(y) {
 				const key = particleKeys[v];
 				const prop = PARTICLE_PROPERTIES[key];
 				if (!hasTag(key, name)) continue;
-				const btn = initButton(key, 5 + xp++ * buttonSpread, 0, prop.color, setNewType, v, elementsHeader);
+				const btn = initButton(key, 5 + xp++ * buttonSpread, 0, prop.color, setNewType, v, elementsHeader, null, null, null, null, 'red');
 				famButton.buttons.push(btn);
 			}
 		}
@@ -118,10 +120,10 @@ function initParticlePagesHeader(y) {
 			const maxLeft = 0;
 			elementsHeader.style.left = Math.max(minLeft, Math.min(maxLeft, curLeft)) + "px";
 		}
+		fitHeaderDragWidth(elementsHeader);
 		uiPagesButtons.push(famButton);
 	}
-	const curLeftTabs = parseFloat(getComputedStyle(pageHeader).left) || 0;
-	pageHeader.style.left = Math.max(-tabsDragW, Math.min(0, curLeftTabs)) + "px";
+	fitHeaderDragWidth(pageHeader);
 	return y + 80;
 }
 

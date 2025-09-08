@@ -29,7 +29,7 @@ p.stopFire = function ()
 }
 p.setToFire = function()
 {
-	if (this.type == 'TNT') this.lt = 0;
+	if (this.expl) this.lt = 0;
 	if (this.frozen) { this.unFreeze(50); return; }
 	this.warm = 200;
 	if (this.wet > 50 && this.wetType != 'OIL') { this.wet -= 50; return; }

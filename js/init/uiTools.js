@@ -323,7 +323,7 @@ function initImageDiv(imgPath, x, y, color, parent = document.body) {
 	return (div);
 }
 
-function initButton(label, x, y, color, onChange, value = null, parent = document.body, isSwitch = null, keyToggle = null, imgPath = null, mouseFollowImg = null, clrText = false, imgClr = null) {
+function initButton(label, x, y, color, onChange, value = null, parent = document.body, isSwitch = null, keyToggle = null, imgPath = null, mouseFollowImg = null, clrText = false) {
 	function formatKeyLabel(k){
 	if(!k) return "";
 	const map={
@@ -337,7 +337,6 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	if(/^Digit[0-9]$/.test(k)) return k.slice(5);
 	return k.length===1 ? k.toUpperCase() : k;
 	}
-
 	let div = document.createElement("div");
 	div.className = "button";
 	div.style.left = x + "px";
@@ -347,19 +346,15 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	div.style.color = 'rgba(213, 213, 213, 1)';
 	div.style.position = div.style.position || "absolute";
 	div.style.boxSizing = "border-box";
-	if (1) {
+	if (!imgPath) {
 		div.style.display = "flex";
 		div.style.alignItems = "center";
 		div.style.justifyContent = "center";
-		if (clrText) {
-			div.style.color = color;
-			div.style.backgroundColor = "black";	
+		if (1) {
+			div.style.backgroundColor = setAlpha(color, .8);
 		}
-		const fontSize = clamp(60 / label.length, 6, 20);
-		div.style.fontSize = fontSize + "px";
-		const minWidth = Math.max(50, fontSize * (label.length * 0.7));
-		div.style.minWidth = minWidth + "px";
-		div.textContent = label;
+		div.textContent = label.substring(0, 5);
+		div.style.fontSize = 13 + "px";
 	}
 	div.label = label;
 	div.value = value;
@@ -368,10 +363,19 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	div.addEventListener("mouseup", activate);
 	div.setAttribute("tabindex", "0");
 
+	if (keyToggle) {
+	window.addEventListener("keydown", (e) => {if (!isInInputField && (e.code === keyToggle || e.key == keyToggle)) activate();});
+	if (1) {
+		const badge=document.createElement("span");
+		badge.className = "buttonBadge";
+		badge.textContent=formatKeyLabel(keyToggle);
+		div.appendChild(badge);}
+	}
+
 	if (imgPath) {
 		 {
 			const img = new Image();
-			img.onload = ()=>{ div.style.background = `${color} url("${imgPath}") calc(50% - 10px) center/contain no-repeat`; };
+			img.onload = () => { div.textContent = ''; 	div.style.background = `${color} url("${imgPath}") center/contain no-repeat`; };
 			img.onerror = ()=>{ div.style.setProperty('--btn-bg', color); div.style.backgroundColor = color; };
 			img.src = imgPath;
 			img.backgroundColor = "red";
@@ -396,21 +400,6 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 			window.addEventListener("blur", stop);
 		}
 	}
-
-	if (keyToggle) {
-	window.addEventListener("keydown", (e) => {
-		if (!isInInputField && (e.code === keyToggle || e.key == keyToggle)) activate();
-	});
-		if (!isMobile) {
-			const badge=document.createElement("span");
-			badge.className = "buttonBadge";
-			badge.textContent=formatKeyLabel(keyToggle);
-			div.appendChild(badge); 
-		}
-	}
-
-	if (parent) parent.appendChild(div);
-
 	function activate() {
 		if (isDraggingheader) return;
 		if (isSwitch != null) {
@@ -424,10 +413,12 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 		div.classList.add("clicked");
 		setTimeout(() => { div.classList.remove("clicked"); }, 100);
 	}
+	if (parent) parent.appendChild(div);
 	return div;
 }
 
 let isDraggingheader = false;
+
 function addHeader(y, color, height, borderColor = null, dragWidth = 0) {
 	let header = document.createElement("div");
 	header.style.top = y + "px";
@@ -442,44 +433,111 @@ function addHeader(y, color, height, borderColor = null, dragWidth = 0) {
 	if (borderColor) header.style.border = "1px solid " + borderColor;
 	document.body.appendChild(header);
 
-	if (dragWidth <= 0 || !isMobile) return (header);
+	if (dragWidth <= 0 || !isMobile) return header;
+
 	header.style.cursor = "grab";
 	header.style.width = dragWidth + "px";
+
 	let dragging = false;
 	let startX = 0;
 	let startLeft = 0;
+
+	const getLeft = () => parseFloat(getComputedStyle(header).left) || 0;
+	const bounds = () => {
+		const w = parseFloat(header.style.width) || 0;
+		return { min: Math.min(0, CANVW - w), max: 0 };
+	};
+
+	function animateTo(target) {
+		const b = bounds();
+		header.style.transition = "left 220ms cubic-bezier(.22,.61,.36,1)";
+		header.style.left = clamp(target, b.min, b.max) + "px";
+		const done = () => { header.style.transition = ""; header.removeEventListener("transitionend", done); };
+		header.addEventListener("transitionend", done);
+	}
+
 	function onMove(e){
 		if (!dragging) return;
-		const dx = e.clientX - startX;
+		const x = e.clientX ?? (e.touches && e.touches[0] && e.touches[0].clientX) ?? 0;
+		const dx = x - startX;
 		isDraggingheader = Math.abs(dx) > 1;
-		const maxLeft = 0;
-		const minLeft = -parseFloat(header.style.width);
-		header.style.left = clamp(startLeft + dx, minLeft, maxLeft) + "px";}
+
+		if (Math.abs(dx) > CANVW / 10) {
+			const dfx = CANVW * Math.sign(dx);
+			dragging = false;
+			setTimeout(() => { isDraggingheader = false; }, 100);
+			header.style.cursor = "grab";
+			animateTo(startLeft + dfx);
+			document.removeEventListener("mousemove", onMove);
+			document.removeEventListener("mouseup", onUp);
+			document.removeEventListener("touchmove", onMove);
+			document.removeEventListener("touchend", onUp);
+			return;
+		}
+
+		let next = startLeft + dx;
+		const b = bounds();
+		if (next > b.max) next = b.max + (next - b.max) * 0.2;
+		if (next < b.min) next = b.min + (next - b.min) * 0.2;
+		header.style.left = next + "px";
+	}
+
 	function onUp(){
+		if (!dragging) return;
 		dragging = false;
 		isDraggingheader = false;
 		header.style.cursor = "grab";
 		document.removeEventListener("mousemove", onMove);
-		document.removeEventListener("mouseup", onUp);}
+		document.removeEventListener("mouseup", onUp);
+		document.removeEventListener("touchmove", onMove);
+		document.removeEventListener("touchend", onUp);
+	}
+
 	header.addEventListener("mousedown", (e) => {
-	dragging = true;
-	header.style.cursor = "grabbing";
-	startX = e.clientX;
-	startLeft = parseFloat(getComputedStyle(header).left) || 0;
-	document.addEventListener("mousemove", onMove);
-	document.addEventListener("mouseup", onUp);
+		dragging = true;
+		header.style.cursor = "grabbing";
+		startX = e.clientX;
+		startLeft = getLeft();
+		document.addEventListener("mousemove", onMove);
+		document.addEventListener("mouseup", onUp);
 	});
+
+	header.addEventListener("touchstart", (e) => {
+		dragging = true;
+		header.style.cursor = "grabbing";
+		startX = e.touches[0].clientX;
+		startLeft = getLeft();
+		document.addEventListener("touchmove", onMove, { passive: true });
+		document.addEventListener("touchend", onUp);
+	}, { passive: true });
+
 	return header;
 }
 
+function fitHeaderDragWidth(header){
+	let maxRight = 0;
+	for (const el of header.children) {
+		const r = el.offsetLeft + el.offsetWidth;
+		if (r > maxRight) maxRight = r;
+	}
+	const contentW = Math.max(CANVW, Math.ceil(maxRight + 10));
+	header.style.width = contentW + "px";
+	const b = { min: Math.min(0, CANVW - contentW), max: 0 };
+	const curLeft = parseFloat(getComputedStyle(header).left) || 0;
+	header.style.left = clamp(curLeft, b.min, b.max) + "px";
+}
+
+
+const selButtonColor = '2px solid rgba(255, 255, 255, 1)';
 function updateUi()
 {
 	let openColor = uiLayerIndex == 0 ? selButtonColor : "none";
+	let closecolor = 'none';
 	for (let i = 0; i < uiPagesButtons.length; i++)
 	{
 		let buttons = uiPagesButtons[i];
 		let isOpen = uiPageIndex == i;
-		buttons.style.border = isOpen ? openColor : "1px solid rgba(0, 0, 0, 1)"
+		buttons.style.border = isOpen ? openColor : closecolor;
 		buttons.style.opacity = isOpen ? "1" : '.6';
 		for (const b of buttons.buttons) { if (b.isSwitch) continue; b.style.display = isOpen ? 'block' : 'none';}
 		for (const s of buttons.sliders) s.style.display = isOpen ? 'block' : 'none';
@@ -491,7 +549,7 @@ function updateUi()
 		let b = uiButtons[i];
 		let isOpen = typeButton && b.label == typeButton.label;
 		if (uiPagesButtons[uiPageIndex].label === 'BRUSH') isOpen = b.value == BRUSHTYPE;
-		b.style.border = isOpen ? openColor : "1px solid rgba(0, 0, 0, 1)"
+		b.style.border = isOpen ? openColor : closecolor;
 		b.style.opacity = isOpen ? "1" : '.6';
 	}
 }
@@ -501,11 +559,9 @@ function setNewType(newIndex)
 {
 	switchBrushAction(null);
 	TYPEINDEX = newIndex;
-	for (const b of uiPagesButtons[uiPageIndex].buttons) {
-		if (b.label == particleKeys[newIndex]) {typeButton = b;
-			BRUSHCOLOR = b.style.backgroundColor;
-		}
-	}
+	for (const b of uiPagesButtons[uiPageIndex].buttons)
+		if (b.label == particleKeys[newIndex]) typeButton = b;
+	BRUSHCOLOR = PARTICLE_PROPERTIES[particleKeys[TYPEINDEX]].color;
 }
 function getCurButtonTypeIndex()
 {
@@ -556,8 +612,6 @@ function switchBrushAction(newAction) {
 	}
 }
 
-
-
 function setNewPixelSize(newPixelSize){
 	if (newPixelSize <= 0 || newPixelSize === PIXELSIZE) return;
 	BRUSHSIZE = clamp(Math.round(BRUSHSIZE * (PIXELSIZE / newPixelSize)), 1, MAXBRUSHSIZE);
@@ -606,6 +660,13 @@ function setNewPixelSize(newPixelSize){
 	grid = newGrid;
 	buildGridLayer();
 	buildWaterShades();
+}
+
+
+function switchHud(newActive) {
+	SHOWHUD = newActive;
+	infoMouse.style.display = SHOWHUD ? 'block' : 'none';
+	infoText.style.display = SHOWHUD ? 'block' : 'none';
 }
 
 

@@ -28,7 +28,7 @@ function showShroomHead(prt, x, y) {
 
 let prvFillColor = null;
 function showParticle(prt, x, y, alpha, color = prt.color) {
-	if (prt.type == 'TNT') {
+	if (prt.expl) {
 		let timeLeft = prt.lt - prt.timeAlive;
 		color = addColor(PARTICLE_PROPERTIES[prt.type].color, 'rgba(255, 0, 0, 1)', 1 - (timeLeft / prt.lt));
 	}
@@ -66,7 +66,7 @@ function render() {
 			drawRect(px - rad, py - rad, rad * 2, rad * 2, color, "#575757b0", 2);
 	}
 	if (gridMode) { ctx.drawImage(gridLayer, 0, 0); }
-	updateHUD();
+	if (SHOWHUD) updateHUD();
 }
 
 function drawRect(x, y, width, height, color, strokeColor, lineWidth) {

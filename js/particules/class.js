@@ -162,8 +162,8 @@ class Particle{
 		{
 			if (this.transformType) return (this.replace(this.transformType));
 			if (this.type == 'MAGMA') return;
-			if (this.type == 'TNT') {
-				explodeRadius(this.x, this.y, 5, 6, 5);
+			if (this.expl) {
+				explodeRadius(this.x, this.y, 5, 20 * PIXELSIZE, 5);
 				if (dice(10)) {
 					this.setType('COAL');
 					this.setToFire(40);

@@ -21,6 +21,7 @@ p.updatePlant = function(curX, curY){
 		else return (this.setColor());
 	}
 	if (dice(30)) this.dirAng += f_range(-0.2, 0.2);
+	console.warn()
 	const t = now * this.oscSpeed + this.oscPhase;
 	const ang = this.dirAng + this.oscAmp * Math.sin(t);
 	const speed = inWater ? .2 : 1;

@@ -53,6 +53,7 @@ p.setType = function(newType)
 	this.lt = this.properties.lt * f_range(.5, 1.5);
 	this.douse = this.properties.douse;
 	this.physT = this.properties.physT;
+	this.expl = this.properties.expl;
 	this.brn = this.properties.brn;
 	this.brnpwr = this.properties.brnpwr;
 	this.cor = this.properties.cor;
