@@ -155,8 +155,11 @@ p.applyCorrosion = function(){
 			if (px.cor >= this.cor) continue;
 			if (this.cor <= px.dns) continue;
 			if (!dice(1001 - this.cor + (px.dns))) continue;
-			px.replace('BUBBLE');
-			px.transformType = this.type;
+			if (this.type == 'SHROOMX') px.replace('ACID');
+			else {
+				px.replace('BUBBLE');
+				px.transformType = this.type;	
+			}
 		}
 	}
 }

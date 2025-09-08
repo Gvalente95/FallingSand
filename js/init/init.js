@@ -49,28 +49,28 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	let xMargin = 65;
 	let nn = 0;
 
-	const wp = "ressources/img/white/";
-	const p = "ressources/img/white/";
+	const wp = "ressources/img/WHITE/";
+	const p = "ressources/img/WHITE/";
 
-	let baseColor = "rgba(33, 23, 37, 1)"
+	let clr = "rgba(33, 23, 37, 1)"
 	let butLen = 13;
 	let butW = 35;
-	let actionHeader = addHeader(yPos, color, height, null, butLen * butW);
-	actionHeader.style.left = "0px";
-	rewButton = initButton("Prev", 5 + xMargin * nn++, 0, baseColor, goToPrevFrame, null, actionHeader, null, '1', p + "prev.png", null, false, baseColor);
-	pauseButton = initButton("Pause", 5 + xMargin * nn++, 0, baseColor, switchPause, -1, actionHeader, false, '2', p + "pause.png", null, false, baseColor);
-	initButton("Next", 5 + xMargin * nn++, 0, baseColor, goToNextFrame, null, actionHeader, null, '3', p + "next.png", null, false, baseColor);
-	initButton("Rain", 5 + xMargin * nn++, 0, baseColor, switchRain, null, actionHeader, false, 'Enter', p + "drop.png", null, false, baseColor);
-	brushActionButtons.push(initButton("Cut", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'CUT', actionHeader, false, "c", p + "eraser.png", wp + "eraser.png", null, false, baseColor));
-	initButton("Clear", 5 + xMargin * nn++, 0, baseColor, resetParticles, PIXELSIZE, actionHeader, null, 'r', p + "broom.png", null, false, baseColor);
-	brushActionButtons.push(initButton("Pick", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'PICK', actionHeader, false, "i", p + "eyedropper.png", wp + "eyedropper.png", null, false, baseColor));
-	brushActionButtons.push(initButton("Vibrate", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'VIBRATE', actionHeader, false, "v", p + "vibrate.png", wp + "vibrate.png", null, false, baseColor));
-	brushActionButtons.push(initButton("Push", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'PUSH', actionHeader, false, "p", p + "push.png", wp + "push.png", null, false, baseColor));
-	brushActionButtons.push(initButton("Explode", 5 + xMargin * nn++, 0, baseColor, switchBrushAction, 'EXPLODE', actionHeader, false, "e", p + "explosion.png", wp + "explosion.png", null, false, baseColor));
-	initButton("Grid", 5 + xMargin * nn++, 0, baseColor, switchGridMode, null, actionHeader, true, "g", p + "grid.png", null, false, baseColor);
-	initButton("Brush", 5 + xMargin * nn++, 0, baseColor, setNewBrushType, null, actionHeader, true, 'b', p + "disk.png", null, false, baseColor);
-	initButton("Emitter", 5 + xMargin * nn++, 0, baseColor, spawnEmitterAtMouse, null, actionHeader, null, 'l', p + "emit.png", null, false, baseColor);
-	initButton("Fill", 5 + xMargin * nn++, 0, baseColor, fillScreen, null, actionHeader, false, 'f', p + "fill.png", null, false, baseColor);
+	let hdr = addHeader(yPos, color, height, null, butLen * butW);
+	hdr.style.left = "0px";
+	rewButton = initButton("Prev", 5 + xMargin * nn++, 0, clr, goToPrevFrame, null, hdr, null, '1', p + "prev.png", null, false, clr);
+	pauseButton = initButton("Pause", 5 + xMargin * nn++, 0, clr, switchPause, -1, hdr, false, '2', p + "pause.png", null, false, clr);
+	initButton("Next", 5 + xMargin * nn++, 0, clr, goToNextFrame, null, hdr, null, '3', p + "next.png", null, false, clr);
+	brushActionButtons.push(initButton("Cut", 5 + xMargin * nn++, 0, clr, switchBrushAction, 'CUT', hdr, false, "c", p + "eraser.png", wp + "eraser.png", null, false, clr));
+	brushActionButtons.push(initButton("Pick", 5 + xMargin * nn++, 0, clr, switchBrushAction, 'PICK', hdr, false, "i", p + "eyedropper.png", wp + "eyedropper.png", null, false, clr));
+	initButton("Clear", 5 + xMargin * nn++, 0, clr, resetParticles, PIXELSIZE, hdr, null, 'r', p + "broom.png", null, false, clr);
+	brushActionButtons.push(initButton("Vibrate", 5 + xMargin * nn++, 0, clr, switchBrushAction, 'VIBRATE', hdr, false, "v", p + "vibrate.png", wp + "vibrate.png", null, false, clr));
+	brushActionButtons.push(initButton("Push", 5 + xMargin * nn++, 0, clr, switchBrushAction, 'PUSH', hdr, false, "p", p + "push.png", wp + "push.png", null, false, clr));
+	brushActionButtons.push(initButton("Explode", 5 + xMargin * nn++, 0, clr, switchBrushAction, 'EXPLODE', hdr, false, "e", p + "explosion.png", wp + "explosion.png", null, false, clr));
+	initButton("Rain", 5 + xMargin * nn++, 0, clr, switchRain, null, hdr, false, 'Enter', p + "drop.png", null, false, clr);
+	initButton("Grid", 5 + xMargin * nn++, 0, clr, switchGridMode, null, hdr, true, "g", p + "grid.png", null, false, clr);
+	initButton("Brush", 5 + xMargin * nn++, 0, clr, setNewBrushType, null, hdr, true, 'b', p + "disk.png", null, false, clr);
+	initButton("Emitter", 5 + xMargin * nn++, 0, clr, spawnEmitterAtMouse, null, hdr, null, 'l', p + "emit.png", null, false, clr);
+	initButton("Fill", 5 + xMargin * nn++, 0, clr, fillScreen, null, hdr, false, 'f', p + "fill.png", null, false, clr);
 	return (yPos + height);
 }
 
@@ -88,7 +88,7 @@ function initParticlePagesHeader(y) {
 		const name = particleTypes[i];
 		const color = TAGSCOLORS[i % TAGSCOLORS.length] || "rgba(80,80,80,1)";
 
-		const famButton = initButton(name, 5 + i * buttonSpread, 0, color, switchUiPage, i, pageHeader, null, null, null, null);
+		const famButton = initButton(name, 5 + i * buttonSpread, 0, color, switchUiPage, i, pageHeader);
 		famButton.sliders = [];
 		famButton.buttons = [];
 		famButton.label = name;
@@ -105,7 +105,7 @@ function initParticlePagesHeader(y) {
 				const key = particleKeys[v];
 				const prop = PARTICLE_PROPERTIES[key];
 				if (!hasTag(key, name)) continue;
-				const btn = initButton( key, 5 + xp++ * buttonSpread, 0, prop.color, setNewType, v, elementsHeader, null, null, 'ressources/img/WHITE/p2.png', null, false, prop.color);
+				const btn = initButton(key, 5 + xp++ * buttonSpread, 0, prop.color, setNewType, v, elementsHeader);
 				famButton.buttons.push(btn);
 			}
 		}

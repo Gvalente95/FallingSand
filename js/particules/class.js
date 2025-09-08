@@ -75,9 +75,8 @@ class Particle{
 	updateMovement() {
 		if (this.type === 'ANT' && this.hasTouchedBorder && !this.inWater) return;
 		if (this.type === 'PLANT' || (this.type === 'FISH' && this.inWater && this.timeInWater < 30)) {
-			const k = SIMSPEED;
-			this.newX = Math.round(this.x + this.velX * k);
-			this.newY = Math.round(this.y + this.velY * k);
+			this.newX = Math.round(this.x + this.velX);
+			this.newY = Math.round(this.y + this.velY);
 			return;
 		}
 
