@@ -343,17 +343,16 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	div.style.top = y + "px";
 	div.style.setProperty('--btn-bg', color);
 	div.style.backgroundColor = color;
-	div.style.color = 'rgba(213, 213, 213, 1)';
+	div.baseClr = color;
+	div.style.color = 'rgba(255, 255, 255, 1)';
 	div.style.position = div.style.position || "absolute";
 	div.style.boxSizing = "border-box";
 	if (!imgPath) {
 		div.style.display = "flex";
 		div.style.alignItems = "center";
 		div.style.justifyContent = "center";
-		if (1) {
-			div.style.backgroundColor = setAlpha(color, .8);
-		}
 		div.textContent = label.substring(0, 5);
+		if (clrText) div.style.color = clrText;
 		div.style.fontSize = 13 + "px";
 	}
 	div.label = label;
@@ -533,26 +532,29 @@ function updateUi()
 {
 	let openColor = uiLayerIndex == 0 ? selButtonColor : "none";
 	let closecolor = 'none';
-	for (let i = 0; i < uiPagesButtons.length; i++)
-	{
-		let buttons = uiPagesButtons[i];
+	for (let i = 0; i < uiPagesButtons.length; i++) {
+		let cb = uiPagesButtons[i];
 		let isOpen = uiPageIndex == i;
-		buttons.style.border = isOpen ? openColor : closecolor;
-		buttons.style.opacity = isOpen ? "1" : '.6';
-		for (const b of buttons.buttons) { if (b.isSwitch) continue; b.style.display = isOpen ? 'block' : 'none';}
-		for (const s of buttons.sliders) s.style.display = isOpen ? 'block' : 'none';
+		cb.style.border = isOpen ? openColor : closecolor;
+		cb.style.backgroundColor = setAlpha(cb.baseClr, isOpen ? 1 : 0.6);
+
+		for (const b of cb.buttons) { if (b.isSwitch) continue; b.style.display = isOpen ? 'block' : 'none'; }
+		for (const s of cb.sliders) s.style.display = isOpen ? 'block' : 'none';
 	}
+
 	openColor = uiLayerIndex == 1 ? selButtonColor : "2px solid rgba(255, 255, 255, 1)";
 	let uiButtons = uiPagesButtons[uiPageIndex].buttons;
-	for (let i = 0; i < uiButtons.length; i++)
-	{
+	for (let i = 0; i < uiButtons.length; i++) {
 		let b = uiButtons[i];
 		let isOpen = typeButton && b.label == typeButton.label;
 		if (uiPagesButtons[uiPageIndex].label === 'BRUSH') isOpen = b.value == BRUSHTYPE;
 		b.style.border = isOpen ? openColor : closecolor;
-		b.style.opacity = isOpen ? "1" : '.6';
+		b.style.backgroundColor = setAlpha(b.baseClr, isOpen ? 1 : 0.6);
 	}
 }
+
+
+
 
 function switchUiPage(newPageIndex) {uiPageIndex = newPageIndex;}
 function setNewType(newIndex)

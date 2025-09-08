@@ -34,9 +34,10 @@ function initParamHeader(yPos, height)
 	sliders.push(createVerticalPressSlider("Speed", x + spread * n++, 0, .2, 2.2, .2, SIMSPEED, setNewSpeed));
 	sliders.push(createVerticalPressSlider("Gravity", x + spread * n++, 0, 1, -1, .1, GRAVITY, setNewGravity));
 	sliders.push(createVerticalPressSlider("Rain Pow", x + spread * n++, 0, 1, 100, 1, RAINPOW, setRAINPOW));
-	let sldW = 19;
+	let sldW = 30;
 	paramheader = addHeader(yPos, null, height, null, sldW * n);
 	sliders.forEach(slider => paramheader.appendChild(slider));
+	fitHeaderDragWidth(paramheader);
 	return (yPos + height);
 }
 
@@ -90,7 +91,7 @@ function initParticlePagesHeader(y) {
 		const name = particleTypes[i];
 		const color = TAGSCOLORS[i % TAGSCOLORS.length] || "rgba(80,80,80,1)";
 
-		const famButton = initButton(name, 5 + i * buttonSpread, 0, color, switchUiPage, i, pageHeader);
+		const famButton = initButton(name, 5 + i * buttonSpread, 0, color, switchUiPage, i, pageHeader, null, null, null, null);
 		famButton.sliders = [];
 		famButton.buttons = [];
 		famButton.label = name;
@@ -107,7 +108,7 @@ function initParticlePagesHeader(y) {
 				const key = particleKeys[v];
 				const prop = PARTICLE_PROPERTIES[key];
 				if (!hasTag(key, name)) continue;
-				const btn = initButton(key, 5 + xp++ * buttonSpread, 0, prop.color, setNewType, v, elementsHeader, null, null, null, null, 'red');
+				const btn = initButton(key, 5 + xp++ * buttonSpread, 0, prop.color, setNewType, v, elementsHeader, null, null, null, null);
 				famButton.buttons.push(btn);
 			}
 		}
