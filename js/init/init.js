@@ -48,7 +48,7 @@ function initActionHeader(yPos, color = 'red', height = 40)
 
 	let baseColor = "rgba(33, 23, 37, 1)"
 	let butLen = 13;
-	let butW = 30;
+	let butW = 35;
 	let actionHeader = addHeader(yPos, color, height, null, butLen * butW);
 	actionHeader.style.left = "0px";
 	rewButton = initButton("Prev", 5 + xMargin * nn++, 0, baseColor, goToPrevFrame, null, actionHeader, null, '1', p + "prev.png");
