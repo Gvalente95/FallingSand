@@ -31,6 +31,7 @@ p.stopFire = function ()
 p.setToFire = function()
 {
 	if (this.frozen) { this.frozen -= 50; return; }
+	this.warm = 200;
 	if (this.wet > 50 && this.wetType != 'OIL') { this.wet -= 50; return; }
 	if (this.burning) return;
 	if (this.type == 'MAGMA') this.setType('MAGMA');
@@ -81,13 +82,13 @@ p.setFrozen = function (freezeAmount) {
 	if (this.burning || this.warm) return;
 	if (this.frozen) { this.frozen = freezeAmount; return; }
 	this.frozen = freezeAmount;
-	this.setColor(randomizeColor('rgba(140, 184, 208, 0)'));
+	// this.setColor(randomizeColor('rgba(140, 184, 208, 0)'));
 }
 
 p.unFreeze = function(warmAmount = 5){
 	this.frozen = 0;
 	this.warm = warmAmount;
-	this.setColor();
+	// this.setColor();
 }
 
 p.updateFrost = function () {

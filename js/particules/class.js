@@ -12,7 +12,7 @@ class Particle{
 			if (this.properties.physT == 'GAS' && type != 'STEAM')
 			{
 				if (pxAtPos.physT == 'LIQUID' && type == 'FIRE') {
-					pxAtPos.replace('STEAM');
+					pxAtPos.replace('FIRE');
 				}
 				else if (type != pxAtPos.type && shouldBurnParticle(type, pxAtPos)) pxAtPos.setToFire();
 				return (this.toRemove(), 0);

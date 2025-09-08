@@ -299,7 +299,6 @@ p.updateShroom = function (curX, curY) {
 			newHead.maxGrowth = this.maxGrowth;
 			newHead.timeAlive = this.timeAlive;
 			newHead.ground = this;
-			newHead.centerX = this.centerX;
 			newHead.velX = newHead.velY = 0;
 			newHead.id = this.id;
 			newHead.child = this;
@@ -307,30 +306,9 @@ p.updateShroom = function (curX, curY) {
 			this.setColor(PARTICLE_PROPERTIES[this.digType ? this.digType : this.type].color);
 			this.parent = newHead;
 		}
-		else if (1) {
-			if ((Math.abs(this.x - this.centerX)) > 5) this.xDir *= -1;
-			let newX = this.x + this.xDir;
-			let px = pxAtP(newX, this.y, this);
-			if (px && px.physT == 'LIQUID') this.swap(px);
-			else if (!px) this.updatePosition(newX, this.y);
-			else this.xDir *= -1;
-			let ch = this.child;
-			let parent = this;
-			while (ch) {
-				let curX = ch.x;
-				if (curX + 1 < parent.x) curX = parent.x - 1;
-				if (curX - 1 > parent.x) curX = parent.x + 1;
-				if (curX != ch.x) {
-					let px = pxAtP(curX, ch.y, ch);
-					if (px) ch.swap(px);
-					else ch.updatePosition(curX, ch.y);
-				}
-				parent = ch;
-				ch = parent.child;
-			}
-		}
 	}
 }
+
 
 p.updateType = function(){
 	if (this.type === 'WOOD') return;

@@ -15,6 +15,7 @@ function showShroomHead(prt, x, y) {
 }
 
 function showParticle(prt, x, y, alpha, color = prt.color) {
+	if (p.frozen) color = addColor(color, 'rgba(146, 195, 205, 1)', .4);
 	if (prt.type == 'SHROOM' && prt.digType) color = addColor(PARTICLE_PROPERTIES[prt.digType].color, 'rgba(0,0,0,1)', .1);
 	if (prt.type == 'SHROOM' && prt.isGrower && !prt.isLoop && !prt.parent && prt.hasTouchedBorder) {
 		let px = pxAtP(x, y - 1, prt);

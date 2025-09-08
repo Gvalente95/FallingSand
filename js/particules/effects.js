@@ -152,6 +152,6 @@ p.applyFrost = function (ignoreType = null, frostAmount = this.frozen) {
     const px = pxAtP(nx, ny, this);
     if (!px || px.frozen) return;
     if (ignoreType && px.type === ignoreType) return;
-	if (px.brnpwr || px.warm) { if (this.frozen && dice(10)) {this.unFreeze(px.warm); this.warm = 100;} }
+	if (px.brnpwr || px.warm) { if (this.frozen && dice(10)) {this.unFreeze(px.warm); this.warm = 500;} }
     else  px.setFrozen(frostAmount);
 };
