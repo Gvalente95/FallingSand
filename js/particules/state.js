@@ -31,6 +31,7 @@ p.setToFire = function()
 {
 	if (this.expl) this.lt = 0;
 	if (this.frozen) { this.unFreeze(50); return; }
+	if (this.type == 'ICE') {return (this.replace('WATER'));}
 	this.warm = 200;
 	if (this.wet > 50 && this.wetType != 'OIL') { this.wet -= 50; return; }
 	if (this.burning) return;
@@ -94,7 +95,7 @@ p.unFreeze = function(warmAmount = 5){
 p.updateFreeze = function () {
 	
 	if (this.warm || this.burning) this.unFreeze();
-	else this.applyFrost('FROST');
+	else this.applyFrost('ICE');
 }
 
 p.updateState = function()

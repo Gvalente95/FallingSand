@@ -61,6 +61,7 @@ p.setType = function(newType)
 	this.spreadAmount = this.properties.spread;
 	this.updT = this.properties.updT;
 	this.inWater = false;
+	this.timeInWater = 0;
 	this.ground = null;
 	this.xDir = rdir(); this.yDir = rdir();
 	this.heigth = 0;

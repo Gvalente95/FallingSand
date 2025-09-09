@@ -46,15 +46,15 @@ p.updatePlant = function(curX, curY){
 p.updateFrost = function(curX, curY){
 	if (this.timeAlive < 200 * this.fseed)
 		this.setColor(addColor(this.properties.color, 'rgba(92, 145, 198, 1)', this.timeAlive / 200 * this.fseed));
-	this.applyFrost('FROST', 20);
-	// this.updatePosition(curX, curY);
+	this.applyFrost('ICE', 20);
+	this.updatePosition(curX, curY);
 }
 
 p.updateAnt = function (curX, curY) {
 	if (this.burning) return;
 	if (this.inWater) {
-		if (this.inWater == 100) this.xDir = rdir();
-		else if (this.inWater > 100) {
+		if (this.timeInWater == 100) this.xDir = rdir();
+		else if (this.timeInWater > 100) {
 			this.velY = -1;
 			if (dice(2)) {
 				let rx = pxAtP(this.x + this.xDir, this.y, this);
@@ -127,7 +127,7 @@ p.updateAnt = function (curX, curY) {
 		if (px) this.yDir = -1;
 	}
 	if (px) {
-		if (px.physT == 'LIQUID' || px.wet) { this.inWater++;  }
+		if (px.physT == 'LIQUID' || px.wet) { this.inWater = true; this.timeInWater++;  }
 		if (px.type == 'ANT' || px.type == 'ANTEGG' || px.physT == 'LIQUID') {
 			this.swap(px);
 			return;
@@ -170,7 +170,7 @@ p.updateFish = function(){
 	if (!l || l.physT != 'LIQUID') {
 		this.updatePosition(this.newX, this.newY);
 		this.inWater = false;
-		if (dice(300)) this.velY = -1;
+		if (dice(300)) this.velY = -2;
 		this.timeInWater = 0;
 		return;
 	}
@@ -216,8 +216,9 @@ p.updateFish = function(){
 	if (!nn.length) {
 		this.velX = this.xDir;
 		const nx = this.x + Math.round(this.velX*SIMSPEED*dt);
-		const ny = this.y + Math.round(this.velY * SIMSPEED*dt);
-		return (this.updatePosition(nx, ny));
+		const ny = this.y + Math.round(this.velY * SIMSPEED * dt);
+		let px = pxAtP(nx, ny, this);
+		if (!px) return (this.updatePosition(nx, ny));
 	}
 	let sx=0, sy=0, ax=0, ay=0, cx=0, cy=0, n=0;
 	for(const q of nn){
@@ -260,7 +261,7 @@ p.updateFish = function(){
 		];
 		for(const [axn,ayn] of alt){
 			const a=pxAtP(axn,ayn,this);
-			if(a && (a.physT==='LIQUID' || a.type && this.type)){ this.swap(a); return; }
+			if(a && (a.physT==='LIQUID' || a.type == this.type)){ this.swap(a); return; }
 			if(!a){ this.updatePosition(axn,ayn); return; }
 		}
 		this.velX *= 0.5; this.velY *= 0.5;
@@ -307,9 +308,11 @@ p.updateShroom = function (curX, curY) {
 		if (up.type == this.type) return;
 	}
 	if ((!up && this.heigth < this.maxHeight) || (up && up.physT == 'LIQUID')) {
+		let wetColor = null;
 		if (up)
 		{
 			this.inWater = true;
+			wetColor = up.color;
 			this.maxHeight = this.heigth + r_range(2, this.heigth / 3);
 			up.toRemove();
 			up = null;
@@ -328,7 +331,13 @@ p.updateShroom = function (curX, curY) {
 		newHead.id = this.id;
 		newHead.child = this;
 		newHead.heigth = this.heigth + 1;
-		if (this.child) this.setColor(addColor(this.baseColor, 'rgba(255, 255, 255, 1)', Math.max(this.heigth * .02), 1));
+		if (this.child) {
+			if (wetColor)
+				newColor = addColor(this.baseColor, wetColor, f_range(.5, .8));
+			else
+				newColor = addColor(this.baseColor, 'rgba(255, 255, 255, 1)', Math.round(Math.max(this.heigth * .02), 1));
+			this.setColor(newColor);
+		}
 		this.parent = newHead;
 	}
 }
@@ -348,7 +357,7 @@ p.updateType = function () {
 		if (this.velX || this.velY) this.updateMovement();
 		if (this.physT == 'LIQUID') this.updateLiquid(this.newX, this.newY);
 	}
-	if (this.type == 'FROST') this.updateFrost(this.newX, this.newY);
+	if (this.type == 'ICE') this.updateFrost(this.newX, this.newY);
 	else if (this.isShroom) this.updateShroom(this.newX, this.newY);
 	else if (this.type == 'ANT') this.updateAnt(this.newX, this.newY);
 	else if (this.type == 'FIRE' || this.type === 'TORCH') this.FireEffect(this.newX, this.newY);

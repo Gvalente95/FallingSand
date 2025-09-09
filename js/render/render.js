@@ -26,9 +26,8 @@ function showShroomHead(prt, x, y) {
 	}
 }
 
-let prvFillColor = null;
 function showParticle(prt, x, y, alpha, color = prt.color) {
-	if (prt.expl) {
+	if (prt.expl && !prt.frozen) {
 		let timeLeft = prt.lt - prt.timeAlive;
 		color = addColor(PARTICLE_PROPERTIES[prt.type].color, 'rgba(255, 0, 0, 1)', 1 - (timeLeft / prt.lt));
 	}
@@ -45,11 +44,8 @@ function showParticle(prt, x, y, alpha, color = prt.color) {
 	}
 	if (prt.physT == 'GAS') alpha = Math.max(0, 1 - prt.timeAlive / prt.lt);
 	if (prt.type == 'WATER' && !prt.frozen) color = waterShades[prt.y];
-	if (color != prvFillColor) {
-		ctx.fillStyle = ((prt.type == 'WATER' && !prt.frozen) ? waterShades[prt.y].color : color);
-		prvFillColor = color;
-	}
 	if (alpha != 1) ctx.fillStyle = `rgba(${prt.rgb}, ${alpha})`;
+	else ctx.fillStyle = ((prt.type == 'WATER' && !prt.frozen) ? waterShades[prt.y].color : color);
 	ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, PIXELSIZE, PIXELSIZE);
 }
 

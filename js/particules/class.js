@@ -52,7 +52,7 @@ class Particle{
 		if (this.type === 'ANT' && this.hasTouchedBorder) return;
 		if (this.type === 'FISH' && this.inWater) return;
 		const g = this.ground;
-		const grounded = g && g.physT === 'SOLID' && g.velY === 0;
+		const grounded = g && (g.physT === 'SOLID' || g.frozen) && g.velY === 0;
 		if (this.type === 'WATER' && g && !pxAtP(this.x, this.y - 1) && dice(200) && g.type === this.type) {
 			this.setType('BUBBLE');
 			this.transformType = 'WATER';
@@ -121,8 +121,13 @@ class Particle{
 			if (hit.dns < this.dns) { this.swap(hit); curX = this.x; curY = this.y; break; }
 			}
 			else if (this.physT === 'SOLID' && hit.physT === 'LIQUID') {
-			if (i !== steps - 1) continue;
-			this.swap(hit); curX = this.x; curY = this.y; break;
+				if (i !== steps - 1) continue;
+				this.timeInWater++;
+				this.inWater = true;
+				if (this.type != 'ICE' || this.timeInWater < 10) {
+					this.swap(hit); curX = this.x; curY = this.y; break;
+				}
+				else if (this.type == 'ICE') this.velY = this.velX = 0;
 			}
 			const lx = realX + side;
 			if (lx >= 0 && lx < GW) {
@@ -158,7 +163,7 @@ class Particle{
 	}
 	updateLifeTime(){
 		this.timeAlive = now - this.startTime;
-		if (this.timeAlive > this.lt)
+		if (this.timeAlive > this.lt && !this.frozen)
 		{
 			if (this.transformType) return (this.replace(this.transformType));
 			if (this.type == 'MAGMA') return;

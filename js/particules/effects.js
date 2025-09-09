@@ -1,5 +1,6 @@
 
 p.updateLiquid = function (curX, curY, spreadAm = this.spreadAmount) {
+	if (this.frozen) return;
 	let upx = pxAtP(curX, curY - 1);
 	if (upx && upx.physT == 'LIQUID' && upx.dns > this.dns && upx.type != 'BUBBLE')
 	{
@@ -25,9 +26,8 @@ p.updateLiquid = function (curX, curY, spreadAm = this.spreadAmount) {
 			if (p && (p.isShroom || p.type == 'FISH' || p.type == 'ANT')) {
 				continue;
 			}
-			if (p && p.physT != 'LIQUID')
-				break;
-			if (p && p.physT == 'LIQUID' && p.type != this.type && i <= 4)
+			if (p && p.physT != 'LIQUID') break;
+			if (p && p.physT == 'LIQUID' && p.type != this.type)
 			{
 				if (p.dns > this.dns) {this.swap(p);
 				return;}
