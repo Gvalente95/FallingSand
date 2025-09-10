@@ -1,5 +1,5 @@
 p.updateCloud = function () {
-	if (time % 3 == 0) return;
+	if (time % 3 === 0) return;
 	let newX = this.x + this.xDir;
 	let newY = this.y;
 	let px = pxAtP(newX, newY, this);
@@ -17,11 +17,10 @@ p.updatePlant = function(curX, curY){
 	let inWater = false;
 	const px = pxAtP(curX, curY, this);
 	if (px) {
-		if (px.type == 'WATER' || px.type == 'PLANT') { inWater = true; px.toRemove();}
+		if (px.type === 'WATER' || px.type === 'PLANT') { inWater = true; px.toRemove();}
 		else return (this.setColor());
 	}
 	if (dice(30)) this.dirAng += f_range(-0.2, 0.2);
-	console.warn()
 	const t = now * this.oscSpeed + this.oscPhase;
 	const ang = this.dirAng + this.oscAmp * Math.sin(t);
 	const speed = inWater ? .2 : 1;
@@ -32,20 +31,20 @@ p.updatePlant = function(curX, curY){
 	const clone = new Particle(ox, oy, this.type);
 	clone.parent = this;
 	if (dice(10))this.dirAng += f_range(-0.3, 0.3);
-	if (this.timeAlive < 2000) {
+	if (this.timeAlive < 2) {
 		let rpx = getPxlsInRect(this.x, this.y, 3, 3, this.type);
 		let isStuck = (rpx.length > 4);
 		if (isStuck) {return (this.setColor());}
 		else if (this.color != "rgba(133, 190, 154, 1)") {
 			this.setColor("rgba(133, 190, 154, 1)");
-			if (this.timeAlive > 6000) this.toRemove();
+			if (this.timeAlive > 6) this.toRemove();
 		}
 	}
 }
 
 p.updateFrost = function(curX, curY){
-	if (this.timeAlive < 200 * this.fseed)
-		this.setColor(addColor(this.properties.color, 'rgba(92, 145, 198, 1)', this.timeAlive / 200 * this.fseed));
+	if (this.timeAlive < .2 * this.fseed)
+		this.setColor(addColor(this.properties.color, 'rgba(92, 145, 198, 1)', this.timeAlive / (.2 * this.fseed)));
 	this.applyFrost('ICE', 20);
 	this.updatePosition(curX, curY);
 }
@@ -53,15 +52,15 @@ p.updateFrost = function(curX, curY){
 p.updateAnt = function (curX, curY) {
 	if (this.burning) return;
 	if (this.inWater) {
-		if (this.timeInWater == 100) this.xDir = rdir();
+		if (this.timeInWater === 100) this.xDir = rdir();
 		else if (this.timeInWater > 100) {
 			this.velY = -1;
 			if (dice(2)) {
 				let rx = pxAtP(this.x + this.xDir, this.y, this);
-				if (rx && rx.physT == 'LIQUID') this.swap(rx);
+				if (rx && rx.physT === 'LIQUID') this.swap(rx);
 			}
 			let px = pxAtP(this.x, this.y - 1, this);
-			if (px && px.physT == 'LIQUID') return (this.swap(px));
+			if (px && px.physT === 'LIQUID') return (this.swap(px));
 			if (!pxAtP(this.x, this.y + 1, this)) return (this.updatePosition(this.x, this.y + 1));
 			return;
 		}
@@ -87,7 +86,7 @@ p.updateAnt = function (curX, curY) {
 		this.xDir = this.yDir = 0;
 	}
 	if (!this.xDir && !this.yDir) {
-		if (curY == 0 || curX == GRIDH - 1) {
+		if (curY === 0 || curX === GRIDH - 1) {
 			if (isValid(curX + 1, curY, 0, 0)) curX++;
 			else if (isValid(curX - 1, curY, 0, 0)) curX--;
 		}
@@ -96,15 +95,15 @@ p.updateAnt = function (curX, curY) {
 		}
 	}
 
-	function isAtCorner(x, y) { return ((x == 0 && y == 0) || (x == GRIDW - 1 && y == 0) || (x == 0 && y == GRIDH - 1) || (x == GRIDW - 1 && y == GRIDH - 1)) }
+	function isAtCorner(x, y) { return ((x === 0 && y === 0) || (x === GRIDW - 1 && y === 0) || (x === 0 && y === GRIDH - 1) || (x === GRIDW - 1 && y === GRIDH - 1)) }
 	function isValid(x, y, xd, yd) { return (!pxAtP(x + xd, y + yd, this) && !isOutOfBorder(x + xd, y + yd)); }
-	function isAtBorder(x, y) { return (x == 0 || x == GRIDW - 1 || y == 0 || y == GRIDH - 1); }
+	function isAtBorder(x, y) { return (x === 0 || x === GRIDW - 1 || y === 0 || y === GRIDH - 1); }
 
 	if (curX <= 0 || curX >= GRIDW - 1) {
 		if (dice(4) && isAtCorner(curX, curY)) this.xDir *= -1;
 		else {
 			this.xDir = 0;
-			if (curY == GRIDH - 1) this.yDir = -1;
+			if (curY === GRIDH - 1) this.yDir = -1;
 			if (curY <= 0) { this.yDir = 0; this.xDir = curX <= 0 ? 1 : -1; }
 		}
 	}
@@ -112,13 +111,13 @@ p.updateAnt = function (curX, curY) {
 		if (dice(4) && isAtCorner(curX, curY)) this.yDir *= -1;
 		else {
 			this.yDir = 0;
-			if (curX == 0) this.xDir = -1;
+			if (curX === 0) this.xDir = -1;
 			if (curX <= 0) this.xDir = 0;
 		}
 	}
 	if ((!isAtBorder(curX, curY)) && !pxAtP(curX + this.xDir, curY + 1, this) && (!pxAtP(curX - 1, curY, this) && !pxAtP(curX + 1, curY, this))) {
 		curY++;
-		if (this.yDir == -1) this.yDir = 0;
+		if (this.yDir === -1) this.yDir = 0;
 		this.xDir = 0;
 	}
 	let px = pxAtP(curX + this.xDir, curY + this.yDir);
@@ -127,18 +126,18 @@ p.updateAnt = function (curX, curY) {
 		if (px) this.yDir = -1;
 	}
 	if (px) {
-		if (px.physT == 'LIQUID' || px.wet) { this.inWater = true; this.timeInWater++;  }
-		if (px.type == 'ANT' || px.type == 'ANTEGG' || px.physT == 'LIQUID') {
+		if (px.physT === 'LIQUID' || px.wet) { this.inWater = true; this.timeInWater++;  }
+		if (px.type === 'ANT' || px.type === 'ANTEGG' || px.physT === 'LIQUID') {
 			this.swap(px);
 			return;
 		}
-		if ((px.physT == 'SOLID' || px.physT == 'STATIC') && dice(px.dns)) {
+		if (px.physT === 'SOLID' && dice(px.dns)) {
 			for (let x = -2; x < 2; x++) {
 				for (let y = -2; y < 2; y++) {
 					let npx = pxAtP(px.x + x, px.y + y, this);
 					if (npx) {
-						npx.physT = 'STATIC';
-						// npx.setColor(addColor(PARTICLE_PROPERTIES[npx.type].color, "rgba(0,0,0,1)", .1));
+						npx.updT = 'STATIC';
+						npx.setColor(addColor(PARTICLE_PROPERTIES[npx.type].color, "rgba(0,0,0,1)", .1));
 					}
 				}
 			}
@@ -162,6 +161,7 @@ p.updateAnt = function (curX, curY) {
 	}
 };
 
+SWIMSPEED = 10;
 p.updateFish = function(){
 	let l = pxAtP(this.x, this.y + 1, this);
 	if (!l || l.physT != 'LIQUID') l = pxAtP(this.x - 1, this.y, this);
@@ -177,17 +177,17 @@ p.updateFish = function(){
 	this.inWater = true;
 	if (dice(1000)) {
 		let px = pxAtP(this.newX, this.newY - 1, this);
-		if (px && px.physT == 'LIQUID') {
+		if (px && px.physT === 'LIQUID') {
 			let type = px.type;
-			px.replace('BUBBLE');
+			px = px.replace('BUBBLE');
 			px.transformType = type;
 		}
 	}
 	if (++this.timeInWater < 30) {
-		this.velY *= .9;
-		if (dice(10)) this.velX = rdir();
+		this.velY *= .8;
+		if (dice(10)) this.velX = rdir() * SWIMSPEED;
 		let px = pxAtP(this.newX, this.newY, this);
-		if (px && px.physT == 'LIQUID') this.swap(px);
+		if (px && px.physT === 'LIQUID') this.swap(px);
 		return;
 	}
 	function getNeighbors(x,y,type,r, clr){
@@ -206,16 +206,20 @@ p.updateFish = function(){
 			}
 		} return out;
 	};
-	if(this.velX==null){ this.velX=f_range(-1,1); this.velY=f_range(-1,1); }
-	if ((this.x < 10 && this.velX < 0) || (this.x > GRIDW - 11 && this.velX > 0))
-		this.velX *= -1;
-	if (this.y <= 10 && this.velY < 0) this.velY = 1;
-	else if (this.y >= GRIDH - 11 && this.velY > 0) this.velY = -1;
-	if (!this.velX) this.velX = f_range(-1, 1);
+
+	let BorderLimit = 20;
+	if ((this.velX < 0 && this.x < BorderLimit) || (this.x > GRIDW - BorderLimit && this.velX > 0)) {
+		this.velX *= .9;
+		if (Math.abs(this.velX) < .5) this.velX = - Math.sign(this.velX);
+	}
+	else if (this.velX <= 0 && this.x < BorderLimit) this.velX = 1;
+	else if (this.velX >= 0 && this.x > GRIDW - BorderLimit) this.velX = -1;
+
+	if (!this.velX) this.velX = rdir() * SWIMSPEED;
 	const nn = getNeighbors(this.x, this.y, this.type, FLOCK.r, this.color);
 	if (!nn.length) {
-		this.velX = this.xDir;
-		const nx = this.x + Math.round(this.velX*SIMSPEED*dt);
+		this.velX = this.xDir * SWIMSPEED;
+		const nx = this.x + Math.round(this.velX * SIMSPEED * dt);
 		const ny = this.y + Math.round(this.velY * SIMSPEED * dt);
 		let px = pxAtP(nx, ny, this);
 		if (!px) return (this.updatePosition(nx, ny));
@@ -261,7 +265,7 @@ p.updateFish = function(){
 		];
 		for(const [axn,ayn] of alt){
 			const a=pxAtP(axn,ayn,this);
-			if(a && (a.physT==='LIQUID' || a.type == this.type)){ this.swap(a); return; }
+			if(a && (a.physT==='LIQUID' || a.type === this.type)){ this.swap(a); return; }
 			if(!a){ this.updatePosition(axn,ayn); return; }
 		}
 		this.velX *= 0.5; this.velY *= 0.5;
@@ -274,11 +278,11 @@ p.updateFish = function(){
 
 p.updateShroom = function (curX, curY) {
 	if (!this.hasTouchedBorder) {
-		if (this.timeAlive <= 2000) return (this.updatePosition(curX, curY));
+		if (this.timeAlive <= 2) return (this.updatePosition(curX, curY));
 		if (atBorder(curX, curY)) this.hasTouchedBorder = true;
 		else {
 			let down = pxAtP(this.x, this.y + 1, this);
-			if (down && (down.hasTouchedBorder || ((down.physT == 'SOLID' || down.physT == 'STATIC') && down.type != this.type))) this.hasTouchedBorder = true;
+			if ((down) && (down.hasTouchedBorder || (down.physT === 'SOLID' && down.type != this.type))) this.hasTouchedBorder = true;
 		}
 		if (!this.hasTouchedBorder) return (this.updatePosition(curX, curY));
 	}
@@ -295,7 +299,7 @@ p.updateShroom = function (curX, curY) {
 	}
 	else { py--; if (dice(5)) px += rdir(); }
 	let up = pxAtP(px, py, this);
-	if (up && (up.type != this.type && (up.physT == 'SOLID' || up.physT == 'STATIC'))) {
+	if (up && (up.type != this.type && up.physT === 'SOLID')) {
 		this.digType = up.type;
 		up.toRemove();
 		up = null;
@@ -303,11 +307,12 @@ p.updateShroom = function (curX, curY) {
 	}
 	else this.digType = null;
 	if (up) {
-		if (up.type == 'WATER' && this.type != 'SHROOM') return;
-		if (up.cor && this.type == 'SHROOM') return;
-		if (up.type == this.type) return;
+		if (up.physT != 'LIQUID') return;
+		if (up.type === 'WATER' && this.type != 'SHROOM') return;
+		if (up.cor && this.type === 'SHROOM') return;
+		if (up.type === this.type) return;
 	}
-	if ((!up && this.heigth < this.maxHeight) || (up && up.physT == 'LIQUID')) {
+	if ((!up && this.heigth < this.maxHeight) || (up && up.physT === 'LIQUID')) {
 		let wetColor = null;
 		if (up)
 		{
@@ -342,28 +347,44 @@ p.updateShroom = function (curX, curY) {
 	}
 }
 
+p.updateSteam = function(newX, newY){
+	if (this.y < 50 && dice(5))
+	{
+		launchParticules('CLOUD', this.x * PIXELSIZE, this.y * PIXELSIZE, 10, true);
+		this.toRemove();
+	}
+	this.updatePosition(newX, newY);
+}
+
+const UPDATE_HANDLERS = {
+	ICE:   p => p.updateFrost(p.newX, p.newY),
+	STEAM: p => p.updateSteam(p.newX, p.newY),
+	ANT:   p => p.updateAnt(p.newX, p.newY),
+	FISH:  p => p.updateFish(p.newX, p.newY),
+	PLANT: p => p.updatePlant(p.newX, p.newY),
+	FIRE:  p => p.FireEffect(p.newX, p.newY),
+	TORCH: p => p.FireEffect(p.newX, p.newY),
+	MAGMA: p => p.MagmaEffect(p.newX, p.newY),
+	LAVA: p => p.LavaEffect(p.newX, p.newY),
+	SHROOM: p => p.MagmaEffect(p.newX, p.newY),
+	SHROOMX: p => p.MagmaEffect(p.newX, p.newY),
+};
+
 p.updateType = function () {
 	if (this.cor) this.applyCorrosion();
 	if (this.type === 'WOOD') return;
 	if (this.type === 'CLOUD') return this.updateCloud();
-	if (this.isShroom && this.hasTouchedBorder) return (this.updateShroom(this.x, this.y));
-	else if (this.type == 'TORCH' && dice(10))
-		new Particle(this.x, this.y - 1, 'FIRE');
-	else if (this.type == 'STEAM' && this.y < 50 && dice(5))
-		{ launchParticules('CLOUD', this.x * PIXELSIZE, this.y * PIXELSIZE, 10, true); this.toRemove(); }
-	if (this.physT != 'STATIC' || this.type == 'PLANT') {
-		this.ground = pxAtP(this.x, this.y + (this.physT == 'GAS' ? -1 : 1), this);
-		this.updateVelocity();
-		if (this.velX || this.velY) this.updateMovement();
-		if (this.physT == 'LIQUID') this.updateLiquid(this.newX, this.newY);
-	}
-	if (this.type == 'ICE') this.updateFrost(this.newX, this.newY);
-	else if (this.isShroom) this.updateShroom(this.newX, this.newY);
-	else if (this.type == 'ANT') this.updateAnt(this.newX, this.newY);
-	else if (this.type == 'FIRE' || this.type === 'TORCH') this.FireEffect(this.newX, this.newY);
-	else if (this.type == 'MAGMA') this.MagmaEffect(this.newX, this.newY);
-	else if (this.type == 'LAVA') this.LavaEffect(this.newX, this.newY);
-	else if (this.type == 'FISH') this.updateFish(this.newX, this.newY);
-	else if (this.type == 'PLANT') this.updatePlant(this.newX, this.newY);
-	else if (this.physT != 'LIQUID') this.updatePosition(this.newX, this.newY);
-}
+	if (this.isShroom && this.hasTouchedBorder) return this.updateShroom(this.x, this.y);
+	if (this.type === 'TORCH' && dice(10)) new Particle(this.x, this.y - 1, 'FIRE');
+	if (this.updT === 'STATIC') return;
+
+	if (this.type !== 'PLANT') this.updateVelocity();
+	if (this.velX || this.velY) this.updateMovement();
+
+	if (this.physT === 'LIQUID') return this.updateLiquid(this.newX, this.newY);
+	if (this.isShroom) return this.updateShroom(this.newX, this.newY);
+
+	const h = UPDATE_HANDLERS[this.type];
+	if (h) return h(this);
+	this.updatePosition(this.newX, this.newY);
+};

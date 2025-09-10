@@ -9,7 +9,7 @@ canvas.addEventListener('mousedown', (e) => {
 	setTimeout(() => { MOUSECLICKED = false }, 50);
 });
 
-canvas.addEventListener('mouseup', () => {
+window.addEventListener('mouseup', () => {
 	MOUSEPRESSED = false;
 	SHOULDCUT = false;
 });
@@ -31,19 +31,14 @@ window.addEventListener('mousemove', (e) => {
 
 window.addEventListener('keydown', (e) => {
 	if (isInInputField) return;
+	if (e.code == 'Tab') e.preventDefault();
+	if (e.key == 't') { ISGAME = !ISGAME; console.warn(ISGAME); updateUi(); }
 	KEYS[e.key] = true;
 	let xScroll = ((KEYS['a'] || KEYS['ArrowLeft']) ? -1 : 0) + ((KEYS['d'] || KEYS['ArrowRight']) ? 1 : 0);
 	let yScroll = ((KEYS['w'] || KEYS['ArrowUp']) ? -1 : 0) + ((KEYS['s'] || KEYS['ArrowDown']) ? 1 : 0);
 	if (!xScroll && !yScroll) return;
-	if (yScroll){ uiLayerIndex = !uiLayerIndex; }
 	e.preventDefault();
-	let max = uiLayerIndex == 0 ? uiPagesButtons.length : uiPagesButtons[uiPageIndex].buttons.length;
-	let curIndex = uiLayerIndex == 0 ? uiPageIndex : getCurButtonTypeIndex();
-	let newIndex = ((curIndex + xScroll) % max);
-	if (newIndex < 0) newIndex = max - 1;
-	if (uiLayerIndex == 0) switchUiPage(newIndex);
-	else { setNewType(uiPagesButtons[uiPageIndex].buttons[newIndex].value); }
-	updateUi();
+	navigateUi(xScroll, yScroll);
 });
 
 window.addEventListener('keyup', (e) => {
@@ -78,6 +73,7 @@ canvas.addEventListener('wheel', (e) => {
 	const delta = e.deltaY;
 	if (KEYS['Shift']) setNewPixelSize(clamp(PIXELSIZE + delta * .1, 1, 19));
 	else BRUSHSIZE = clamp(BRUSHSIZE - delta * 0.1, 1, MAXBRUSHSIZE);
+	SHOWBRUSH = true;
 });
 
 

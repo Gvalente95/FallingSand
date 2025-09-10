@@ -20,7 +20,7 @@ p.hasTouchedSurfaceCheck = function()
 				return (true);
 			}
 			px = pxAtP(this.x, this.y + y);
-			if (px && (px.physT == 'SOLID' || px.physT == 'STATIC')) {
+			if (px && (px.physT == 'SOLID')) {
 				if (hasBubble && dice(10)) new Particle(this.newX, this.newY - 1, this.type == 'LAVA' ? 'SMOKE' : 'BUBBLE');
 				return (true);
 			}
@@ -42,7 +42,7 @@ p.setColor = function(color = this.properties.color) {
 p.replace = function(newType){
 	let p = [this.x, this.y];
 	this.toRemove();
-	new Particle(p[0], p[1], newType);
+	return (new Particle(p[0], p[1], newType));
 }
 
 p.setType = function(newType)
@@ -50,6 +50,7 @@ p.setType = function(newType)
 	this.type = newType;
 	this.isShroom = this.type == 'SHROOM' || this.type == 'SHROOMX';
 	this.properties = PARTICLE_PROPERTIES[newType];
+	this.cr = this.properties.cr;
 	this.lt = this.properties.lt * f_range(.5, 1.5);
 	this.douse = this.properties.douse;
 	this.physT = this.properties.physT;
@@ -68,6 +69,7 @@ p.setType = function(newType)
 	this.parent = null;
 	this.child = null;
 	this.transformType = null;
+	if (ISGAME) setTimeout(() => { discoverType(this) }, 50);
 	if (this.updT == 'STATIC') { this.velY = 0; this.velX = 0; }
 	if (this.type == 'FISH') {
 		let clrs = ["rgba(135, 60, 163, 1)", "rgba(11, 93, 61, 1)", this.properties.color];

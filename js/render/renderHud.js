@@ -8,7 +8,7 @@ function updateHUD(){
   if (topNow !== lastTop) { infoText.textContent = topNow; lastTop = topNow; }
 
   if (PXATMOUSE && !isMobile) {
-    const tm = (PXATMOUSE.timeAlive/1000);
+    const tm = (PXATMOUSE.timeAlive);
     const tmStr = Math.round(tm*10)/10;
     const parts = [
       `Elem: ${PXATMOUSE.type}`,

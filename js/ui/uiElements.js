@@ -76,12 +76,13 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
 	const centerValue = (min + max) / 2;
 	const centerIndex = Math.round((centerValue - min) / step);
 	let currentIndex = Math.max(0, Math.min(steps - 1, Math.round((value - min) / step)));
+	if (isInverted) currentIndex = visualCount - currentIndex;
 	let pointerActive = false;
 	let startIndex = currentIndex;
 	let startClientY = 0;
 
 	const maxLabel = document.createElement("span");
-	maxLabel.textContent = max;
+	maxLabel.textContent = isInverted ? min : max;
 	maxLabel.style.position = "absolute";
 	maxLabel.style.top = "-2px";
 	maxLabel.style.color = "#fff";
@@ -90,7 +91,7 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
 	maxLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
 
 	const minLabel = document.createElement("span");
-	minLabel.textContent = min;
+	minLabel.textContent = isInverted ? max : min;
 	minLabel.style.position = "absolute";
 	minLabel.style.bottom = "0px";
 	minLabel.style.color = "#fff";
@@ -99,7 +100,7 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
 	minLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
 
 	const curLabel = document.createElement("span");
-	curLabel.textContent = (min + currentIndex * step).toFixed(1);
+	curLabel.textContent = ((min + currentIndex * step)* (isInverted ? -1 : 1)).toFixed(1);
 	curLabel.style.position = "absolute";
 	curLabel.style.right = "-80px";
 	curLabel.style.top = "50%";
@@ -131,7 +132,8 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
 	function paintIndex(i) {
 		const vi = indexToVisual(i);
 		for (let k = 0; k < rects.length; k++) rects[k].style.backgroundColor = "rgba(255,255,255,.3)";
-		rects[visualCount - 1 - vi].style.backgroundColor = "rgba(255,255,255,.9)";
+		let index = visualCount - 1 - vi;
+		rects[index].style.backgroundColor = "rgba(255,255,255,.9)";
 	}
 	function positionCurLabelFromIndex(i) {
 		const r = track.getBoundingClientRect();
@@ -144,7 +146,8 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
 		let prvIndex = currentIndex;
 		currentIndex = clampIndex(i);
 		if (prvIndex != currentIndex) {
-			const val = min + currentIndex * step;
+			let val = min + currentIndex * step;
+			if (isInverted) { val *= -1; }
 			curLabel.textContent = val.toFixed(1);
 			paintIndex(currentIndex);
 			if (onChange) onChange(val);
@@ -208,104 +211,6 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
 	return container;
 }
 
-function createSlider(labelText, x, y, min, max, step, value, onChange, height = 16, width = 5) {
-    const container = document.createElement("label");
-    container.style.position = "absolute";
-    container.style.left = x + "px";
-    container.style.top = y + "px";
-    container.style.display = "flex";
-    container.style.alignItems = "center";
-	container.style.padding = "5px";
-	container.style.userSelect = "none";
-	
-    const labelSpan = document.createElement("span");
-	labelSpan.textContent = labelText;
-    labelSpan.style.color = "white";
-    labelSpan.style.fontFamily = "'Press Start 2P', monospace";
-	labelSpan.style.fontSize = "10px";
-	labelSpan.style.userSelect = "none";
-    labelSpan.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
-    labelSpan.style.marginRight = "10px";
-
-    const sliderContainer = document.createElement("div");
-    sliderContainer.style.display = "flex";
-    sliderContainer.style.flexDirection = "row";
-    sliderContainer.style.alignItems = "center";
-    sliderContainer.style.height = height + "px";
-    sliderContainer.style.backgroundColor = "rgba(0, 0, 0, 0.73)";
-	sliderContainer.style.maxWidth = "150px";
-    sliderContainer.style.overflowX = "auto";
-    sliderContainer.style.overflowY = "hidden";
-    sliderContainer.style.whiteSpace = "nowrap";
-    sliderContainer.style.userSelect = "none";
-    sliderContainer.style.cursor = "pointer";
-
-	const steps = Math.floor((max - min) / step) + 1;
-    const rects = [];
-    let currentValue = value;
-    let isDragging = false;
-
-    for (let i = 0; i < steps; i++) {
-    const stepValue = Number((min + i * step).toFixed(2));
-    const rect = document.createElement("div");
-    const rectWidth = steps > 20 ? 5 : 10;
-    const rectMargin = steps > 20 ? 1 : 2;
-    rect.style.width = rectWidth + "px";
-    rect.style.height = height + "px";
-    rect.style.backgroundColor = stepValue === value ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0.3)";
-    rect.style.margin = "0 " + rectMargin + "px";
-    rect.style.boxShadow = "inset 0 0 0 1px rgb(0, 0, 0)";
-    rect.style.display = "inline-block";
-    rects.push(rect);
-    sliderContainer.appendChild(rect);
-}
-
-    function selectRectAtPosition(clientX) {
-  const r = sliderContainer.getBoundingClientRect();
-  const rectWidth = steps > 20 ? 5 : 10;
-  const rectMargin = steps > 20 ? 1 : 2;
-  const unit = rectWidth + rectMargin * 2;
-  const x = clientX - r.left + sliderContainer.scrollLeft - rectMargin;
-  let index = Math.round(x / unit);
-  index = Math.max(0, Math.min(steps - 1, index));
-  const selectedRect = rects[index];
-  if (selectedRect) {
-    currentValue = min + index * step;
-    valueDisplay.textContent = String(currentValue).slice(0, 5);
-    rects.forEach(el => { el.style.backgroundColor = "rgba(255, 255, 255, 0.3)"; });
-    selectedRect.style.backgroundColor = "rgba(255, 255, 255, 0.9)";
-    if (onChange) onChange(currentValue);
-    selectedRect.scrollIntoView({ inline: "center", behavior: "smooth" });
-  }
-}
-
-    sliderContainer.addEventListener("mousedown", (e) => {isDragging = true; selectRectAtPosition(e.clientX);});
-	sliderContainer.addEventListener("mousemove", (e) => {
-		if (isDragging) {
-            e.preventDefault();
-            selectRectAtPosition(e.clientX);
-        }
-    });
-	document.addEventListener("mouseup", () =>{isDragging = false;});
-
-    const valueDisplay = document.createElement("span");
-    valueDisplay.textContent = String(value);
-    valueDisplay.style.width = "40px";
-    valueDisplay.style.color = "white";
-    valueDisplay.style.fontFamily = "'Press Start 2P', monospace";
-    valueDisplay.style.fontSize = "10px";
-    valueDisplay.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
-    valueDisplay.style.marginLeft = "10px";
-
-    container.appendChild(labelSpan);
-    container.appendChild(sliderContainer);
-    container.appendChild(valueDisplay);
-
-    const initialRect = rects.find(r => r.style.backgroundColor === "rgba(255, 255, 255, 0.9)");
-    if (initialRect) initialRect.scrollIntoView({ inline: "center", behavior: "auto" });
-    return container;
-}
-
 function initImageDiv(imgPath, x, y, color, parent = document.body) {
 	let div = document.createElement("div");
 	div.style.position = "absolute";
@@ -325,17 +230,17 @@ function initImageDiv(imgPath, x, y, color, parent = document.body) {
 
 function initButton(label, x, y, color, onChange, value = null, parent = document.body, isSwitch = null, keyToggle = null, imgPath = null, mouseFollowImg = null, clrText = false) {
 	function formatKeyLabel(k){
-	if(!k) return "";
-	const map={
-		"ArrowUp":"↑","ArrowDown":"↓","ArrowLeft":"←","ArrowRight":"→",
-		"Space":"␣","Enter":"⏎","Escape":"Esc","Backspace":"⌫",
-		"ShiftLeft":"Shift","ShiftRight":"Shift","ControlLeft":"Ctrl","ControlRight":"Ctrl",
-		"AltLeft":"Alt","AltRight":"Alt","MetaLeft":"Meta","MetaRight":"Meta"
-	};
-	if(map[k]) return map[k];
-	if(/^Key[A-Z]$/.test(k)) return k.slice(3);
-	if(/^Digit[0-9]$/.test(k)) return k.slice(5);
-	return k.length===1 ? k.toUpperCase() : k;
+		if(!k) return "";
+		const map={
+			"ArrowUp":"↑","ArrowDown":"↓","ArrowLeft":"←","ArrowRight":"→",
+			"Space":"␣","Enter":"⏎","Escape":"Esc","Backspace":"⌫",
+			"ShiftLeft":"Shift","ShiftRight":"Shift","ControlLeft":"Ctrl","ControlRight":"Ctrl",
+			"AltLeft":"Alt","AltRight":"Alt","MetaLeft":"Meta","MetaRight":"Meta"
+		};
+		if(map[k]) return map[k];
+		if(/^Key[A-Z]$/.test(k)) return k.slice(3);
+		if(/^Digit[0-9]$/.test(k)) return k.slice(5);
+		return k.length===1 ? k.toUpperCase() : k;
 	}
 	let div = document.createElement("div");
 	div.className = "button";
@@ -347,12 +252,13 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	div.style.color = 'rgba(255, 255, 255, 1)';
 	div.style.position = div.style.position || "absolute";
 	div.style.boxSizing = "border-box";
+	div.new = true;
 	if (!imgPath) {
 		div.style.display = "flex";
 		div.style.alignItems = "center";
 		div.style.justifyContent = "center";
 		div.textContent = label.substring(0, 5);
-		if (clrText) div.style.color = clrText;
+		if (clrText) div.style.color = setBrightness(clrText);
 		div.style.fontSize = 13 + "px";
 	}
 	div.label = label;
@@ -363,22 +269,19 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	div.setAttribute("tabindex", "0");
 
 	if (keyToggle) {
-	window.addEventListener("keydown", (e) => {if (!isInInputField && (e.code === keyToggle || e.key == keyToggle)) activate();});
-	if (1) {
-		const badge=document.createElement("span");
-		badge.className = "buttonBadge";
-		badge.textContent=formatKeyLabel(keyToggle);
-		div.appendChild(badge);}
+		window.addEventListener("keydown", (e) => { if (!isInInputField && (e.code === keyToggle || e.key == keyToggle || e.key.toLowerCase() == keyToggle)) activate(); });
+		if (!isMobile) {
+			div.badge = initLabelDiv(x + 50, canvas.height - 10, formatKeyLabel(keyToggle), 'rgba(255, 255, 255, 1)');
+			div.badge.style.fontSize = '12px';
+		}	
 	}
 
 	if (imgPath) {
-		 {
-			const img = new Image();
-			img.onload = () => { div.textContent = ''; 	div.style.background = `${color} url("${imgPath}") center/contain no-repeat`; };
-			img.onerror = ()=>{ div.style.setProperty('--btn-bg', color); div.style.backgroundColor = color; };
-			img.src = imgPath;
-			img.backgroundColor = "red";
-		}
+		const img = new Image();
+		img.onload = () => { div.textContent = ''; 	div.style.background = `${color} url("${imgPath}") center/contain no-repeat`; };
+		img.onerror = ()=>{ div.style.setProperty('--btn-bg', color); div.style.backgroundColor = color; };
+		img.src = imgPath;
+		img.backgroundColor = "red";
 		if (mouseFollowImg) {
 			div.cursorImg = initImageDiv(mouseFollowImg, CANVW / 2, CANVH / 2, "rgba(0,0,0,0)", document.body);
 			div.cursorImg.style.display = "none";
@@ -407,6 +310,7 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 			else div.classList.remove("activeButton");
 			if (onChange) { onChange(div.value != null && div.active ? value : div.value != null ? null : div.active); }
 		} else if (onChange) onChange(value);
+		div.new = false;
 		updateUi();
 		au.playSound(au.tuk);
 		div.classList.add("clicked");
@@ -526,165 +430,16 @@ function fitHeaderDragWidth(header){
 	header.style.left = clamp(curLeft, b.min, b.max) + "px";
 }
 
-
-const selButtonColor = '2px solid rgba(255, 255, 255, 1)';
-function updateUi()
-{
-	let openColor = uiLayerIndex == 0 ? selButtonColor : "none";
-	let closecolor = 'none';
-	for (let i = 0; i < uiPagesButtons.length; i++) {
-		let cb = uiPagesButtons[i];
-		let isOpen = uiPageIndex == i;
-		cb.style.border = isOpen ? openColor : closecolor;
-		cb.style.backgroundColor = setAlpha(cb.baseClr, isOpen ? 1 : 0.6);
-
-		for (const b of cb.buttons) { if (b.isSwitch) continue; b.style.display = isOpen ? 'block' : 'none'; }
-		for (const s of cb.sliders) s.style.display = isOpen ? 'block' : 'none';
-	}
-
-	openColor = uiLayerIndex == 1 ? selButtonColor : "2px solid rgba(255, 255, 255, 1)";
-	let uiButtons = uiPagesButtons[uiPageIndex].buttons;
-	for (let i = 0; i < uiButtons.length; i++) {
-		let b = uiButtons[i];
-		let isOpen = typeButton && b.label == typeButton.label;
-		if (uiPagesButtons[uiPageIndex].label === 'BRUSH') isOpen = b.value == BRUSHTYPE;
-		b.style.border = isOpen ? openColor : closecolor;
-		b.style.backgroundColor = setAlpha(b.baseClr, isOpen ? 1 : 0.6);
-	}
-}
-
-
-
-
-function switchUiPage(newPageIndex) {uiPageIndex = newPageIndex;}
-function setNewType(newIndex)
-{
-	switchBrushAction(null);
-	TYPEINDEX = newIndex;
-	for (const b of uiPagesButtons[uiPageIndex].buttons)
-		if (b.label == particleKeys[newIndex]) typeButton = b;
-	BRUSHCOLOR = PARTICLE_PROPERTIES[particleKeys[TYPEINDEX]].color;
-}
-function getCurButtonTypeIndex()
-{
-	for (let i = 0; i < uiPagesButtons[uiPageIndex].buttons.length; i++)
-	{
-		let b = uiPagesButtons[uiPageIndex].buttons[i];
-		if (b.label == particleKeys[TYPEINDEX]) return (i);
-	}
-	return (0);
-}
-
-function getCurTypeIndex(typeString) { return (particleKeys.indexOf(typeString)); }
-
-let settingBrushSize = false;
-function setNewBrushSize(newPercentile) { BRUSHSIZE = ((Math.min(GRIDW, GRIDH) / 3) / 100) * newPercentile; settingBrushSize = true; }
-function setNewBrushType(newType) { BRUSHTYPE = BRUSHTYPE == 'RECT' ? 'DISC' : 'RECT'; }
-function setNewGravity(newGravity) { GRAVITY = newGravity;}
-function setNewSpeed(newSpeed) { SIMSPEED = newSpeed; }
-function switchGridMode(newGridMode) { gridMode = newGridMode; }
-function setRAINPOW(newIntensity) { RAINPOW = (newIntensity / (PIXELSIZE));}
-function goToNextFrame() { switchPause(true); update(false); };
-function switchRewinding(newRewind) {ISREWINDING = newRewind;}
-function goToPrevFrame() {
-	if (!ISREWINDING) switchPause(true);
-	initGrid();
-	let hasReachedEnd = false;
-	for (const p of activeParticles) {
-		if (!p.prvP.length) { hasReachedEnd++; continue; }
-		let prvP = p.prvP.pop();
-		p.updatePosition(prvP[0], prvP[1], false);
-		p.velX = prvP[2];
-		p.velY = prvP[3];
-	}
-	if (hasReachedEnd >= activeParticles.length) { switchRewinding(); switchPause(true); }
-};
-
-function deactivateSwitchButton(button) {
-	button.active = false;
-	button.classList.remove("activeButton");
-}
-
-function switchRain(newActive) { ISRAINING = newActive; }
-
-function switchBrushAction(newAction) {
-	BRUSHACTION = newAction;
-	for (const b of brushActionButtons) {
-		if (b.value != newAction) deactivateSwitchButton(b);
-	}
-}
-
-function setNewPixelSize(newPixelSize){
-	if (newPixelSize <= 0 || newPixelSize === PIXELSIZE) return;
-	BRUSHSIZE = clamp(Math.round(BRUSHSIZE * (PIXELSIZE / newPixelSize)), 1, MAXBRUSHSIZE);
-	const scale = PIXELSIZE / newPixelSize;
-	PIXELSIZE = newPixelSize;
-	const newGRIDW = Math.max(1, Math.floor(CANVW / PIXELSIZE));
-	const newGRIDH = Math.max(1, Math.floor(CANVH / PIXELSIZE));
-	const newGrid = new Array(newGRIDW);
-	for (let x = 0; x < newGRIDW; x++) newGrid[x] = new Array(newGRIDH);
-	for (let i = 0; i < activeParticles.length; i++){
-		const p = activeParticles[i];
-		let nx = Math.round(p.x * scale);
-		let ny = Math.round(p.y * scale);
-		nx = clamp(nx, 0, newGRIDW - 1);
-		ny = clamp(ny, 0, newGRIDH - 1);
-
-		if (!newGrid[nx][ny]) {
-			p.x = nx; p.y = ny; p.newX = nx; p.newY = ny;
-			p.velX *= scale; p.velY *= scale;
-			newGrid[nx][ny] = p;
-			continue;
-		}
-		let placed = false;
-		const maxR = 8;
-		for (let r = 1; r <= maxR && !placed; r++){
-			for (let oy = -r; oy <= r && !placed; oy++){
-				for (let ox = -r; ox <= r && !placed; ox++){
-					const tx = nx + ox, ty = ny + oy;
-					if (tx < 0 || ty < 0 || tx >= newGRIDW || ty >= newGRIDH) continue;
-					if (!newGrid[tx][ty]){
-						p.x = tx; p.y = ty; p.newX = tx; p.newY = ty;
-						p.velX *= scale; p.velY *= scale;
-						newGrid[tx][ty] = p;
-						placed = true;
-					}
-				}
-			}
-		}
-		if (!placed){
-			p.active = false;
-			destroyedParticles.push(p);
-		}
-	}
-	GRIDW = newGRIDW;
-	GRIDH = newGRIDH;
-	grid = newGrid;
-	buildGridLayer();
-	buildWaterShades();
-}
-
-
-function switchHud(newActive) {
-	SHOWHUD = newActive;
-	infoMouse.style.display = SHOWHUD ? 'block' : 'none';
-	infoText.style.display = SHOWHUD ? 'block' : 'none';
-}
-
-
-function switchPause(newPause = !inPause) {
-    if (newPause == -1) newPause = !inPause;
-    inPause = newPause;
-    if (inPause) pauseButton.classList.add("activeButton");
-    else pauseButton.classList.remove("activeButton");
-}
-
-function fillScreen() {
-	initGrid();
-	activeParticles = [];
-	for (let x = 0; x < GRIDW; x++){
-		for (let y = GRIDH / 2; y < GRIDH; y++){
-			new Particle(x, y, particleKeys[TYPEINDEX]);
-		}
-	}
+function initLabelDiv(x, y, text = '', color = 'white', parent = document.body) {
+	let div = document.createElement("label");
+	div.className = "infoText";
+	div.style.position = "fixed";
+	div.style.top = y + "px";
+	div.style.left = x + "px";
+	div.style.whiteSpace = "pre";
+	div.style.fontFamily = "monospace";
+	div.textContent = text;
+	div.style.color = color;
+	if (parent) parent.appendChild(div);
+	return (div);
 }

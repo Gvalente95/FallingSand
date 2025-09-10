@@ -2,8 +2,8 @@ p.updateBurn = function () {
 	if (this.frozen) { this.frozen -= 50; this.burning = 0; }
 	if (--this.burning <= 0)
 	{
-		if (this.type == 'OIL') this.lt = 0;
-		else if (this.type == 'SAND' && dice(20)) this.setType('GLASS');
+		if (this.type === 'OIL') this.lt = 0;
+		else if (this.type === 'SAND' && dice(20)) this.setType('GLASS');
 		else this.setType('COAL');
 		this.burning = 0;
 	}
@@ -12,7 +12,7 @@ p.updateBurn = function () {
 	for (let x = -depth; x < depth; x++)
 		for (let y = -depth; y < depth; y++)
 		{
-			if (x == 0 && y == 0) continue;
+			if (x === 0 && y === 0) continue;
 			if (isOutOfBorder(this.x + x, this.y + y)) continue;
 			let px = pxAtP(this.x + x, this.y + y, this);
 			if (px && !px.burning && shouldBurnParticle('FIRE', px)) px.setToFire();
@@ -31,21 +31,22 @@ p.setToFire = function()
 {
 	if (this.expl) this.lt = 0;
 	if (this.frozen) { this.unFreeze(50); return; }
-	if (this.type == 'ICE') {return (this.replace('WATER'));}
+	if (this.type === 'ROCK') {return (this.setType('MAGMA'));}
+	if (this.type === 'ICE') {return (this.setType('WATER'));}
 	this.warm = 200;
 	if (this.wet > 50 && this.wetType != 'OIL') { this.wet -= 50; return; }
 	if (this.burning) return;
-	if (this.type == 'MAGMA') this.setType('MAGMA');
-	else if (this.type == 'MAGMA') this.setType('LAVA');
+	if (this.type === 'MAGMA') this.setType('MAGMA');
+	else if (this.type === 'MAGMA') this.setType('LAVA');
 	else {
 		this.burning = 120 - (this.brn / 10);
-		this.setColor(this.type == 'COAL' ? 'rgba(129, 89, 80, 1)' : 'rgba(228, 76, 16, 1)');
+		this.setColor(this.type === 'COAL' ? 'rgba(129, 89, 80, 1)' : 'rgba(228, 76, 16, 1)');
 	}
 }
 
 p.setWet = function(wetAmount = 100, type = 'WATER') {
 	if (this.physT != 'SOLID') return (0);
-	if (this.isShroom || this.type == 'FISH') return (0);
+	if (this.isShroom || this.type === 'FISH') return (0);
 	if (this.brnpwr) return (0);
 	if (this.wet) { this.wet = wetAmount; this.wetType = type; return (1); }
 	if (type != 'OIL') this.burning = 0;
@@ -56,15 +57,15 @@ p.setWet = function(wetAmount = 100, type = 'WATER') {
 }
 
 p.updateWet = function () {
-	if (this.burning) { if (this.wetType == 'OIL') this.wet = 0; else this.stopFire();}
-	if (time % 10 == 0 && --this.wet <= 0) { this.setColor(); return;}
+	if (this.burning) { if (this.wetType === 'OIL') this.wet = 0; else this.stopFire();}
+	if (--this.wet <= 0) { this.setColor(this.baseColor); return;}
 	else if (this.wet > 80)
 	{
 		let depth = 2;
 		for (let x = -depth; x < depth; x++)
 		for (let y = -depth; y < depth; y++)
 		{
-			if (x == 0 && y == 0) continue;
+			if (x === 0 && y === 0) continue;
 			if (isOutOfBorder(this.x + x, this.y + y)) continue;
 			let px = pxAtP(this.x + x, this.y + y, this);
 			if (px) px.setWet(this.wet - 10, this.wetType);
@@ -73,9 +74,13 @@ p.updateWet = function () {
 	if (dice(5000)) {
 		let pxAb = pxAtP(this.x, this.y - 1);
 		if (pxAb && pxAb.type === this.wetType) {
-			pxAb.replace('BUBBLE');
+			pxAb = pxAb.replace('BUBBLE');
 			pxAb.transformType = this.wetType;
 		}
+	}
+	if (dice((this.dns * (1000 - this.wet)))) {
+		this.setType('SHROOM');
+		this.isGrower = true;
 	}
 }
 
@@ -89,7 +94,7 @@ p.setFrozen = function (freezeAmount) {
 p.unFreeze = function(warmAmount = 5){
 	this.frozen = 0;
 	this.warm = warmAmount;
-	this.setColor();
+	this.setColor(this.baseColor);
 }
 
 p.updateFreeze = function () {

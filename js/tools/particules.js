@@ -115,29 +115,33 @@ function pushRadius(cx = MOUSEGRIDX, cy = MOUSEGRIDY, radius = BRUSHSIZE * 2, in
   }
 }
 
-function explodeRadius(cx = MOUSEGRIDX, cy = MOUSEGRIDY, radius = BRUSHSIZE, intensity = 5, setToFire = 0, ignoreType = null) {
+function explodeRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity = 5, setToFire = 0, ignoreType = null) {
 	const r2 = radius * radius;
 	let xPushLimits = [intensity * .01, intensity * .09];
 	let yPushLimits = [intensity * .1, intensity * .14];
-	for (let dy = -radius; dy <= radius; dy++) {
-	for (let dx = -radius; dx <= radius; dx++) {
-			if (dx*dx + dy*dy > r2) continue;
-			const gx = cx + dx, gy = cy + dy;
-			if (gx < 0 || gy < 0 || gx >= GRIDW || gy >= GRIDH) continue;
-			const p = pxAtP(gx, gy);
-			if (!p) continue;
-			if (ignoreType && p.type == ignoreType) continue;
-			if (p.expl) p.lt = 0;
-			let ddy = dy;
-			let ddx = dx;
-			if (dy >= -radius / 2) {
-				ddy = -radius / 2;
-				ddx = r_range(-radius, radius);
-			}
-			p.velX = ddx * f_range(xPushLimits[0], xPushLimits[1]);
-			p.velY = ddy * f_range(yPushLimits[0], yPushLimits[1]);
-			if (setToFire && dice(2000)) p.setToFire(setToFire);
-		}
+	for (let posY = -radius; posY <= radius; posY++) {
+        for (let posX = -radius; posX <= radius; posX++) {
+            if ((posX * posX + posY * posY) <= r2) {
+				let rx = cx + posX * PIXELSIZE;
+				let ry = cy + posY * PIXELSIZE;
+				let gx = Math.floor(rx / PIXELSIZE);
+				let gy = Math.floor(ry / PIXELSIZE);
+				if (gx < 0 || gy < 0 || gx >= GRIDW || gy >= GRIDH) continue;
+				const p = pxAtP(gx, gy);
+				if (!p) continue;
+				if (ignoreType && p.type == ignoreType) continue;
+				if (p.expl) p.lt = 0;
+				let ddy = gy;
+				let ddx = gx;
+				if (posY >= -radius / 2) {
+					ddy = -radius / 2;
+					ddx = r_range(-radius, radius);
+				}
+				p.velX = ddx * f_range(xPushLimits[0], xPushLimits[1]);
+				p.velY = ddy * f_range(yPushLimits[0], yPushLimits[1]);
+				if (setToFire && dice(2000)) p.setToFire(setToFire);
+            }
+        }
 	}
 }
 

@@ -42,6 +42,7 @@ function hexToRgb(hex) {
     let b = parseInt(hex.substring(4, 6), 16);
     return `${r}, ${g}, ${b}`;
 }
+
 function getR(hex) { return (parseInt(hex.substring(0, 2), 16));}
 function getG(hex) { return (parseInt(hex.substring(2, 4), 16)); }
 function getB(hex) { return (parseInt(hex.substring(4, 6), 16)); }
@@ -169,4 +170,32 @@ function recolorImage(imgPath, tintColor, callback) {
         console.error("Failed to load image:", imgPath);
         callback(null);
     };
+}
+
+function setBrightness(color, minLuminance = 150) {
+	let r, g, b, a = 1;
+    let returnAsString = false;
+    if (typeof color === 'string') {
+        const matches = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+        if (!matches) return color;
+        r = parseInt(matches[1]);
+        g = parseInt(matches[2]);
+        b = parseInt(matches[3]);
+        a = matches[4] !== undefined ? parseFloat(matches[4]) : 1;
+        returnAsString = true;
+    } else if (Array.isArray(color)) {
+        r = color[0];
+        g = color[1];
+        b = color[2];
+        a = color[3] !== undefined ? color[3] : 1;
+    } else return color;
+    let luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+    if (luminance < minLuminance && luminance > 0) {
+        const scale = minLuminance / luminance;
+        r = Math.min(255, Math.round(r * scale));
+        g = Math.min(255, Math.round(g * scale));
+        b = Math.min(255, Math.round(b * scale));
+    }
+    if (returnAsString) return `rgba(${r}, ${g}, ${b}, ${a})`;
+    return [r, g, b, a];
 }

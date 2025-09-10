@@ -49,19 +49,23 @@ function showParticle(prt, x, y, alpha, color = prt.color) {
 	ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, PIXELSIZE, PIXELSIZE);
 }
 
+function renderBrush() {
+	if (MOUSEX < 0 || MOUSEX > canvas.width || MOUSEY < 0 || MOUSEY > canvas.height) return;
+	if (!settingBrushSize && (MOUSEPRESSED || !SHOWBRUSH)) return;
+	let px = settingBrushSize ? CANVW / 2 : MOUSEGRIDX * PIXELSIZE; py = settingBrushSize ? CANVH / 2 : MOUSEGRIDY * PIXELSIZE;
+	let rad = BRUSHSIZE * PIXELSIZE;
+	let color = BRUSHCOLOR ? setBrightness(BRUSHCOLOR) : "#ffffff39";
+	if (BRUSHTYPE == BRUSHTYPES.DISC)
+		drawCircle(px, py, rad / 4, null, color);
+	else if (BRUSHTYPE == BRUSHTYPES.RECT)
+		drawRect(px - rad, py - rad, rad * 2, rad * 2, null, color, 2);
+}
+
 function render() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	for (let i = 0; i < activeParticles.length; i++) showParticle(activeParticles[i], activeParticles[i].x, activeParticles[i].y, 1);
-	if (((settingBrushSize) || (!isMobile && !MOUSEPRESSED) || (isMobile && MOUSEPRESSED))) {
-		let px = settingBrushSize ? CANVW / 2 : MOUSEGRIDX * PIXELSIZE; py = settingBrushSize ? CANVH / 2 : MOUSEGRIDY * PIXELSIZE;
-		let rad = BRUSHSIZE * PIXELSIZE;
-		let color = BRUSHCOLOR ? setAlpha(BRUSHCOLOR, .5) : null;
-		if (BRUSHTYPE == BRUSHTYPES.DISC)
-			drawCircle(px, py, rad / 4, color, "#575757b0", 2);
-		else if (BRUSHTYPE == BRUSHTYPES.RECT)
-			drawRect(px - rad, py - rad, rad * 2, rad * 2, color, "#575757b0", 2);
-	}
 	if (gridMode) { ctx.drawImage(gridLayer, 0, 0); }
+	for (let i = 0; i < activeParticles.length; i++) showParticle(activeParticles[i], activeParticles[i].x, activeParticles[i].y, 1);
+	renderBrush();
 	if (SHOWHUD) updateHUD();
 }
 

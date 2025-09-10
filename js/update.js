@@ -2,10 +2,10 @@ function updateInput()
 {
 	PXATMOUSE = pxAtP(MOUSEGRIDX, MOUSEGRIDY);
 	if (MOUSEPRESSED && !isTwoFingerTouch) {
-		if ((BRUSHACTION == 'CUT' && SHOULDCUT) || KEYS['Shift']) deleteParticulesAtMouse();
-		else if (BRUSHACTION == 'PUSH') pushRadius();
-		else if (BRUSHACTION == 'VIBRATE') vibrateRadius();
-		else if (BRUSHACTION == 'EXPLODE') explodeRadius();
+		if ((BRUSHACTION === 'CUT' && SHOULDCUT) || KEYS['Shift']) deleteParticulesAtMouse();
+		else if (BRUSHACTION === 'PUSH') pushRadius();
+		else if (BRUSHACTION === 'VIBRATE') vibrateRadius();
+		else if (BRUSHACTION === 'EXPLODE') explodeRadius();
 		else launchParticules(particleKeys[TYPEINDEX]);
 	}
 	if (KEYS['Backspace']) deleteParticulesAtMouse();
@@ -38,6 +38,8 @@ function updateTime() {
 	}
 }
 
+let updateCreInterval = 100;
+let updateCre = 0;
 function update(loop = !inPause) {
 	if (isInInputField) return (requestAnimationFrame(update));
 	updateTime();
@@ -50,15 +52,14 @@ function update(loop = !inPause) {
 		return;
 	}
 	time++;
-	if (ISREWINDING) { goToPrevFrame(); }
-	else {
-		for (let i = 0; i < particleEmitters.length; i++) particleEmitters[i].update();
-		for (let i = 0; i < activeParticles.length; i++) activeParticles[i].update();
-	}
+	updateCre = time % updateCreInterval === 0;
+	for (let i = 0; i < particleEmitters.length; i++) particleEmitters[i].update();
+	for (let i = 0; i < activeParticles.length; i++) activeParticles[i].update();
 	flushDestroyedParticles();
 	if (ISRAINING)
 		for (let i = 0; i < RAINPOW; i++)
 			launchParticlesRect(particleKeys[TYPEINDEX], r_range(0, GRIDW), 1, 1, 50);
 	render();
-	if (loop) requestAnimationFrame(update);
+	// if (time % 100 == 0) PROF.report(0);
+	requestAnimationFrame(update);
 }
