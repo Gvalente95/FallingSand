@@ -76,11 +76,7 @@ let PARTICLE_PROPERTIES = {
 ['ROCK']:	{ color: 'rgba(76, 78, 1, 1)',		lt: Infinity,	brn: 1,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 95,	spread: 0,	expl: 0, kn: 1},
 ['DIAMOND']:{ color: 'rgba(102, 203, 221, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 1000,	spread: 0,	expl: 0, kn: 0},
 ['TNT']:	{ color: 'rgba(74, 104, 115, 1)',	lt: 20,		brn: 999,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 50,	spread: 0,	expl: 5, kn: 0},
-<<<<<<< HEAD
 ['COAL']:	{ color: 'rgba(68, 68, 68, 1)',	lt: 10,		brn: 1,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 45,	spread: 2,	expl: 0, kn: 0},
-=======
-['COAL']:	{ color: 'rgba(68, 68, 68, 1)',	lt: 20,		brn: 1,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 45,	spread: 2,	expl: 0, kn: 0},
->>>>>>> 144abe00646466cee9cbd8d4100b4b68bdf074d5
 ['RAINBOW']:{ color: 'rgba(255, 0, 234, 1)',	lt: Infinity,	brn: 100,	brnpwr: 0, 		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 10,	spread: 0,	expl: 0, kn: 0},
 ['MAGMA']:	{ color: 'rgba(198, 64, 2, 1)',	lt: 12,		brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 100,	spread: 0,	expl: 0, kn: 0},
 ['OIL']:	{ color: 'rgba(50, 96, 84, 1)',	lt: Infinity,	brn: 1000,	brnpwr: 0,		douse: 1, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 1,	spread: 20,	expl: 0, kn: 0},
@@ -112,7 +108,6 @@ let particleKeys = Object.keys(PARTICLE_PROPERTIES);
 const CREATIONMODE = Object.freeze({ HEAT: 'HEAT', COLD: 'COLD', PRESSURE: 'PRESSURE', TIME: 'TIME', CHARGE: 'CHARGE'})
 function initCreationRules() {
 	for (let i = 0; i < particleKeys.length; i++) PARTICLE_PROPERTIES[particleKeys[i]].cr = null;
-<<<<<<< HEAD
 	// addCreationRule('SAND', { mode: 'TIME', need: 'ROCK, WATER', value: 1, chance: .1, result: 'GRASS' });
 	// addCreationRule('SAND', { mode: 'TIME', need: 'WATER', chance: .1, result: 'GRASS' });
 	// addCreationRule('SAND', {mode:'HEAT', need:'LAVA', chance:.1, result:'GLASS'});
@@ -124,20 +119,6 @@ function initCreationRules() {
 	// addCreationRule('WOOD', { mode: 'PRESSURE, TIME', value: 50, result: 'OIL' });
 	// addCreationRule('GRASS', { mode: 'TIME', need: 'WATER', value: 5, chance: .1, result: 'PLANT' });
 	// addCreationRule('ROCK', { mode: 'HEAT', value: 100, chance: 100, result: 'LAVA' });
-=======
-	// return;
-	addCreationRule('SAND', { mode: 'TIME', need: 'ROCK, WATER', value: 1, chance: .1, result: 'GRASS' });
-	addCreationRule('SAND', { mode: 'TIME', need: 'WATER', chance: .1, result: 'GRASS' });
-	addCreationRule('SAND', {mode:'HEAT', need:'LAVA', chance:.1, result:'GLASS'});
-	addCreationRule('ROCK', { mode: 'TIME', need: 'WATER', value: 10, chance: .1, result: 'SAND'});
-	addCreationRule('COAL', { mode: 'PRESSURE, HEAT', chance: .1, value: 20, result: 'DIAMOND' });
-	addCreationRule('OIL', { mode: 'PRESSURE', need: 'CHEMX, WOOD', chance: 100, result: 'TNT' });
-	addCreationRule('RAINBOW', { mode: 'TIME', need: 'CLOUD', chance: .1, result: 'RAINBOW' });
-	addCreationRule('ROCK', { mode: 'PRESSURE, HEAT', value: 1000, chance: .1, result: 'MAGMA' });
-	addCreationRule('WOOD', { mode: 'PRESSURE, TIME', value: 50, result: 'OIL' });
-	addCreationRule('GRASS', { mode: 'TIME', need: 'WATER', value: 5, chance: .1, result: 'PLANT' });
-	addCreationRule('ROCK', { mode: 'HEAT', value: 100, chance: 100, result: 'LAVA' });
->>>>>>> 144abe00646466cee9cbd8d4100b4b68bdf074d5
 	rebuildCreationRules();
 }
 

@@ -98,28 +98,6 @@ function getRainbowColor(time, speed = 0.002) {
     return `rgb(${r}, ${g}, ${b})`;
 }
 
-<<<<<<< HEAD
-=======
-  if (typeof getA === 'function') {
-    const a = getA(color);
-    if (a != null) return `rgba(${r}, ${g}, ${b}, ${a})`;
-  }
-  if (typeof color === 'string' && color[0] === '#') {
-    const h = (n) => n.toString(16).padStart(2, '0');
-    return `#${h(r)}${h(g)}${h(b)}`;
-  }
-  return `rgb(${r}, ${g}, ${b})`;
-}
-
-
-function getRainbowColor(time, speed = 0.002) {
-    const r = Math.floor(127 * Math.sin(speed * time + 0) + 128);
-    const g = Math.floor(127 * Math.sin(speed * time + 2) + 128);
-    const b = Math.floor(127 * Math.sin(speed * time + 4) + 128);
-    return `rgb(${r}, ${g}, ${b})`;
-}
-
->>>>>>> 144abe00646466cee9cbd8d4100b4b68bdf074d5
 function getTimeColor() {
 	let phase = 50;
 	let t = time;

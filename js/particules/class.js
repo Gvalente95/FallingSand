@@ -39,15 +39,8 @@ class Particle{
 		this.setVel(velX, velY);
 		this.setType(type);
 		if (color) this.setColor(color);
-<<<<<<< HEAD
 		this.x = clamp(x, 0, GRIDW - 1);
 		this.y = clamp(y, 0, GRIDH - 1);
-=======
-		this.x = clamp(x, 0, GRIDW);
-		this.y = clamp(y, 0, GRIDH);
-		this.newX = x;
-		this.newY = y;
->>>>>>> 144abe00646466cee9cbd8d4100b4b68bdf074d5
 		this.active = true;
 		grid[this.x][this.y] = this;
 		activeParticles.push(this);
@@ -80,7 +73,6 @@ class Particle{
 			if (this.expl) {
 				explodeRadius(this.x * PIXELSIZE, this.y * PIXELSIZE, 5, 10 * PIXELSIZE, 5);
 				if (dice(10)) { this.setType('COAL'); this.setToFire(40); return;}
-<<<<<<< HEAD
 			}
 			if (this.physT !== 'GAS') {
 				const x = this.x;
@@ -95,19 +87,7 @@ class Particle{
 						q.newY = ny;
 					}
 				}
-=======
->>>>>>> 144abe00646466cee9cbd8d4100b4b68bdf074d5
 			}
-			// else if (this.physT === 'SOLID') {
-			// 	let y = this.y - 1;
-			// 	let p = pxAtP(this.x, y);
-			// 	while (p && p.physT === 'DYNAMIC')
-			// 	{
-			// 		grid[p.x][p.y] = null;
-			// 		grid[p.x][++p.y] = p;
-			// 		p = pxAtP(this.x, --y);
-			// 	}
-			// }
 			return (this.toRemove(), 0);
 		}
 	}
