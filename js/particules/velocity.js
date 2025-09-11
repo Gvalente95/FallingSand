@@ -1,18 +1,35 @@
 p.updateLiquidVelocity = function (g) {
+<<<<<<< HEAD
 	if (!g && this.type === 'WATER' && dice(20000)) {
 		const n = this.replace('BUBBLE');
 		n.transformType = 'WATER';
 		return;
 	}
 	if (dice(400) && !pxAtP(this.x, this.y - 1, this))
+=======
+	if (!g) {
+		this.velY += GRAVITY;
+		if (this.type === 'WATER' && dice(20000)) {
+			const n = this.replace('BUBBLE');
+			n.transformType = 'WATER';
+		}
+		return;
+	}
+	if (this.type == 'WATER' && dice(400) && !pxAtP(this.x, this.y - 1, this))
+>>>>>>> 144abe00646466cee9cbd8d4100b4b68bdf074d5
 	{
 		const n = this.replace('BUBBLE');
 		n.transformType = 'WATER';
 		return;
 	}
 	this.velY += GRAVITY;
+<<<<<<< HEAD
 	// this.velY *= 1 - g.dns * .1;
 	// this.velX *= .99;
+=======
+	this.velY *= 1 - g.dns * .1;
+	this.velX *= .99;
+>>>>>>> 144abe00646466cee9cbd8d4100b4b68bdf074d5
 };
 
 p.updateGasVelocity = function () {

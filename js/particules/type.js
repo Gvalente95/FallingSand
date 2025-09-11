@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 p.shouldSpreadCheck = function () {
 	let massMax = 3;
 	let massAbove = 0;
@@ -41,6 +42,8 @@ p.updateLiquid = function (curX, curY, spreadAm = this.spreadAmount) {
 	this.updatePosition(newX, curY);
 };
 
+=======
+>>>>>>> 144abe00646466cee9cbd8d4100b4b68bdf074d5
 p.updateCloud = function () {
 	if (time % 3 === 0) return;
 	let newX = this.x + this.xDir;
@@ -405,8 +408,11 @@ const UPDATE_HANDLERS = {
 	ANT:   p => p.updateAnt(p.newX, p.newY),
 	FISH:  p => p.updateFish(p.newX, p.newY),
 	PLANT: p => p.updatePlant(p.newX, p.newY),
+<<<<<<< HEAD
 	SHROOM: p => p.updateShroom(p.newX, p.newY),
 	SHROOMX: p => p.updateShroom(p.newX, p.newY),
+=======
+>>>>>>> 144abe00646466cee9cbd8d4100b4b68bdf074d5
 	FIRE:  p => p.FireEffect(p.newX, p.newY),
 	TORCH: p => p.FireEffect(p.newX, p.newY),
 	MAGMA: p => p.MagmaEffect(p.newX, p.newY),
@@ -417,6 +423,7 @@ const UPDATE_HANDLERS = {
 
 p.updateType = function () {
 	if (this.cor) this.applyCorrosion();
+<<<<<<< HEAD
 	if (this.physT == 'LIQUID') {
 		if (this.frozen) return;
 		this.updateVelocity();
@@ -489,3 +496,21 @@ p.setType = function(newType)
 	else if (this.type == 'ANTEGG') this.transformType = 'ANT';
 	else if (this.type == 'COAL') { this.velX = 0; }
 }
+=======
+	if (this.type === 'WOOD') return;
+	if (this.type === 'CLOUD') return this.updateCloud();
+	if (this.isShroom && this.hasTouchedBorder) return this.updateShroom(this.x, this.y);
+	if (this.type === 'TORCH' && dice(10)) new Particle(this.x, this.y - 1, 'FIRE');
+	if (this.updT === 'STATIC') return;
+
+	if (this.type !== 'PLANT') this.updateVelocity();
+	if (this.velX || this.velY) this.updateMovement();
+
+	if (this.physT === 'LIQUID') return this.updateLiquid(this.newX, this.newY);
+	if (this.isShroom) return this.updateShroom(this.newX, this.newY);
+
+	const h = UPDATE_HANDLERS[this.type];
+	if (h) return h(this);
+	this.updatePosition(this.newX, this.newY);
+};
+>>>>>>> 144abe00646466cee9cbd8d4100b4b68bdf074d5

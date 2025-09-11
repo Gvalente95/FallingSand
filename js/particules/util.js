@@ -38,11 +38,73 @@ p.setColor = function(color = this.properties.color) {
         this.rgb = `${rgb[0]},${rgb[1]},${rgb[2]}`;
     } else this.rgb = hexToRgb(color);
 }
+<<<<<<< HEAD
 
 p.replace = function(newType){
 	let p = [this.x, this.y];
 	this.toRemove();
 	return (new Particle(p[0], p[1], newType));
+=======
+
+p.replace = function(newType){
+	let p = [this.x, this.y];
+	this.toRemove();
+	return (new Particle(p[0], p[1], newType));
+}
+
+p.setType = function(newType)
+{
+	this.type = newType;
+	this.isShroom = this.type == 'SHROOM' || this.type == 'SHROOMX';
+	this.properties = PARTICLE_PROPERTIES[newType];
+	this.cr = this.properties.cr;
+	this.lt = this.properties.lt * f_range(.5, 1.5);
+	this.douse = this.properties.douse;
+	this.physT = this.properties.physT;
+	this.expl = this.properties.expl;
+	this.brn = this.properties.brn;
+	this.brnpwr = this.properties.brnpwr;
+	this.cor = this.properties.cor;
+	this.dns = this.properties.dns;
+	this.spreadAmount = this.properties.spread;
+	this.updT = this.properties.updT;
+	this.inWater = false;
+	this.timeInWater = 0;
+	this.ground = null;
+	this.xDir = rdir(); this.yDir = rdir();
+	this.heigth = 0;
+	this.parent = null;
+	this.child = null;
+	this.transformType = null;
+	if (ISGAME) setTimeout(() => { discoverType(this) }, 50);
+	if (this.updT == 'STATIC') { this.velY = 0; this.velX = 0; }
+	if (this.type == 'FISH') {
+		let clrs = ["rgba(135, 60, 163, 1)", "rgba(11, 93, 61, 1)", this.properties.color];
+		this.setColor(clrs[r_range(0, clrs.length)]);
+	}
+	else if (this.isShroom) {
+		this.headColor = randomizeColor(this.properties.color, 50);
+		this.setColor(randomizeColor(newType == 'SHROOMX' ? 'rgba(71, 45, 119, 1)' : 'rgba(45, 119, 83, 1)'));
+		this.isGrowing = false;
+		this.isGrower = this.id % 4 == 0;
+		this.maxHeight = r_range(2, 20);
+		this.growSpeed = r_range(2, 6);
+	}
+	else this.setColor(this.type != 'WOOD' && this.physT != 'LIQUID' || this.type == 'LAVA' ?
+		randomizeColor(this.properties.color) : this.properties.color);
+	this.baseColor = this.color;
+	if (this.type == 'PLANT')
+	{
+		this.growSpeed = r_range(1, 3);
+		this.velX = 0; this.velY = 0;
+		this.dirAng = Math.atan2(f_range(-1,1), f_range(-1,1));
+		this.oscPhase = Math.random() * Math.PI * 2;
+		this.oscSpeed = f_range(0.0025, 0.006);
+		this.oscAmp = f_range(2, 6);
+	}
+	else if (this.type == 'ANTEGG') this.transformType = 'ANT';
+	else if (this.type == 'COAL') { this.velX = 0; }
+>>>>>>> 144abe00646466cee9cbd8d4100b4b68bdf074d5
 }
 
 function shouldBurn(agressor, victim)
