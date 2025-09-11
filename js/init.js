@@ -22,23 +22,22 @@ function initParamHeader(yPos, height)
 	paramheader = addHeader(yPos, null, height, null, sldW * n);
 	sliders.forEach(slider => paramheader.appendChild(slider));
 	fitHeaderDragWidth(paramheader);
-	return (yPos + height);
 }
 
 let rewButton = null;
 let pauseButton = null;
 
 let brushActionButtons = [];
-function initActionHeader(yPos, color = 'red', height = 40)
+function initActionHeader(yPos, color = 'red')
 {
-	let xMargin = 65;
+	let xMargin = btnW + uiXmargin;
 	let nn = 0;
 
 	const wp = "ressources/img/WHITE/";
 	const p = "ressources/img/WHITE/";
 
 	let clr = "rgba(33, 23, 37, 1)"
-	let hdr = addHeader(yPos, color, height, null, 1);
+	let hdr = addHeader(yPos, color, btnH, null, 1);
 	hdr.style.left = "0px";
 
 	pauseButton = initButton("Pause", 5 + xMargin * nn++, 0, clr, switchPause, -1, hdr, false, 'Space', p + "pause.png", null, false, clr);
@@ -57,16 +56,15 @@ function initActionHeader(yPos, color = 'red', height = 40)
 	initButton("Hud", 5 + xMargin * nn++, 0, clr, switchHud, null, hdr, true, 'u', p + "info.png", null, false, clr);
 
 	fitHeaderDragWidth(hdr);
-	return (yPos + height);
 }
 
 function initParticlePagesHeader(y) {
-    const buttonSpread = 65;
+    const buttonSpread = btnW + uiXmargin;
     const particleTypes = TAGS.map(tag => tag.type);
     const tabsCount = particleTypes.length;
     const tabsContentW = tabsCount * buttonSpread + 10;
     const tabsDragW = Math.max(0, tabsContentW - CANVW);
-	const pageHeader = addHeader(y, null, 40, null, tabsDragW);
+	const pageHeader = addHeader(y, null, btnH, null, tabsDragW);
 	const background = 'rgba(94, 73, 73, 0.16)';
     for (let i = 0; i < particleTypes.length; i++) {
         const name = particleTypes[i];
@@ -75,8 +73,8 @@ function initParticlePagesHeader(y) {
         famButton.sliders = [];
         famButton.buttons = [];
         famButton.label = name;
-        const elementsY = y + 45;
-        const elementsHeader = addHeader(elementsY, null, 40, null, 1);
+        const elementsY = y + btnH + 5;
+        const elementsHeader = addHeader(elementsY, null, btnH, null, 1);
         let xp = 0;
 		for (let v = 0; v < particleKeys.length; v++) {
 			const key = particleKeys[v];
@@ -102,18 +100,19 @@ function initParticlePagesHeader(y) {
         uiPagesButtons.push(famButton);
     }
     fitHeaderDragWidth(pageHeader);
-    return y + 80;
 }
 
 function initUi()
 {
-	let y = initActionHeader(CANVH, 'rgb(23, 14, 23)');
-	y = initParamHeader(y + 2 , 35);
-	y = initParticlePagesHeader(y + 2, 'rgb(23, 14, 23)');
+	const paramHeight = 35;
+	initActionHeader(CANVH, 'rgb(23, 14, 23)');
+	initParamHeader(CANVH + btnH, paramHeight);
+	initParticlePagesHeader(CANVH + btnH + paramHeight, 'rgb(23, 14, 23)');
 	initInfoText();
-	switchUiPage(0);
 	setNewType(0);
 	setNewBrushType('DISC');
+	switchUiPage(0);
+	uiLayerIndex = 0;
 	updateUi();
 }
 

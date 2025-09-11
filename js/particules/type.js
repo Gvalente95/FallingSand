@@ -138,12 +138,10 @@ p.updateAnt = function (curX, curY) {
 		}
 	}
 
-	function isAtCorner(x, y) { return ((x === 0 && y === 0) || (x === GRIDW - 1 && y === 0) || (x === 0 && y === GRIDH - 1) || (x === GRIDW - 1 && y === GRIDH - 1)) }
 	function isValid(x, y, xd, yd) { return (!pxAtP(x + xd, y + yd, this) && !isOutOfBorder(x + xd, y + yd)); }
-	function isAtBorder(x, y) { return (x === 0 || x === GRIDW - 1 || y === 0 || y === GRIDH - 1); }
 
 	if (curX <= 0 || curX >= GRIDW - 1) {
-		if (dice(4) && isAtCorner(curX, curY)) this.xDir *= -1;
+		if (dice(4) && atCorner(curX, curY)) this.xDir *= -1;
 		else {
 			this.xDir = 0;
 			if (curY === GRIDH - 1) this.yDir = -1;
@@ -151,14 +149,14 @@ p.updateAnt = function (curX, curY) {
 		}
 	}
 	else if (curY <= 0 || curY >= GRIDH - 1) {
-		if (dice(4) && isAtCorner(curX, curY)) this.yDir *= -1;
+		if (dice(4) && atCorner(curX, curY)) this.yDir *= -1;
 		else {
 			this.yDir = 0;
 			if (curX === 0) this.xDir = -1;
 			if (curX <= 0) this.xDir = 0;
 		}
 	}
-	if ((!isAtBorder(curX, curY)) && !pxAtP(curX + this.xDir, curY + 1, this) && (!pxAtP(curX - 1, curY, this) && !pxAtP(curX + 1, curY, this))) {
+	if ((!atBorder(curX, curY)) && !pxAtP(curX + this.xDir, curY + 1, this) && (!pxAtP(curX - 1, curY, this) && !pxAtP(curX + 1, curY, this))) {
 		curY++;
 		if (this.yDir === -1) this.yDir = 0;
 		this.xDir = 0;
@@ -424,7 +422,6 @@ p.updateType = function () {
 		this.updateLiquid(this.newX, this.newY);
 		return;
 	}
-	if (this.type === 'WOOD') return;
 	else if (this.type === 'CLOUD') return this.updateCloud();
 	else if (this.isShroom && this.hasTouchedBorder) return this.updateShroom(this.x, this.y);
 	else if (this.type === 'TORCH' && dice(10)) new Particle(this.x, this.y - 1, 'FIRE');

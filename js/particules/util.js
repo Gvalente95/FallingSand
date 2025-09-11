@@ -71,5 +71,3 @@ function shouldBurnParticle(typeA, victim)
 	let sumChance = Math.max(1, 2000 - brn - burnForce);
 	return (dice(sumChance));
 }
-
-p.getNeigh = function (dir) {return (pxAtP(this.x + dir[0], this.y + dir[1], this));}

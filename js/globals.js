@@ -1,7 +1,7 @@
 //	INPUT
 KEYS = {};
 MOUSECLICKED = MOUSEPRESSED = false;
-MOUSEX = MOUSEY = null;
+MOUSEX = MOUSEY = 0;
 MOUSEDX = MOUSEDY = 0;
 MOUSEGRIDX = MOUSEGRIDY = 0;
 MOUSEMOVED = false;
@@ -25,7 +25,24 @@ TYPEINDEX = 0;
 MAXREWIND = 30;
 RAINPOW = 50;
 
-const DIR = Object.freeze({ LEFT: [-1, 0], UP: [0, -1], DOWN: [0, 1], RIGHT: [1, 0] })
+//	UI
+let uiContainer = document.createElement("div");
+let uiDisplayed = false;
+let uiPagesButtons = [];
+let uiPageContent = [];
+let typeButton = null;
+let gridLayer = null;
+let inPause = false;
+let gridMode = true;
+let uiPageIndex = 0;
+let uiLayerIndex = 0;
+let uiXmargin = 5;
+let gridCacheKey = "";
+const rs = getComputedStyle(document.documentElement);
+const btnWpx = rs.getPropertyValue('--btnW').trim(); // "50px"
+const btnHpx = rs.getPropertyValue('--btnH').trim();
+const btnW = parseFloat(btnWpx); // 50
+const btnH = parseFloat(btnHpx); // 50
 
 BRUSHACTION = null;
 ISRAINING = false;
@@ -37,21 +54,9 @@ const FLOCK = { r: 10, sep: 1.2, ali: 0.8, coh: 0.35, maxSpd: 1.8, maxAcc: 0.15 
 
 //	CANVAS
 CANVW = window.innerWidth;
-CANVH = window.innerHeight - 165;
+CANVH = window.innerHeight - (50 + (btnH * 3));
 GRIDW = Math.floor(CANVW / PIXELSIZE);
 GRIDH = Math.floor(CANVH / PIXELSIZE);
-
-//	UI
-let uiPagesButtons = [];
-let uiPageContent = [];
-let typeButton = null;
-let gridLayer = null;
-let inPause = false;
-let gridMode = true;
-let uiPageIndex = 0;
-let uiLayerIndex = 0;
-let gridCacheKey = "";
-
 canvas = document.createElement('canvas');
 canvas.style.backgroundColor = "black";
 ctx = canvas.getContext('2d');
@@ -64,10 +69,11 @@ let grid = [];
 let destroyedParticles = [];
 let activeParticles = [];
 let particleEmitters = [];
+let selParticles = [];
 
 const PHYSTYPES = Object.freeze({ SOLID: 'SOLID', LIQUID: 'LIQUID', GAS: 'GAS', STATIC: 'STATIC' });
 const physKeys = Object.keys(PHYSTYPES);
-const UPDATE_TYPES = Object.freeze({ STATIC: 'STATIC', DYNAMIC: 'DYNAMIC', ALIVE: 'ALIVE', });
+const UPDATE_TYPES = Object.freeze({ STATIC: 'STATIC', DYNAMIC: 'DYNAMIC', ALIVE: 'ALIVE', GEL: 'GEL'});
 
 let PARTICLE_PROPERTIES = {
 ['GRASS']:	{ color: 'rgba(86, 223, 36, 1)',	lt: Infinity,	brn: 900,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 15,	spread: 0,	expl: 0, kn: 1},
@@ -75,15 +81,17 @@ let PARTICLE_PROPERTIES = {
 ['GLASS']:	{ color: 'rgba(208, 226, 239, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 90,	spread: 0,	expl: 0, kn: 0},
 ['ROCK']:	{ color: 'rgba(76, 78, 1, 1)',		lt: Infinity,	brn: 1,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 95,	spread: 0,	expl: 0, kn: 1},
 ['DIAMOND']:{ color: 'rgba(102, 203, 221, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 1000,	spread: 0,	expl: 0, kn: 0},
-['TNT']:	{ color: 'rgba(74, 104, 115, 1)',	lt: 20,		brn: 999,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 50,	spread: 0,	expl: 5, kn: 0},
+['TNT']: 	{ color: 'rgba(74, 104, 115, 1)', lt: Infinity, brn: 999, brnpwr: 0, douse: 0, cor: 0, physT: 'SOLID', updT: 'DYNAMIC', dns: 50, spread: 0, expl: 5, kn: 0 },
+['DYNAMITE']:{ color: 'rgba(115, 99, 74, 1)',	lt: 5,		brn: 999,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 50,	spread: 0,	expl: 5, kn: 0},
 ['COAL']:	{ color: 'rgba(68, 68, 68, 1)',	lt: 10,		brn: 1,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 45,	spread: 2,	expl: 0, kn: 0},
 ['RAINBOW']:{ color: 'rgba(255, 0, 234, 1)',	lt: Infinity,	brn: 100,	brnpwr: 0, 		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 10,	spread: 0,	expl: 0, kn: 0},
 ['MAGMA']:	{ color: 'rgba(198, 64, 2, 1)',	lt: 12,		brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 100,	spread: 0,	expl: 0, kn: 0},
+['WATER']: { color: 'rgba(0, 191, 255, 1)', lt: Infinity, brn: 0, brnpwr: 0, douse: 1, cor: 0, physT: 'LIQUID', updT: 'DYNAMIC', dns: 2, spread: 10, expl: 0, kn: 1 },
 ['OIL']:	{ color: 'rgba(50, 96, 84, 1)',	lt: Infinity,	brn: 1000,	brnpwr: 0,		douse: 1, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 1,	spread: 20,	expl: 0, kn: 0},
 ['ACID']:	{ color: 'rgba(131, 35, 163, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, cor: 1000, physT:'LIQUID',updT: 'DYNAMIC', dns: 1.8,	spread: 6,	expl: 0, kn: 0},
 ['CHEMX']:	{ color: 'rgba(16, 96, 28, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, cor: 1500, physT:'LIQUID',updT: 'DYNAMIC', dns: 1.9,	spread: 6,	expl: 0, kn: 0},
 ['BUBBLE']:	{ color: 'rgba(255, 255, 255, 1)',	lt: 1,		brn: 0,		brnpwr: 0,		douse: 1, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 1,	spread: 20,	expl: 0, kn: 0},
-['WATER']:	{ color: 'rgba(0, 191, 255, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 2,	spread: 10,	expl: 0, kn: 1},
+['BLOB']:	{ color: 'rgba(0, 191, 255, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'GEL', dns: 2,	spread: 10,	expl: 0, kn: 0},
 ['LAVA']:	{ color: 'rgba(255, 0, 0, 1)',		lt: Infinity,	brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 2.1,	spread: 5,	expl: 0, kn: 0},
 ['BOLT']:	{ color: 'rgba(212, 255, 0, 1)',	lt: .4,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 100,	spread: 0,	expl: 0, kn: 0},
 ['FIRE']:	{ color: 'rgba(214, 113, 40, 1)',	lt: .4,		brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 1},
@@ -99,11 +107,8 @@ let PARTICLE_PROPERTIES = {
 ['FISH']:	{ color: 'rgba(27, 80, 133, 1)',	lt: Infinity,	brn: 970,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'ALIVE', 	 dns: 25,	spread: 0,	expl: 0, kn: 0},
 ['ICE']:	{ color: 'rgba(126, 166, 205, 1)',	lt: Infinity,	brn: 400,	brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 10,	spread: 2,	expl: 0, kn: 0},
 ['TORCH']:	{ color: 'rgba(255, 0, 0, 1)',		lt: Infinity,	brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'SOLID',	updT: 'STATIC',  dns: 30,	spread: 0,	expl: 0, kn: 0},
-['WOOD']: 	{ color: 'rgba(68, 60, 44, 1)', 	lt: Infinity,	brn: 950, 	brnpwr: 0, 		douse: 0, cor: 0, physT: 'SOLID', 	updT: 'DYNAMIC',  dns: 40, 	spread: 0, expl: 0 , kn: 0},
-['BLOB']: 	{ color: 'rgba(192, 144, 190, 1)', lt: Infinity, brn: 999, brnpwr: 0, douse: 0, cor: 0, physT: 'STATIC', updT: 'ALIVE', dns: 25, spread: 10, expl: 0, kn: 0 },
-};
-
-let particleKeys = Object.keys(PARTICLE_PROPERTIES);
+['WOOD']: 	{ color: 'rgba(68, 60, 44, 1)', 	lt: Infinity,	brn: 950, 	brnpwr: 0, 		douse: 0, cor: 0, physT: 'SOLID', 	updT: 'STATIC',  dns: 40, 	spread: 0, expl: 0 , kn: 0},
+}; let particleKeys = Object.keys(PARTICLE_PROPERTIES);
 
 const CREATIONMODE = Object.freeze({ HEAT: 'HEAT', COLD: 'COLD', PRESSURE: 'PRESSURE', TIME: 'TIME', CHARGE: 'CHARGE'})
 function initCreationRules() {
@@ -123,18 +128,17 @@ function initCreationRules() {
 }
 
 const TAGS = [
+    { type: 'ALIVE', color: setBrightness('rgba(33, 169, 117, 1)', 150) },
+	{ type: 'GEL', color: setBrightness('rgba(134, 74, 184, 1)', 150) },
+    { type: 'FOOD', color: setBrightness('rgba(165, 169, 33, 1)', 150) },
+    { type: 'HEAT', color: setBrightness('rgba(212, 103, 24, 1)', 150) },
+    { type: 'ACIDS', color: setBrightness('rgba(166, 45, 179, 1)', 150) },
+    { type: 'DOUSE', color: setBrightness('rgba(33, 124, 169, 1)', 150) },
+	{ type: 'EXPLOSIVE', color: setBrightness('rgba(57, 48, 37, 1)', 150) },
     { type: 'SOLID', color: setBrightness('rgba(115, 144, 118, 1)', 150) },
     { type: 'LIQUID', color: setBrightness('rgba(46, 113, 207, 1)', 150) },
     { type: 'GAS', color: setBrightness('rgba(129, 127, 23, 1)', 150) },
     { type: 'STATIC', color: setBrightness('rgba(33, 169, 117, 1)', 150) },
-    { type: 'ALIVE', color: setBrightness('rgba(33, 169, 117, 1)', 150) },
-	{ type: 'COMB', color: setBrightness('rgba(33, 169, 58, 1)', 150) },
-    { type: 'FOOD', color: setBrightness('rgba(165, 169, 33, 1)', 150) },
-    { type: 'IGNITE', color: setBrightness('rgba(212, 103, 24, 1)', 150) },
-    { type: 'ERODE', color: setBrightness('rgba(166, 45, 179, 1)', 150) },
-    { type: 'DOUSE', color: setBrightness('rgba(33, 124, 169, 1)', 150) },
-    { type: 'COLOR', color: setBrightness('rgba(214, 114, 219, 1)', 150) },
-    { type: 'EXPLOSIVE', color: setBrightness('rgba(57, 48, 37, 1)', 150) },
     { type: 'CUSTOM', color: setBrightness('rgba(255, 255, 255, 1)', 150) },
     { type: 'ALL', color: setBrightness('rgba(255, 255, 255, 1)', 150) }
 ];
@@ -151,15 +155,16 @@ function typesWithAll(tags) {const m = tagMaskOf(tags);return Object.keys(PARTIC
 for (const k in PARTICLE_PROPERTIES) {
 	const p = PARTICLE_PROPERTIES[k];
 	const s = new Set(p.tags || []);
-	s.add(p.updT);
 	s.add('ALL');
 	if (p.brn > 100) s.add('COMB');
-	if (p.brnpwr > 0) s.add('IGNITE');
+	if (p.brnpwr > 0) s.add('HEAT');
 	if (p.douse > 0) s.add('DOUSE');
-	if (p.physT) s.add(p.physT);
-	if (p.cor) s.add('ERODE');
+	if (p.cor) s.add('ACIDS');
 	if (p.updT == 'ALIVE') s.add('ALIVE');
 	if (p.expl) s.add('EXPLOSIVE');
+	if (p.updT) s.add(p.updT);
+	if (p.physT) s.add(p.physT);
+	if (p.type) s.add(p.physT);
 	p.tags = [...s];
 	p.tagMask = tagMaskOf(p.tags);
 }

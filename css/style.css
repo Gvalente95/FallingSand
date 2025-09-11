@@ -6,10 +6,16 @@ body {
 	background-color: rgb(23, 2, 24);
 }
 
+:root {
+  --btnW: 80px;
+  --btnH: 50px;
+}
+
+
 .button {
 	position: absolute;
-	min-width: 60px;
-	height: 40px;
+	width: var(--btnW);
+	height: var(--btnH);
 	padding: 10px 10px;
 	background: var(--btn-bg, linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%), linear-gradient(180deg, #ff4d4d, #c31212));
 	color: #ffffff;

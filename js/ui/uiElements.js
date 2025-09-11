@@ -324,6 +324,7 @@ let isDraggingheader = false;
 
 function addHeader(y, color, height, borderColor = null, dragWidth = 0) {
 	let header = document.createElement("div");
+	uiContainer.appendChild(header);
 	header.style.top = y + "px";
 	header.style.left = "0px";
 	header.className = "uiHeader";
@@ -413,7 +414,6 @@ function addHeader(y, color, height, borderColor = null, dragWidth = 0) {
 		document.addEventListener("touchmove", onMove, { passive: true });
 		document.addEventListener("touchend", onUp);
 	}, { passive: true });
-
 	return header;
 }
 

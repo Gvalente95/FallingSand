@@ -62,7 +62,7 @@ function getScrollTypeIndex(curI, scrollDir) {
 
 function navigateUi(xScroll, yScroll) {
 	if (yScroll) {
-		uiLayerIndex = yScroll > 0 ? true : false;
+		uiLayerIndex = yScroll > 0 ? 1 : 0;
 		let curIndex = uiLayerIndex == 0 ? uiPageIndex : getCurButtonTypeIndex();
 		if (curIndex == -1) { uiLayerIndex = 0; return; }
 		if (uiLayerIndex == 0) switchUiPage(curIndex);

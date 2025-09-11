@@ -60,6 +60,5 @@ function update(loop = !inPause) {
 		for (let i = 0; i < RAINPOW; i++)
 			launchParticlesRect(particleKeys[TYPEINDEX], r_range(0, GRIDW), 1, 1, 50);
 	render();
-	// if (time % 100 == 0) PROF.report(0);
 	requestAnimationFrame(update);
 }

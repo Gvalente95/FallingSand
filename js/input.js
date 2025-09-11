@@ -12,6 +12,14 @@ canvas.addEventListener('mousedown', (e) => {
 window.addEventListener('mouseup', () => {
 	MOUSEPRESSED = false;
 	SHOULDCUT = false;
+	for (let i = 0; i < selParticles.length; i++){
+		let p = selParticles[i];
+		p.updatePosition(p.x, p.y);
+		p.isSel = false;
+		p.velX = MOUSEDX / PIXELSIZE;
+		p.velY = MOUSEDY / PIXELSIZE
+	}
+	selParticles = [];
 });
 
 window.addEventListener('mousemove', (e) => {
@@ -33,6 +41,7 @@ window.addEventListener('keydown', (e) => {
 	if (isInInputField) return;
 	if (e.code == 'Tab') e.preventDefault();
 	if (e.key == 't') { ISGAME = !ISGAME; console.warn(ISGAME); updateUi(); }
+	if (e.key == 'k') switchUiDisplay();
 	KEYS[e.key] = true;
 	let xScroll = ((KEYS['a'] || KEYS['ArrowLeft']) ? -1 : 0) + ((KEYS['d'] || KEYS['ArrowRight']) ? 1 : 0);
 	let yScroll = ((KEYS['w'] || KEYS['ArrowUp']) ? -1 : 0) + ((KEYS['s'] || KEYS['ArrowDown']) ? 1 : 0);

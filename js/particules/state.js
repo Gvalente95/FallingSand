@@ -2,6 +2,7 @@ p.updateBurn = function () {
 	if (this.frozen) { this.frozen -= 50; this.burning = 0; }
 	if (--this.burning <= 0)
 	{
+		if (this.expl) {return (this.lt = r_range(1, 20));}
 		if (this.type === 'OIL') this.lt = 0;
 		else if (this.type === 'SAND' && dice(20)) this.setType('GLASS');
 		else this.setType('COAL');
@@ -29,7 +30,6 @@ p.stopFire = function ()
 }
 p.setToFire = function()
 {
-	if (this.expl) this.lt = 0;
 	if (this.frozen) { this.unFreeze(50); return; }
 	if (this.type === 'ROCK') {return (this.setType('MAGMA'));}
 	if (this.type === 'ICE') {return (this.setType('WATER'));}

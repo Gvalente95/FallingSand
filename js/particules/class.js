@@ -31,6 +31,7 @@ class Particle{
 		this.lt = lt;
 		this.startTime = now;
 		this.timeAlive = 0;
+		this.isSel = false;
 		this.wet = 0;
 		this.warm = 0;
 		this.frozen = 0;
@@ -71,7 +72,7 @@ class Particle{
 			if (this.transformType) return (this.replace(this.transformType));
 			if (this.type === 'MAGMA') return;
 			if (this.expl) {
-				explodeRadius(this.x * PIXELSIZE, this.y * PIXELSIZE, 5, 10 * PIXELSIZE, 5);
+				explodeRadius(this.x * PIXELSIZE, this.y * PIXELSIZE, 5, 10 * PIXELSIZE, 3);
 				if (dice(10)) { this.setType('COAL'); this.setToFire(40); return;}
 			}
 			if (this.physT !== 'GAS') {
@@ -93,6 +94,12 @@ class Particle{
 	}
 	update() {
 		if (!this.active) return;
+		if (this.isSel) {
+			this.x += Math.round(MOUSEDX / PIXELSIZE);
+			this.y += Math.round(MOUSEDY / PIXELSIZE);
+			// this.updatePosition(this.x, this.y);
+			return;
+		}
 		this.updateState();
 		if (this.frozen) return;
 		this.updateLifeTime();
