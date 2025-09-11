@@ -1,4 +1,4 @@
-function randomizeColor(color) {
+function randomizeColor(color, range = 10) {
     const namedColors = {
         'yellow': '#FFFF00',
         'blue': '#0000FF',
@@ -26,7 +26,6 @@ function randomizeColor(color) {
         g = parseInt(hexColor.substr(2, 2), 16);
         b = parseInt(hexColor.substr(4, 2), 16);
     }
-    const range = 10;
     r = Math.max(0, Math.min(255, r + Math.floor(Math.random() * (2 * range + 1)) - range));
     g = Math.max(0, Math.min(255, g + Math.floor(Math.random() * (2 * range + 1)) - range));
     b = Math.max(0, Math.min(255, b + Math.floor(Math.random() * (2 * range + 1)) - range));
@@ -43,19 +42,45 @@ function hexToRgb(hex) {
     let b = parseInt(hex.substring(4, 6), 16);
     return `${r}, ${g}, ${b}`;
 }
+
 function getR(hex) { return (parseInt(hex.substring(0, 2), 16));}
 function getG(hex) { return (parseInt(hex.substring(2, 4), 16)); }
 function getB(hex) { return (parseInt(hex.substring(4, 6), 16)); }
 function getRGB(color) {
-    const match = color.match(/^\s*(?:rgba?\()(\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})(?:,\s*[\d.]+)?\)?\s*$/);
-    if (!match)
-        throw new Error(`Invalid RGB or RGBA color format: ${color}`);
-    const rgb = [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
-    if (rgb.some(v => v < 0 || v > 255)) {
-        throw new Error('RGB components must be between 0 and 255');
+    color = color.trim();
+    if (color.startsWith("#")) {
+        const hex = color.slice(1);
+        if (hex.length === 3) {
+            const r = parseInt(hex[0] + hex[0], 16);
+            const g = parseInt(hex[1] + hex[1], 16);
+            const b = parseInt(hex[2] + hex[2], 16);
+            return [r, g, b];
+        }
+        if (hex.length === 6) {
+            const r = parseInt(hex.slice(0, 2), 16);
+            const g = parseInt(hex.slice(2, 4), 16);
+            const b = parseInt(hex.slice(4, 6), 16);
+            return [r, g, b];
+        }
+
+        throw new Error(`Invalid HEX color format: ${color}`);
     }
-    return rgb;
+    const match = color.match(/^\s*rgba?\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})(?:,\s*[\d.]+)?\)\s*$/i);
+    if (match) {
+        const rgb = [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
+        if (rgb.some(v => v < 0 || v > 255)) {
+            throw new Error(`RGB components must be between 0 and 255: ${color}`);
+        }
+        return rgb;
+    }
+    throw new Error(`Invalid color format: ${color}`);
 }
+
+function setAlpha(color, alpha) {
+	let rgb = getRGB(color);
+	return (`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha}`);
+}
+
 
 function addColor(originalColor, newColor, amount = 1) {
     const rgb0 = getRGB(originalColor);
@@ -63,23 +88,95 @@ function addColor(originalColor, newColor, amount = 1) {
     const newr = clamp(rgb0[0] * (1 - amount) + rgb1[0] * amount, 0, 255);
     const newg = clamp(rgb0[1] * (1 - amount) + rgb1[1] * amount, 0, 255);
     const newb = clamp(rgb0[2] * (1 - amount) + rgb1[2] * amount, 0, 255);
-    return `rgb(${newr}, ${newg}, ${newb})`;
+    return `rgba(${newr}, ${newg}, ${newb})`;
 }
 
-function randomizeColorAmount(color, randomAmount = 16) {
-  let r = getR(color) | 0, g = getG(color) | 0, b = getB(color) | 0;
-  const j = () => r_range(-randomAmount, randomAmount);
-  r = clamp(r + j(), 0, 255) | 0;
-  g = clamp(g + j(), 0, 255) | 0;
-  b = clamp(b + j(), 0, 255) | 0;
+function getRainbowColor(time, speed = 0.002) {
+    const r = Math.floor(127 * Math.sin(speed * time + 0) + 128);
+    const g = Math.floor(127 * Math.sin(speed * time + 2) + 128);
+    const b = Math.floor(127 * Math.sin(speed * time + 4) + 128);
+    return `rgb(${r}, ${g}, ${b})`;
+}
 
-  if (typeof getA === 'function') {
-    const a = getA(color);
-    if (a != null) return `rgba(${r}, ${g}, ${b}, ${a})`;
-  }
-  if (typeof color === 'string' && color[0] === '#') {
-    const h = (n) => n.toString(16).padStart(2, '0');
-    return `#${h(r)}${h(g)}${h(b)}`;
-  }
-  return `rgb(${r}, ${g}, ${b})`;
+function getTimeColor() {
+	let phase = 50;
+	let t = time;
+	let tr = t % 255;
+	let tg = (t + phase) % 255;
+	let tb = (t + phase * 2) % 255;
+  	return `rgb(${tr}, ${tg}, ${tb})`;
+}
+
+function getMountainColor() {
+	let phase = 50;
+	let t = time;
+	let tr = t % 255;
+	let tg = (t + phase) % 255;
+	let tb = (t + phase * 2) % 255;
+  	return `rgb(${tr}, ${tg}, ${tb})`;
+}
+
+
+function getRandomColor() {
+  	return `rgb(${r_range(0, 255)}, ${r_range(0, 255)}, ${r_range(0, 255)})`;
+}
+
+
+
+function recolorImage(imgPath, tintColor, callback) {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = imgPath;
+    img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const rgb = tintColor.match(/\d+/g).map(Number);
+        for (let i = 0; i < data.length; i += 4) {
+            if (data[i + 3] > 0) { // skip fully transparent pixels
+                data[i] = rgb[0];
+                data[i + 1] = rgb[1];
+                data[i + 2] = rgb[2];
+            }
+        }
+        ctx.putImageData(imageData, 0, 0);
+        callback(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => {
+        console.error("Failed to load image:", imgPath);
+        callback(null);
+    };
+}
+
+function setBrightness(color, minLuminance = 150) {
+	let r, g, b, a = 1;
+    let returnAsString = false;
+    if (typeof color === 'string') {
+        const matches = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+        if (!matches) return color;
+        r = parseInt(matches[1]);
+        g = parseInt(matches[2]);
+        b = parseInt(matches[3]);
+        a = matches[4] !== undefined ? parseFloat(matches[4]) : 1;
+        returnAsString = true;
+    } else if (Array.isArray(color)) {
+        r = color[0];
+        g = color[1];
+        b = color[2];
+        a = color[3] !== undefined ? color[3] : 1;
+    } else return color;
+    let luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+    if (luminance < minLuminance && luminance > 0) {
+        const scale = minLuminance / luminance;
+        r = Math.min(255, Math.round(r * scale));
+        g = Math.min(255, Math.round(g * scale));
+        b = Math.min(255, Math.round(b * scale));
+    }
+    if (returnAsString) return `rgba(${r}, ${g}, ${b}, ${a})`;
+    return [r, g, b, a];
 }

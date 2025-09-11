@@ -1,41 +1,34 @@
 function updateInput()
 {
-	for (let x = 1; x < particleKeys.length + 1; x++)
-	{
-		if (KEYS[x])
-		{
-			setNewType(x - 1);
-			TYPEINDEX = x - 1;
-			launchParticules(particleKeys[TYPEINDEX]);
-		}
-	}
-	if (MOUSEPRESSED) {
-		if (KEYS['Shift']) deleteParticules(MOUSEX - BRUSHSIZE / 2, MOUSEY - BRUSHSIZE / 2, BRUSHSIZE);
+	PXATMOUSE = pxAtP(MOUSEGRIDX, MOUSEGRIDY);
+	if (MOUSEPRESSED && !isTwoFingerTouch) {
+		if ((BRUSHACTION === 'CUT' && SHOULDCUT) || KEYS['Shift']) deleteParticulesAtMouse();
+		else if (BRUSHACTION === 'PUSH') pushRadius();
+		else if (BRUSHACTION === 'VIBRATE') vibrateRadius();
+		else if (BRUSHACTION === 'EXPLODE') explodeRadius();
 		else launchParticules(particleKeys[TYPEINDEX]);
 	}
-	if (KEYS['u']) explodeRadius(MOUSEX, MOUSEY, BRUSHSIZE, PARTICLE_TYPES.TNT, 100);
-	if (KEYS['Backspace']) deleteParticules(MOUSEX - BRUSHSIZE / 2, MOUSEY - BRUSHSIZE / 2, BRUSHSIZE, ((KEYS['Shift'] == true) ? particleKeys[TYPEINDEX] : null));
-	if (KEYS['x'])
-	{
-		let px = getPxlAtPos(MOUSEGRIDX, MOUSEGRIDY);
-		if (px) deleteAllParticules(px.type);
-	}
+	if (KEYS['Backspace']) deleteParticulesAtMouse();
+	if (KEYS['x'] && PXATMOUSE) deleteAllParticules(PXATMOUSE.type);
 }
 
 function flushDestroyedParticles()
 {
-	for (let particle of destroyedParticles) particle.onRemove();
+	for (let i = 0; i < destroyedParticles.length; i++) destroyedParticles[i].onRemove();
 	destroyedParticles = [];
 }
 
 let now = performance.now();
+let last = now;
 let prvNow = now;
-let fps = 0;
+let fps = '?';
 let ticks = 0;
 let time = 0;
-let pxAtMouse = null;
-function update(loop = !inPause) {
+function updateTime() {
 	now = performance.now();
+	dt = (now - last) / (1000 / 30);
+	last = now;
+	if (dt > 3) dt = 3;
 	ticks++;
 	if (now - prvNow > 1000)
 	{
@@ -43,12 +36,13 @@ function update(loop = !inPause) {
 		fps = ticks;
 		ticks = 0;
 	}
-	infoHeader.text.textContent = `x${MOUSEX},y${MOUSEY} ${'   '}	Pxls: ${activeParticles.length} Tm:${time} Fps:${fps}`;
-	infoHeader.rightText.textContent = pxAtMouse ?
-		`Elem: ${pxAtMouse.type} - 
-		TimeAlive: ${Number(pxAtMouse.timeAlive / 1000).toFixed(1)} - 
-		Wet: ${pxAtMouse.wet} -
-		WetType: ${pxAtMouse.wetType}` : '';
+}
+
+let updateCreInterval = 100;
+let updateCre = 0;
+function update(loop = !inPause) {
+	if (isInInputField) return (requestAnimationFrame(update));
+	updateTime();
 	updateInput();
 	if (inPause && loop)
 	{
@@ -58,18 +52,14 @@ function update(loop = !inPause) {
 		return;
 	}
 	time++;
-	for (let particleEmitter of particleEmitters) particleEmitter.update();
-	for (let particle of activeParticles) particle.update();
+	updateCre = time % updateCreInterval === 0;
+	for (let i = 0; i < particleEmitters.length; i++) particleEmitters[i].update();
+	for (let i = 0; i < activeParticles.length; i++) activeParticles[i].update();
 	flushDestroyedParticles();
 	if (ISRAINING)
-	{
-		for (let i = 0; i < RAININTENSITY; i++)
-		{
-			let x = r_range(0, GRIDW);
-			new Particle(x, 1, particleKeys[TYPEINDEX], 0, r_range(2, 4));
-			new Particle(x, 3, particleKeys[TYPEINDEX], 0, r_range(2, 4));
-		}
-	}
+		for (let i = 0; i < RAINPOW; i++)
+			launchParticlesRect(particleKeys[TYPEINDEX], r_range(0, GRIDW), 1, 1, 50);
 	render();
-	if (loop) requestAnimationFrame(update);
+	// if (time % 100 == 0) PROF.report(0);
+	requestAnimationFrame(update);
 }

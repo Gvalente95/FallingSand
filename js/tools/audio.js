@@ -2,14 +2,13 @@ const audioPath = "ressources/audio/";
 class AudioManager {
 	constructor() {
 		this.lastPlayTime = 0;
-		this.canPlay = true;
+		this.canPlay = isMobile ? false : true;
 		this.maxQueue = 200;
 		this.active = true;
 		this.playInterval = 0.05;
 		this.audioQueue = [];
 		this.buttonOk = new Audio(audioPath + "buttonOk.mp3");
 		this.gameOn = new Audio(audioPath + "gameOn.mp3");
-		this.soundMove = new Audio(audioPath + "Move.mp3");
 		this.dig = new Audio(audioPath + "dig.mp3");
 		this.tuk = new Audio(audioPath + "tuk.mp3");
 		this.click = new Audio(audioPath + "click.mp3");

@@ -1,0 +1,132 @@
+TO DISCOVER: 
+	SAND
+	GRASS
+	GLASS
+	ROCK
+	DIAMOND
+	TNT
+	COAL
+	RAINBOW
+	MAGMA
+	OIL
+	ACID
+	CHEMX
+	BUBBLE
+	WATER
+	LAVA
+	BOLT
+	FIRE
+	SMOKE
+	CLOUD
+	STEAM
+	PLANT
+	SHROOM
+	SHROOMX
+	BLOB
+	ANT
+	ANTEGG
+	FISH
+	ICE
+	TORCH
+	WOOD
+
+START:
+	WATER, SAND, GRASS, FIRE
+
+
+DISCOVER NEW ELEMENTS
+
+
+ACID : 
+CHEMX : ACID + LAVA
+SHROOMX : CHEMX + SHROOM
+
+
+
+
+NEW TYPES IDEA:
+
+
+MAGMA SLUG
+ACID OCTOPUS
+BUG
+DIRT
+TRASH
+
+
+
+
+
+Voici un arbre de recettes minimalistes (pensées pour voisinage/contacts + quelques conditions simples) en partant de GRASS, SAND, ROCK, WATER. Tu peux tout piloter avec 5 “boutons” globaux : HEAT, COLD, PRESSURE, TIME, CHARGE (foudre).
+
+Règles globales (recommandées)
+
+HEAT : voisin de FIRE/LAVA/MAGMA.
+COLD : haut de la map / voisin de ICE.
+PRESSURE : profondeur sous ROCK ≥ N.
+TIME : compteur de ticks.
+
+CHARGE : zone sous CLOUD dense (pour BOLT).
+
+Recettes par type
+
+SAND : ROCK + TIME + eau agitée (WATER voisin en mouvement) → SAND.
+GRASS : déjà de base; sinon ROCK/SAND humide (WATER voisin, TIME) → GRASS.
+GLASS : SAND + HEAT soutenu → GLASS.
+Bonus: SAND + BOLT (CHARGE) → GLASS (fulgurite) avec p≈0.3.
+ROCK : LAVA/MAGMA + COLD → ROCK. SAND + PRESSURE + TIME → ROCK.
+DIAMOND : COAL + PRESSURE élevé + HEAT modéré + TIME → DIAMOND.
+TNT : OIL + CHEMX + WOOD adjacent → TNT (inerte). TNT + FIRE → explosion.
+COAL : WOOD enterré (ROCK au-dessus) + HEAT faible + pauvre en oxygène + TIME → COAL.
+RAINBOW : BOLT à travers STEAM/CLOUD au-dessus d’eau → RAINBOW (éphémère, décor/catalyseur).
+MAGMA : ROCK en profondeur + HEAT fort → MAGMA. (MAGMA = “lava” souterraine.)
+OIL : PLANT/WOOD enterrés (SAND/ROCK, PRESSURE) + TIME long → OIL.
+ACID : CHEMX + WATER → ACID.
+Alternatives: SHROOMX + WATER → ACID; OIL + CHEMX + HEAT → ACID + SMOKE.
+CHEMX : BOLT frappant ROCK proche de WATER → CHEMX (cristal/goutte).
+Option catalyseur: RAINBOW voisin de WATER → CHEMX avec p≈0.1.
+BUBBLE : WATER voisin d’une réaction gaz (STEAM, SMOKE, ACID neutralisé) → BUBBLE (qui monte et éclate).
+WATER : base; STEAM + COLD → WATER; ICE + HEAT → WATER.
+LAVA : MAGMA exposé (pas de ROCK au-dessus) → LAVA. ROCK + HEAT très fort → LAVA.
+BOLT : CLOUD dense + CHARGE (rng) → BOLT vers le sol.
+FIRE : GRASS/WOOD + frottement (déplacements rapides) ou BOLT → FIRE. LAVA adjacente enflamme.
+SMOKE : FIRE + matière organique (GRASS/PLANT/WOOD/OIL) → SMOKE.
+CLOUD : STEAM qui monte + COLD d’altitude → CLOUD.
+STEAM : WATER + HEAT → STEAM.
+PLANT : GRASS + WATER + TIME → PLANT (pousse). SAND humide près de GRASS → PLANT.
+SHROOM : PLANT à l’ombre (sous ROCK) + humidité (WATER/STEAM) + TIME → SHROOM.
+SHROOMX : SHROOM + CHEMX/ACID voisin + TIME → SHROOMX (muté).
+BLOB : OIL + WATER agités (cisaillement) → BLOB (émulsion/goo).
+Option: matière organique (PLANT) + ACID → BLOB.
+ANTEGG : dans SAND sous WOOD/PLANT, humidité légère + TIME → ANTEGG.
+ANT : ANTEGG + TIME → ANT. Nourri par PLANT/WOOD; peut déplacer SAND.
+FISH : WATER profonde + PLANT (algues) + TIME → FISH.
+ICE : WATER + COLD (altitude, voisin ICE) → ICE.
+TORCH : WOOD + FIRE maintenu → TORCH (source de HEAT/lumière).
+WOOD : PLANT mature + TIME → WOOD.
+
+
+
+
+
+P’tites constantes pratiques (à ajuster)
+
+PRESSURE_DEPTH = 8–12 couches de ROCK au-dessus.
+
+HEAT_TICKS pour fusion: 30–60 ticks; pour combustion: 5–15.
+
+COLD_ALTITUDE = top 10% de la carte ou voisinage d’ICE.
+
+Probas typiques: 0.1–0.3 pour événements rares (BOLT→GLASS, RAINBOW→CHEMX).
+
+Priorités d’application (par tick)
+
+Chaleur/froid (GLASS/STEAM/ICE/LAVA).
+
+Géologie/pression (ROCK/COAL/OIL/DIAMOND).
+
+Bio (PLANT/WOOD/SHROOM/ANT/FISH).
+
+Chimie (CHEMX/ACID/BLOB).
+
+Effets spéciaux (RAINBOW/BOLT/BUBBLE/SMOKE).
