@@ -339,7 +339,7 @@ function addParticleType(props = {}) {
 	const x = -(5 + customIdx * buttonSpread) + buttons.length * buttonSpread;
 	const y = buttonHeight;
 	const idxInKeys = particleKeys.indexOf(key);
-	const newBut = initButton(key, x, y, PARTICLE_PROPERTIES[key].color, setNewType, idxInKeys, page);
+	const newBut = initButton(key, x, y, btnW, btnH, PARTICLE_PROPERTIES[key].color, setNewType, idxInKeys, page);
 	buttons.push(newBut);
 	return key;
 }

@@ -409,8 +409,6 @@ const UPDATE_HANDLERS = {
 	TORCH: p => p.FireEffect(p.newX, p.newY),
 	MAGMA: p => p.MagmaEffect(p.newX, p.newY),
 	LAVA: p => p.LavaEffect(p.newX, p.newY),
-	SHROOM: p => p.MagmaEffect(p.newX, p.newY),
-	SHROOMX: p => p.MagmaEffect(p.newX, p.newY),
 };
 
 p.updateType = function () {

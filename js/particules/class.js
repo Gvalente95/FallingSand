@@ -42,6 +42,7 @@ class Particle{
 		if (color) this.setColor(color);
 		this.x = clamp(x, 0, GRIDW - 1);
 		this.y = clamp(y, 0, GRIDH - 1);
+		this.prvX = this.x, this.prvY = this.y;
 		this.active = true;
 		grid[this.x][this.y] = this;
 		activeParticles.push(this);
@@ -49,6 +50,7 @@ class Particle{
 
 	updatePosition(newX, newY, nullifyThis = true)
 	{
+		this.prvX = this.x, this.prvY = this.y;
 		if (!this.active) return;
 		let px = pxAtP(newX, newY, this);
 		if (px && this.physT === 'GAS') return (this.toRemove(), 0);
@@ -97,14 +99,12 @@ class Particle{
 		if (this.isSel) {
 			this.x += Math.round(MOUSEDX / PIXELSIZE);
 			this.y += Math.round(MOUSEDY / PIXELSIZE);
-			// this.updatePosition(this.x, this.y);
 			return;
 		}
 		this.updateState();
 		if (this.frozen) return;
 		this.updateLifeTime();
 		this.updateType();
-		if (ISGAME && updateCre && this.cr) runCreationAt(this.x, this.y, this);
 	}
 
 	toRemove(){

@@ -151,7 +151,6 @@ function discoverType(element, x = MOUSEX - 100, y = MOUSEY - 60) {
 
 
 function switchUiDisplay(newActive = !uiDisplayed) {
-	console.warn(newActive);
 	uiDisplayed = newActive;
 	uiContainer.style.display = (uiDisplayed === true ? 'block' : 'none');
 }

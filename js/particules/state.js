@@ -78,7 +78,8 @@ p.updateWet = function () {
 			pxAb.transformType = this.wetType;
 		}
 	}
-	if (dice((this.dns * (1000 - this.wet)))) {
+	let shroomChance = (this.type === 'GRASS' ? 1000 : 10000) - this.wet;
+	if (dice(shroomChance)) {
 		this.setType('SHROOM');
 		this.isGrower = true;
 	}

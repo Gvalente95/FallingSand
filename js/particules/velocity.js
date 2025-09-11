@@ -1,14 +1,16 @@
 p.updateLiquidVelocity = function (g) {
-	if (!g && this.type === 'WATER' && dice(20000)) {
+	if (this.type === 'WATER') {
+		if (!g && dice(20000)) {
 		const n = this.replace('BUBBLE');
 		n.transformType = 'WATER';
 		return;
-	}
-	if (dice(400) && !pxAtP(this.x, this.y - 1, this))
-	{
-		const n = this.replace('BUBBLE');
-		n.transformType = 'WATER';
-		return;
+		}
+		if (dice(400) && !pxAtP(this.x, this.y - 1, this))
+		{
+			const n = this.replace('BUBBLE');
+			n.transformType = 'WATER';
+			return;
+		}
 	}
 	this.velY += GRAVITY;
 	// this.velY *= 1 - g.dns * .1;
@@ -29,11 +31,19 @@ p.updateSolidVelocity = function (g) {
 		this.velX *= .99;
 		return;
 	}
-	const grounded = g && (g.physT === 'SOLID' || g.frozen) && g.velY === 0;
+	// if (!this.hasTouchedBorder) {
+	// 	this.hasTouchedBorder = (this.y >= GRIDH - 1 || (g && g.hasTouchedBorder));
+	// 	if (this.hasTouchedBorder) {this.velX = 0;}	
+	// }
+	// else if (this.hasTouchedBorder > 0 && !g && this.y < GRIDH - 1) {
+	// 	this.hasTouchedBorder--;
+	// }
+
+	const grounded = g && g.velY === 0 && (g.physT === 'SOLID' || g.frozen);
 	if (grounded && this.updT !== 'ALIVE') {
 		this.velY = g.updT === 'STATIC' ? 1 : 0;
 		this.velX *= (1 - XDRAG);
-		if (this.velX > -0.01 && this.velX < 0.01) this.velX = 0;
+		if (Math.abs(this.velX) < .01) this.velX = 0;
 	} else if (!g) this.velY += GRAVITY;
 };
 

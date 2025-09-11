@@ -1,4 +1,4 @@
-function createVerticalPressSlider(labelText, x, y, min, max, step, value, onChange, totalHeight = 180, width = 90) {
+function createVerticalPressSlider(labelText, x, y, min, max, step, value, onChange, totalHeight = 180, width = paramBtnW) {
 	const sldWidth = "30px";
 	const container = document.createElement("div");
 	container.style.position = "absolute";
@@ -228,7 +228,7 @@ function initImageDiv(imgPath, x, y, color, parent = document.body) {
 	return (div);
 }
 
-function initButton(label, x, y, color, onChange, value = null, parent = document.body, isSwitch = null, keyToggle = null, imgPath = null, mouseFollowImg = null, clrText = false) {
+function initButton(label, x, y, w, h, color, onChange, value = null, parent = document.body, isSwitch = null, keyToggle = null, imgPath = null, mouseFollowImg = null, clrText = false) {
 	function formatKeyLabel(k){
 		if(!k) return "";
 		const map={
@@ -246,6 +246,8 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	div.className = "button";
 	div.style.left = x + "px";
 	div.style.top = y + "px";
+	div.style.width = w + 'px'; div.style.minWidth = w + 'px';
+	div.style.height = h + 'px'; div.style.lineHeight = h + 'px';
 	div.style.setProperty('--btn-bg', color);
 	div.style.backgroundColor = color;
 	div.baseClr = color;
@@ -271,9 +273,10 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	if (keyToggle) {
 		window.addEventListener("keydown", (e) => { if (!isInInputField && (e.code === keyToggle || e.key == keyToggle || e.key.toLowerCase() == keyToggle)) activate(); });
 		if (!isMobile) {
-			div.badge = initLabelDiv(x + 50, canvas.height - 10, formatKeyLabel(keyToggle), 'rgba(255, 255, 255, 1)');
+			div.badge = initLabelDiv(x + w - 5, canvas.height - 5, formatKeyLabel(keyToggle), 'rgba(255, 255, 255, 1)');
 			div.badge.style.fontSize = '12px';
-		}	
+			uiContainer.appendChild(div.badge);
+		}
 	}
 
 	if (imgPath) {
@@ -322,20 +325,19 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 
 let isDraggingheader = false;
 
-function addHeader(y, color, height, borderColor = null, dragWidth = 0) {
+function addHeader(x, y, color, height, borderColor = null, dragWidth = 0) {
 	let header = document.createElement("div");
 	uiContainer.appendChild(header);
 	header.style.top = y + "px";
-	header.style.left = "0px";
+	header.style.left = x + "px";
 	header.className = "uiHeader";
 	header.style.width = CANVW + "px";
 	if (color) header.style.backgroundColor = color;
-	else header.style.backgroundColor = "rgba(0, 0, 0, 0)";
+	else header.style.backgroundColor = "rgba(255, 255, 255, 0)";
 	header.style.height = height + "px";
 	header.style.position = "absolute";
 	header.style.userSelect = "none";
 	if (borderColor) header.style.border = "1px solid " + borderColor;
-	document.body.appendChild(header);
 
 	if (dragWidth <= 0 || !isMobile) return header;
 

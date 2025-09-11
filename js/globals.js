@@ -24,10 +24,10 @@ SIMSPEED = .5;
 TYPEINDEX = 0;
 MAXREWIND = 30;
 RAINPOW = 50;
+GRIDPX = true;
 
 //	UI
-let uiContainer = document.createElement("div");
-let uiDisplayed = false;
+let uiDisplayed = true;
 let uiPagesButtons = [];
 let uiPageContent = [];
 let typeButton = null;
@@ -37,12 +37,17 @@ let gridMode = true;
 let uiPageIndex = 0;
 let uiLayerIndex = 0;
 let uiXmargin = 5;
+let uiYmargin = 5;
 let gridCacheKey = "";
-const rs = getComputedStyle(document.documentElement);
-const btnWpx = rs.getPropertyValue('--btnW').trim(); // "50px"
-const btnHpx = rs.getPropertyValue('--btnH').trim();
-const btnW = parseFloat(btnWpx); // 50
-const btnH = parseFloat(btnHpx); // 50
+let paramH = 32;
+
+let ratio = isMobile ? 4 : 20;
+let actionBtnW = window.innerWidth / ratio;
+if (isMobile) actionBtnW = window.innerWidth / 4 - uiXmargin - 2;
+let paramBtnW = actionBtnW;
+let actionBtnH = actionBtnW * .6;
+let btnW = actionBtnW;
+let btnH = isMobile ? btnW * .6 : 30;
 
 BRUSHACTION = null;
 ISRAINING = false;
@@ -54,7 +59,7 @@ const FLOCK = { r: 10, sep: 1.2, ali: 0.8, coh: 0.35, maxSpd: 1.8, maxAcc: 0.15 
 
 //	CANVAS
 CANVW = window.innerWidth;
-CANVH = window.innerHeight - (50 + (btnH * 3));
+CANVH = window.innerHeight - (actionBtnH + paramH + ((btnH * 2)) + (uiYmargin * 6));
 GRIDW = Math.floor(CANVW / PIXELSIZE);
 GRIDH = Math.floor(CANVH / PIXELSIZE);
 canvas = document.createElement('canvas');
@@ -63,6 +68,16 @@ ctx = canvas.getContext('2d');
 canvas.width = CANVW;
 canvas.height = CANVH;
 document.body.appendChild(canvas);
+
+let uiContainer = document.createElement("div");
+document.body.appendChild(uiContainer);
+uiContainer.style.backgroundColor = 'rgba(0, 0, 0, 1)';
+uiContainer.style.position = 'fixed';
+uiContainer.style.top = CANVH + "px";
+uiContainer.style.border = '5px solid rgba(123, 123, 123, 0.09)';
+uiContainer.style.height = parseFloat(window.innerHeight) - (CANVH + 10) + "px";
+uiContainer.style.width = (parseFloat(window.innerWidth) - 10) + "px";
+
 
 //	PARTICLES
 let grid = [];
@@ -86,7 +101,7 @@ let PARTICLE_PROPERTIES = {
 ['COAL']:	{ color: 'rgba(68, 68, 68, 1)',	lt: 10,		brn: 1,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 45,	spread: 2,	expl: 0, kn: 0},
 ['RAINBOW']:{ color: 'rgba(255, 0, 234, 1)',	lt: Infinity,	brn: 100,	brnpwr: 0, 		douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 10,	spread: 0,	expl: 0, kn: 0},
 ['MAGMA']:	{ color: 'rgba(198, 64, 2, 1)',	lt: 12,		brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 100,	spread: 0,	expl: 0, kn: 0},
-['WATER']: { color: 'rgba(0, 191, 255, 1)', lt: Infinity, brn: 0, brnpwr: 0, douse: 1, cor: 0, physT: 'LIQUID', updT: 'DYNAMIC', dns: 2, spread: 10, expl: 0, kn: 1 },
+['WATER']: { color: 'rgba(0, 191, 255, 1)', lt: Infinity, brn: 0, brnpwr: 0, douse: 1, cor: 0, physT: 'LIQUID', updT: 'DYNAMIC', dns: 2, spread: 20, expl: 0, kn: 1 },
 ['OIL']:	{ color: 'rgba(50, 96, 84, 1)',	lt: Infinity,	brn: 1000,	brnpwr: 0,		douse: 1, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 1,	spread: 20,	expl: 0, kn: 0},
 ['ACID']:	{ color: 'rgba(131, 35, 163, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, cor: 1000, physT:'LIQUID',updT: 'DYNAMIC', dns: 1.8,	spread: 6,	expl: 0, kn: 0},
 ['CHEMX']:	{ color: 'rgba(16, 96, 28, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, cor: 1500, physT:'LIQUID',updT: 'DYNAMIC', dns: 1.9,	spread: 6,	expl: 0, kn: 0},
