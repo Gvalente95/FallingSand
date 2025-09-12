@@ -19,7 +19,7 @@ p.updateLiquidVelocity = function (g) {
 
 p.updateGasVelocity = function () {
 	if (this.type === 'STEAM' || this.type === 'CLOUD' || ((this.id + time) % 5) === 0)
-		this.velX = getSin(now * 0.002, 5, 0.9, this.id * 0.3);
+		this.velX = getSin(now * 0.002, 5, 0.6, this.id * 0.3);
 };
 
 p.updateSolidVelocity = function (g) {

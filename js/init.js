@@ -43,7 +43,6 @@ function initActionHeader(yPos)
 	hdr.style.left = "0px";
 
 	pauseButton = initButton("Pause", xs * nn++, 0, w, h, clr, switchPause, -1, hdr, false, 'Space', p + "pause.png", null, false, clr);
-	initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, 'Tab', p + "next.png", null, false, clr);
 	brushActionButtons.push(initButton("Cut", xs * nn++, 0, w, h, clr, switchBrushAction, 'CUT', hdr, false, "c", p + "eraser.png", wp + "eraser.png", null, false, clr));
 	initButton("Fill", xs * nn++, 0, w, h, clr, fillScreen, null, hdr, null, 'f', p + "fill.png", null, false, clr);
 	initButton("Clear", xs * nn++, 0, w, h, clr, resetParticles, PIXELSIZE, hdr, null, 'r', p + "broom.png", null, false, clr);
@@ -51,6 +50,7 @@ function initActionHeader(yPos)
 	brushActionButtons.push(initButton("Vibrate", xs * nn++, 0, w, h, clr, switchBrushAction, 'VIBRATE', hdr, false, "v", p + "vibrate.png", wp + "vibrate.png", null, false, clr));
 	brushActionButtons.push(initButton("Push", xs * nn++, 0, w, h, clr, switchBrushAction, 'PUSH', hdr, false, "p", p + "push.png", wp + "push.png", null, false, clr));
 	brushActionButtons.push(initButton("Explode", xs * nn++, 0, w, h, clr, switchBrushAction, 'EXPLODE', hdr, false, "e", p + "explosion.png", wp + "explosion.png", null, false, clr));
+	initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, 'Tab', p + "next.png", null, false, clr);
 	initButton("Rain", xs * nn++, 0, w, h, clr, switchRain, null, hdr, false, 'Enter', p + "drop.png", null, false, clr);
 	initButton("Grid", xs * nn++, 0, w, h, clr, switchGridMode, null, hdr, true, "g", p + "grid.png", null, false, clr);
 	initButton("Brush", xs * nn++, 0, w, h, clr, setNewBrushType, null, hdr, true, 'b', p + "disk.png", null, false, clr);
@@ -118,13 +118,32 @@ function initUi()
 	updateUi();
 }
 
+
+grid1 = null;
+N4 = null;
+function buildNeighbors4(){
+	let i = 0;
+	let H = GRIDH, W = GRIDW;
+  for (let y=0;y<H;y++){
+    for (let x=0;x<W;x++,i++){
+      N4[i*4+0] = (y>0    ) ? i-W : -1;
+      N4[i*4+1] = (y<H-1  ) ? i+W : -1;
+      N4[i*4+2] = (x>0    ) ? i-1 : -1;
+      N4[i*4+3] = (x<W-1  ) ? i+1 : -1;
+    }
+  }
+}
+function idx(x,y){ return (x) + (y) * GRIDW; }
+function atI(i,self){ const p = grid1[i]; return (p && p!==self && p.active) ? p : null; }
+function upI(i){ const j=N4[i*4+0]; return j>=0? j : -1; }
+function dnI(i){ const j=N4[i*4+1]; return j>=0? j : -1; }
+function lfI(i){ const j=N4[i*4+2]; return j>=0? j : -1; }
+function rtI(i){ const j=N4[i*4+3]; return j>=0? j : -1; }
 function initGrid() {
-    grid = [];
-    for (let x = 0; x < GRIDW; x++) {
-        grid[x] = [];
-        for (let y = 0; y < GRIDH; y++)
-            grid[x][y] = null;
-	}
+	const W = GRIDW, H = GRIDH, N = W*H;
+	grid1 = new Array(N);
+	N4 = new Int32Array(N*4);
+	buildNeighbors4();
 	buildGridLayer();
 }
 

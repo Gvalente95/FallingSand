@@ -1,7 +1,7 @@
 function pxAtP(x, y, self) {
 	if ((x >>> 0) >= GRIDW || (y >>> 0) >= GRIDH) return null;
-	const col = grid[x];
-	const px = col && col[y];
+	let i = idx(x, y);
+	const px = grid1[i];
 	if (!px || px === self || !px.active) return null;
 	return px;
 }

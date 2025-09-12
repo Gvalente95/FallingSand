@@ -55,25 +55,11 @@ window.addEventListener('keyup', (e) => {
 });
 
 window.addEventListener('resize', () => {
-	const oldW = GRIDW, oldH = GRIDH;
 	CANVW = window.innerWidth; CANVH = window.innerHeight - 180;
 	canvas.width = CANVW; canvas.height = CANVH;
 	GRIDW = Math.floor(CANVW / PIXELSIZE); GRIDH = Math.floor(CANVH / PIXELSIZE);
-	for (let x = 0; x < oldW; x++) {
-		const col = grid[x];
-		if (!col) continue;
-		for (let y = 0; y < oldH; y++) {
-			if (x >= GRIDW || y >= GRIDH) {
-				const cell = col[y];
-				if (cell && cell.toRemove) cell.toRemove();
-			}
-		}
-	}
-	grid.length = GRIDW;
-	for (let x = 0; x < GRIDW; x++) {
-		if (!grid[x]) grid[x] = [];
-		grid[x].length = GRIDH;
-	}
+	for (let i = 0; i < grid1.length; i++) if (grid1[i]) grid1[i].toRemove();
+	grid1 = new Array(GRIDW * GRIDH);
 	buildGridLayer();
 });
 

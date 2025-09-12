@@ -30,7 +30,7 @@ p.updateMovement = function() {
 
 		const hit = pxAtP(realX, realY, this);
 		if (!hit) { lastX = curX; lastY = curY; continue; }
-		if (this.phys === 'FISH' && hit.physT === 'LIQUID') continue;
+		if (this.physT === 'FISH' && hit.physT === 'LIQUID') continue;
 		if (this.type === 'ANT' && hit.physT === 'LIQUID' && this.inWater > 100) continue;
 		if (this.douse && hit.type !== 'FISH') { if (hit.brnpwr) this.setType('STEAM'); else hit.setWet(100, this.type); }
 		if (shouldBurn(this, hit)) { hit.setToFire(); }

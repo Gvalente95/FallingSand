@@ -37,55 +37,116 @@ function switchBrushAction(newAction) {
 		if (b.value != newAction) deactivateSwitchButton(b);
 	}
 }
+
+
+
+
+function rebuildNeighbors4(W,H){
+  const N = W*H;
+  N4 = new Int32Array(N*4);
+  for (let y=0,i=0; y<H; y++){
+    for (let x=0; x<W; x++,i++){
+      N4[i*4+0] = y>0    ? i-W : -1;
+      N4[i*4+1] = y<H-1  ? i+W : -1;
+      N4[i*4+2] = x>0    ? i-1 : -1;
+      N4[i*4+3] = x<W-1  ? i+1 : -1;
+    }
+  }
+}
+
+function ringOffsets(W,maxR){
+  const out=[];
+  for (let r=1;r<=maxR;r++){
+    for (let oy=-r;oy<=r;oy++){
+      for (let ox=-r;ox<=r;ox++){
+        if (!ox && !oy) continue;
+        if (Math.max(Math.abs(ox),Math.abs(oy))!==r) continue;
+        out.push(ox + oy*W);
+      }
+    }
+  }
+  return out;
+}
 function setNewPixelSize(newPixelSize){
 	if (newPixelSize <= 0 || newPixelSize === PIXELSIZE) return;
-	BRUSHSIZE = clamp(Math.round(BRUSHSIZE * (PIXELSIZE / newPixelSize)), 1, MAXBRUSHSIZE);
+
 	const scale = PIXELSIZE / newPixelSize;
 	PIXELSIZE = newPixelSize;
-	const newGRIDW = Math.max(1, Math.floor(CANVW / PIXELSIZE));
-	const newGRIDH = Math.max(1, Math.floor(CANVH / PIXELSIZE));
-	const newGrid = new Array(newGRIDW);
-	for (let x = 0; x < newGRIDW; x++) newGrid[x] = new Array(newGRIDH);
-	for (let i = 0; i < activeParticles.length; i++){
-		const p = activeParticles[i];
-		let nx = Math.round(p.x * scale);
-		let ny = Math.round(p.y * scale);
-		nx = clamp(nx, 0, newGRIDW - 1);
-		ny = clamp(ny, 0, newGRIDH - 1);
 
-		if (!newGrid[nx][ny]) {
-			p.x = nx; p.y = ny; p.newX = nx; p.newY = ny;
-			p.velX *= scale; p.velY *= scale;
-			newGrid[nx][ny] = p;
-			continue;
+	BRUSHSIZE = clamp(Math.round(BRUSHSIZE * scale), 1, MAXBRUSHSIZE);
+
+	const newW = Math.max(1, (CANVW / PIXELSIZE) | 0);
+	const newH = Math.max(1, (CANVH / PIXELSIZE) | 0);
+	const newN = newW * newH;
+
+	const newGrid1 = new Array(newN);
+	const buckets = new Map();
+
+	for (let i = 0; i < activeParticles.length; i++){
+	const p = activeParticles[i];
+	let nx = Math.round(p.x * scale);
+	let ny = Math.round(p.y * scale);
+	if (nx < 0) nx = 0; else if (nx >= newW) nx = newW - 1;
+	if (ny < 0) ny = 0; else if (ny >= newH) ny = newH - 1;
+	const ni = idx(nx,ny,newW);
+	p._ni = ni;
+	p._nx = nx;
+	p._ny = ny;
+	p.velX *= scale;
+	p.velY *= scale;
+	const arr = buckets.get(ni);
+	if (arr) arr.push(p); else buckets.set(ni,[p]);
+	}
+
+	const offs = ringOffsets(newW, 16);
+
+	for (const [ni, arr] of buckets){
+	let placedCenter = false;
+	for (let j=0; j<arr.length; j++){
+		const p = arr[j];
+		let ti = ni;
+
+		if (!placedCenter && !newGrid1[ti]) {
+		placedCenter = true;
+		} else {
+		let found = false;
+		for (let k=0; k<offs.length; k++){
+			const oi = ti + offs[k];
+			if (oi < 0 || oi >= newN) continue;
+			const x = oi % newW;
+			const y = (oi / newW) | 0;
+			if (x < 0 || x >= newW || y < 0 || y >= newH) continue;
+			if (!newGrid1[oi]) { ti = oi; found = true; break; }
 		}
-		let placed = false;
-		const maxR = 8;
-		for (let r = 1; r <= maxR && !placed; r++){
-			for (let oy = -r; oy <= r && !placed; oy++){
-				for (let ox = -r; ox <= r && !placed; ox++){
-					const tx = nx + ox, ty = ny + oy;
-					if (tx < 0 || ty < 0 || tx >= newGRIDW || ty >= newGRIDH) continue;
-					if (!newGrid[tx][ty]){
-						p.x = tx; p.y = ty; p.newX = tx; p.newY = ty;
-						p.velX *= scale; p.velY *= scale;
-						newGrid[tx][ty] = p;
-						placed = true;
-					}
-				}
-			}
-		}
-		if (!placed){
+		if (!found) {
 			p.active = false;
 			destroyedParticles.push(p);
+			continue;
 		}
+		}
+
+		const tx = ti % newW;
+		const ty = (ti / newW) | 0;
+		p.x = tx; p.y = ty; p.newX = tx; p.newY = ty; p.i = ti;
+		newGrid1[ti] = p;
 	}
-	GRIDW = newGRIDW;
-	GRIDH = newGRIDH;
-	grid = newGrid;
-	buildGridLayer();
-	buildWaterShades();
+  }
+
+  GRIDW = newW;
+  GRIDH = newH;
+  grid1 = newGrid1;
+  rebuildNeighbors4(GRIDW, GRIDH);
+
+  if (typeof buildGridLayer === 'function') buildGridLayer();
+  if (typeof buildWaterShades === 'function') buildWaterShades();
+
+  if (typeof RowCache !== 'undefined' && RowCache) {
+    RowCache.vacL.length = RowCache.vacR.length = RowCache.dropL.length = RowCache.dropR.length =
+    RowCache.barL.length = RowCache.barR.length = RowCache.dirty.length = 0;
+    for (let y = 0; y < GRIDH; y++) RowCache.dirty[y] = 1;
+  }
 }
+
 function switchHud(newActive) {
 	SHOWHUD = newActive;
 	infoMouse.style.display = SHOWHUD ? 'block' : 'none';

@@ -4,20 +4,20 @@ class Particle{
 	{
 		if (isOutOfBorder(x, y)) return (this.toRemove(), 0);
 		this.properties = PARTICLE_PROPERTIES[type];
-		let pxAtPos = pxAtP(x, y, this);
-		if (pxAtPos)
+		let px = pxAtP(x, y, this);
+		if (px)
 		{
-			if (type === pxAtPos.type) { this.toRemove(); return; }
-			else if ((type === 'SHROOM' || type === 'SHROOMX') && pxAtPos.physT === 'SOLID') {color = pxAtPos.color;}
+			if (type === px.type) { this.toRemove(); return; }
+			else if ((type === 'SHROOM' || type === 'SHROOMX') && px.physT === 'SOLID') {color = px.color;}
 			if (this.properties.physT === 'GAS' && type != 'STEAM')
 			{
-				if (pxAtPos.physT === 'LIQUID' && type === 'FIRE') {
-					pxAtPos.replace('FIRE');
+				if (px.physT === 'LIQUID' && type === 'FIRE') {
+					px.replace('FIRE');
 				}
-				else if (type != pxAtPos.type && shouldBurnParticle(type, pxAtPos)) pxAtPos.setToFire();
+				else if (type != px.type && shouldBurnParticle(type, px)) px.setToFire();
 				return (this.toRemove(), 0);
 			}
-			else pxAtPos.toRemove();
+			else px.toRemove();
 		}
 		this.ground = null;
 		this.wetType = null;
@@ -42,31 +42,30 @@ class Particle{
 		if (color) this.setColor(color);
 		this.x = clamp(x, 0, GRIDW - 1);
 		this.y = clamp(y, 0, GRIDH - 1);
-		this.prvX = this.x, this.prvY = this.y;
 		this.active = true;
-		grid[this.x][this.y] = this;
+		this.i = idx(this.x, this.y);
+		grid1[this.i] = this;
 		activeParticles.push(this);
 	}
 
-	updatePosition(newX, newY, nullifyThis = true)
-	{
-		this.prvX = this.x, this.prvY = this.y;
-		if (!this.active) return;
-		let px = pxAtP(newX, newY, this);
-		if (px && this.physT === 'GAS') return (this.toRemove(), 0);
-		else if (px) { return (this.swap(px)); }
-		const clampedX = Math.floor(clamp(newX, 0, GRIDW - 1));
-		const clampedY = Math.floor(clamp(newY, 0, GRIDH - 1));
-		if (clampedX != newX || clampedY != newY) this.velX = 0;
-		if (nullifyThis)
-		{
-			if (clampedX === this.x && clampedY === this.y) return (0);
-			grid[this.x][this.y] = null;
+	updatePosition(newX, newY){
+		if (!this.active) return 0;
+		const sx = this.x, sy = this.y, si = this.i;
+		let dx = Math.floor(clamp(newX, 0, GRIDW - 1));
+		let dy = Math.floor(clamp(newY, 0, GRIDH - 1));
+		if (dx === sx && dy === sy) return 0;
+		const di = idx(dx, dy);
+		const hit = grid1[di];
+		if (hit && hit !== this && hit.active) {
+			if (this.physT === 'GAS') { this.toRemove(); return 0; }
+			return this.swap(hit);
 		}
-		this.x = clampedX; this.y = clampedY;
-		grid[this.x][this.y] = this;
-		return (1);
-	}
+		grid1[si] = null;
+		this.x = dx; this.y = dy; this.i = di;
+		grid1[di] = this;
+		return 1;
+	};
+
 	updateLifeTime(){
 		this.timeAlive = (now - this.startTime) / 1000;
 		if (this.timeAlive > this.lt && !this.frozen)
@@ -80,18 +79,17 @@ class Particle{
 			if (this.physT !== 'GAS') {
 				const x = this.x;
 				for (let yy = this.y - 1; yy >= 0; yy--) {
-					const q = grid[x][yy];
+					const i0 = idx(x, yy);
+					const q = grid1[i0];
 					if (!q || q.type !== this.type) break;
-					grid[x][yy] = null;
-					const ny = yy + 1;
-					if (ny < GRIDH) {
-						grid[x][ny] = q;
-						q.y = ny;
-						q.newY = ny;
-					}
+					grid1[i0] = null;
+					const ny = yy + 1, i1 = idx(x, ny);
+					grid1[i1] = q;
+					q.y = ny; q.newY = ny; q.i = i1;
 				}
 			}
-			return (this.toRemove(), 0);
+			this.toRemove();
+			return 0;
 		}
 	}
 	update() {
@@ -114,10 +112,11 @@ class Particle{
 		destroyedParticles.push(this);
 	}
 	onRemove(){
-		let index = activeParticles.indexOf(this);
-		if (index != -1) activeParticles.splice(index, 1);
-		if (!isOutOfBorder(this.x, this.y) && grid[this.x][this.y] === this)
-			grid[this.x][this.y] = null;
+		const i = activeParticles.indexOf(this);
+		if (i !== -1) activeParticles.splice(i, 1);
+		const si = this.i;
+		if ((si >>> 0) < grid1.length && grid1[si] === this) grid1[si] = null;
+		this.i = -1;
 	}
 }; const p = Particle.prototype;
 

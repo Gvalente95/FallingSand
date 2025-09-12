@@ -2,12 +2,12 @@ p.swap = function(other)
 {
 	if (isOutOfBorder(this.x, this.y)) return;
 	let otherX = other.x, otherY = other.y;
-	grid[this.x][this.y] = null;
+	grid1[idx(this.x, this.y)] = null;
 	other.updatePosition(this.x, this.y, false);
-	grid[otherX][otherY] = null;
+	grid1[idx(otherX, otherY)] = null;
 	this.updatePosition(otherX, otherY, false);
 }
-	
+
 p.hasTouchedSurfaceCheck = function()
 	{
 		let y = 0;

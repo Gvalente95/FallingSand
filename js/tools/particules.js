@@ -103,7 +103,8 @@ function pushRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, isCircle = BRU
 				if (!p) continue;
 				p.isSel = true;
 				p.velY = p.velX = 0;
-				if (grid[p.x][p.y] == p) grid[p.x][p.y] = null;
+				let i = idx(p.x, p.y);
+				if (grid1[i] === p) grid1[i] = null;
 				selParticles.push(p);
 				}
 			}

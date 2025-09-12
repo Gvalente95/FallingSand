@@ -80,7 +80,6 @@ uiContainer.style.width = (parseFloat(window.innerWidth) - 10) + "px";
 
 
 //	PARTICLES
-let grid = [];
 let destroyedParticles = [];
 let activeParticles = [];
 let particleEmitters = [];
@@ -109,7 +108,7 @@ let PARTICLE_PROPERTIES = {
 ['BLOB']:	{ color: 'rgba(0, 191, 255, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'GEL', dns: 2,	spread: 10,	expl: 0, kn: 0},
 ['LAVA']:	{ color: 'rgba(255, 0, 0, 1)',		lt: Infinity,	brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 2.1,	spread: 5,	expl: 0, kn: 0},
 ['BOLT']:	{ color: 'rgba(212, 255, 0, 1)',	lt: .4,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 100,	spread: 0,	expl: 0, kn: 0},
-['FIRE']:	{ color: 'rgba(214, 113, 40, 1)',	lt: .4,		brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 1},
+['FIRE']:	{ color: 'rgba(214, 113, 40, 1)',	lt: 1,		brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 1},
 ['SMOKE']:	{ color: 'rgba(106, 106, 106, 1)',	lt: .6,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 0},
 ['CLOUD']:	{ color: 'rgba(255, 255, 255, 1)',	lt: 20,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 2,	expl: 0, kn: 0},
 ['STEAM']:	{ color: 'rgba(237, 211, 211, 1)',	lt: 6,		brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 0},
