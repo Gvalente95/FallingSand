@@ -35,8 +35,8 @@ function showShroomHead(prt, x, y) {
 }
 
 function renderBrush() {
-	if (MOUSEX < 0 || MOUSEX > canvas.width || MOUSEY < 0 || MOUSEY > canvas.height) return;
 	if (!settingBrushSize && BRUSHTYPE != 'PICK' && (MOUSEPRESSED || !SHOWBRUSH)) return;
+	if (MOUSEX < 0 || MOUSEX > canvas.width || MOUSEY < 0 || MOUSEY > canvas.height) return;
 	let px = settingBrushSize ? CANVW / 2 : MOUSEGRIDX * PIXELSIZE; py = settingBrushSize ? CANVH / 2 : MOUSEGRIDY * PIXELSIZE;
 	let rad = BRUSHSIZE * PIXELSIZE;
 	let color = BRUSHCOLOR ? setBrightness(BRUSHCOLOR) : "#ffffff39";

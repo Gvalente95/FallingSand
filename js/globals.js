@@ -14,7 +14,7 @@ SWIMSPEED = 2;
 SHOWHUD = true;
 PIXELSIZE = 4;
 BRUSHSIZE = 8;
-SHOWBRUSH = true;
+SHOWBRUSH = !isMobile;
 BRUSHCOLOR = null;
 MAXPARTICLES = 200000;
 MAXBRUSHSIZE = 40;
@@ -44,10 +44,10 @@ let gridCacheKey = "";
 let paramH = 32;
 
 let ratio = isMobile ? 4 : 20;
-let actionBtnW = window.innerWidth / ratio;
+let actionBtnW = isMobile ? window.innerWidth / ratio : 80;
 if (isMobile) actionBtnW = window.innerWidth / 4 - uiXmargin - 2;
 let paramBtnW = actionBtnW;
-let actionBtnH = actionBtnW * .6;
+let actionBtnH = actionBtnW * .4;
 let btnW = actionBtnW;
 let btnH = isMobile ? btnW * .6 : 30;
 
@@ -112,9 +112,9 @@ let PARTICLE_PROPERTIES = {
 ['BUBBLE']:	{ color: 'rgba(255, 255, 255, 1)',	lt: 1,			brn: 0,		brnpwr: 0,		douse: 1, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 1,	spread: 20,	expl: 0, kn: 0, rclr: 1},
 ['HYDROGEL']:{ color: 'rgba(97, 160, 181, 1)',	lt: Infinity, 	brn: 0,		brnpwr: 0, 		douse: 1, cor: 0, physT: 'LIQUID', 	updT: 'DYNAMIC', dns: 2, 	spread: 1,	expl: 0, kn: 1, rclr: 0},
 ['BLOB']:	{ color: 'rgba(0, 191, 255, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'SOLID',	updT: 'GEL', 	 dns: 2,	spread: 10,	expl: 0, kn: 0, rclr: 1},
-['BOLT']:	{ color: 'rgba(212, 255, 0, 1)',	lt: .4,			brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 100,	spread: 0,	expl: 0, kn: 0, rclr: 1},
 ['FIRE']:	{ color: 'rgba(214, 113, 40, 1)',	lt: .5,			brn: 0,		brnpwr: 1000,	douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 1, rclr: 1},
 ['SMOKE']:	{ color: 'rgba(106, 106, 106, 1)',	lt: .6,			brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 0, rclr: 1},
+['BOLT']:	{ color: 'rgba(212, 255, 0, 1)',	lt: .4,			brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 100,	spread: 0,	expl: 0, kn: 0, rclr: 1},
 ['CLOUD']:	{ color: 'rgba(255, 255, 255, 1)',	lt: 20,			brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 2,	expl: 0, kn: 0, rclr: 1},
 ['STEAM']:	{ color: 'rgba(237, 211, 211, 1)',	lt: 1,			brn: 0,		brnpwr: 0,		douse: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 0, rclr: 1},
 ['PLANT']:	{ color: 'rgba(45, 119, 83, 1)', 	lt: Infinity, 	brn: 975, 	brnpwr: 0, 		douse: 0, cor: 0, physT: 'STATIC', 	updT: 'ALIVE', 	 dns: 4, 	spread: 0, 	expl: 0, kn: 0, rclr: 1},
@@ -148,6 +148,10 @@ function initCreationRules() {
 }
 
 const TAGS = [
+    { type: 'SOLID', color: setBrightness('rgba(115, 144, 118, 1)', 150) },
+    { type: 'LIQUID', color: setBrightness('rgba(46, 113, 207, 1)', 150) },
+    { type: 'GAS', color: setBrightness('rgba(129, 127, 23, 1)', 150) },
+    { type: 'STATIC', color: setBrightness('rgba(33, 169, 117, 1)', 150) },
     { type: 'ALIVE', color: setBrightness('rgba(33, 169, 117, 1)', 150) },
     { type: 'HEAT', color: setBrightness('rgba(212, 103, 24, 1)', 150) },
     { type: 'ACIDS', color: setBrightness('rgba(166, 45, 179, 1)', 150) },
@@ -155,10 +159,6 @@ const TAGS = [
 	{ type: 'GEL', color: setBrightness('rgba(134, 74, 184, 1)', 150) },
     { type: 'FOOD', color: setBrightness('rgba(165, 169, 33, 1)', 150) },
 	{ type: 'EXPLOSIVE', color: setBrightness('rgba(57, 48, 37, 1)', 150) },
-    { type: 'SOLID', color: setBrightness('rgba(115, 144, 118, 1)', 150) },
-    { type: 'LIQUID', color: setBrightness('rgba(46, 113, 207, 1)', 150) },
-    { type: 'GAS', color: setBrightness('rgba(129, 127, 23, 1)', 150) },
-    { type: 'STATIC', color: setBrightness('rgba(33, 169, 117, 1)', 150) },
     { type: 'CUSTOM', color: setBrightness('rgba(255, 255, 255, 1)', 150) },
     { type: 'ALL', color: setBrightness('rgba(255, 255, 255, 1)', 150) }
 ];

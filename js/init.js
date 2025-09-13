@@ -6,7 +6,6 @@ function initInfoText() {
 	infoMouse = initLabelDiv(5, 20);
 }
 
-let pxSizeSlider = null;
 function initParamHeader(yPos)
 {
 	let spread = paramBtnW + uiXmargin;
@@ -15,10 +14,9 @@ function initParamHeader(yPos)
 
 	let sliders = [];
 	sliders.push(createVerticalPressSlider("Brush Sz", spread * n++, 0, 2, 100, 1, BRUSHSIZE, setNewBrushSize));
-	pxSizeSlider = createVerticalPressSlider("Px Size", spread * n++, 0, 2, 19, 1, PIXELSIZE, setNewPixelSize);
-	sliders.push(pxSizeSlider);
 	sliders.push(createVerticalPressSlider("Gravity", spread * n++, 0, 1, -1, .1, GRAVITY, setNewGravity));
 	sliders.push(createVerticalPressSlider("Speed", spread * n++, 0, .2, 2.2, .2, SIMSPEED, setNewSpeed));
+	sliders.push(createVerticalPressSlider("Px Size", spread * n++, 0, 2, 19, 1, PIXELSIZE, setNewPixelSize));
 	sliders.push(createVerticalPressSlider("Rain Pow", spread * n++, 0, 1, 100, 1, RAINPOW, setRAINPOW));
 	let sldW = 30;
 	paramheader = addHeader(xm, yPos, null, paramH, null, sldW * n);

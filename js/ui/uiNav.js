@@ -3,7 +3,7 @@ function updateUi()
 	for (let i = 0; i < uiPagesButtons.length; i++) {
 		let cb = uiPagesButtons[i];
 		let isOpen = uiPageIndex == i;
-		cb.style.backgroundColor = setAlpha(cb.baseClr, isOpen ? uiLayerIndex == 0 ? 1 : .6 : 0.3);
+		cb.style.backgroundColor = setAlpha(cb.baseClr, isOpen ? uiLayerIndex == 0 ? .6 : .4 : 0.2);
 		for (const b of cb.buttons) { b.newDiv.style.opacity = '0'; if (b.isSwitch) continue; b.style.display = isOpen ? 'block' : 'none'; }
 		for (const s of cb.sliders) s.style.display = isOpen ? 'block' : 'none';
 	}
