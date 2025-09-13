@@ -1,4 +1,11 @@
-function makeProfiler(){
+// const PROF=makeProfiler();
+
+// PROF.wrapProto(Particle, [
+//   'updatePosition','updateVelocity','updateMovement',
+// 	'update', 'render', 'pxAtp'
+// ]);
+
+function makeProfiler() {
   const T=new Map, WRAPPED=new WeakSet;
   return {
     tic(k){ const a=T.get(k)||{t:0,n:0}; a.s=performance.now(); T.set(k,a); },
@@ -24,4 +31,3 @@ function makeProfiler(){
     }
   };
 }
-const PROF=makeProfiler();

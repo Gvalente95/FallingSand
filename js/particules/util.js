@@ -1,11 +1,14 @@
 p.swap = function(other)
 {
-	if (isOutOfBorder(this.x, this.y)) return;
-	let otherX = other.x, otherY = other.y;
-	grid1[idx(this.x, this.y)] = null;
-	other.updatePosition(this.x, this.y, false);
-	grid1[idx(otherX, otherY)] = null;
-	this.updatePosition(otherX, otherY, false);
+	const otherX = other.x, otherY = other.y;
+	other.i = this.x + (this.y * GW);
+	this.i = otherX + (otherY * GW);
+	grid1[this.i] = this;
+	grid1[other.i] = other;
+	other.x = this.x;
+	other.y = this.y;
+	this.x = otherX;
+	this.y = otherY;
 }
 
 p.hasTouchedSurfaceCheck = function()
@@ -13,13 +16,15 @@ p.hasTouchedSurfaceCheck = function()
 		let y = 0;
 		let px = null;
 		let hasBubble = this.type == 'WATER' && this.timeAlive > 2;
+		let newY;
 		while (++y < 50)
 		{
-			if (this.y + y >= GRIDH - 1) {
+			newY = this.y + y;
+			if (newY >= GH - 1) {
 				if (hasBubble && dice(10)) new Particle(this.newX, this.newY - 1, this.type == 'LAVA' ? 'SMOKE' : 'BUBBLE');
 				return (true);
 			}
-			px = pxAtP(this.x, this.y + y);
+			px = pxAtI(ROWOFF[newY] + this.x);
 			if (px && (px.physT == 'SOLID')) {
 				if (hasBubble && dice(10)) new Particle(this.newX, this.newY - 1, this.type == 'LAVA' ? 'SMOKE' : 'BUBBLE');
 				return (true);

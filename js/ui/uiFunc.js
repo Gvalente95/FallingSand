@@ -19,17 +19,14 @@ function setNewType(newIndex)
 }
 
 let settingBrushSize = false;
-function setNewBrushSize(newPercentile) { BRUSHSIZE = ((Math.min(GRIDW, GRIDH) / 3) / 100) * newPercentile; settingBrushSize = true; }
+function setNewBrushSize(newPercentile) { BRUSHSIZE = Math.floor(((Math.min(GW, GH) / 3) / 100) * newPercentile); settingBrushSize = true; }
 function setNewBrushType(newType) { BRUSHTYPE = BRUSHTYPE == 'RECT' ? 'DISC' : 'RECT'; }
 function setNewGravity(newGravity) { GRAVITY = newGravity;}
 function setNewSpeed(newSpeed) { SIMSPEED = newSpeed; }
 function switchGridMode(newGridMode) { gridMode = newGridMode; }
 function setRAINPOW(newIntensity) { RAINPOW = (newIntensity / (PIXELSIZE));}
 function goToNextFrame() { switchPause(true); update(false); };
-function deactivateSwitchButton(button) {
-	button.active = false;
-	button.classList.remove("activeButton");
-}
+function deactivateSwitchButton(button) {button.active = false; button.classList.remove("activeButton");}
 function switchRain(newActive) { ISRAINING = newActive; }
 function switchBrushAction(newAction) {
 	BRUSHACTION = newAction;
@@ -39,34 +36,98 @@ function switchBrushAction(newAction) {
 }
 
 
-
-
-function rebuildNeighbors4(W,H){
-  const N = W*H;
-  N4 = new Int32Array(N*4);
-  for (let y=0,i=0; y<H; y++){
-    for (let x=0; x<W; x++,i++){
-      N4[i*4+0] = y>0    ? i-W : -1;
-      N4[i*4+1] = y<H-1  ? i+W : -1;
-      N4[i*4+2] = x>0    ? i-1 : -1;
-      N4[i*4+3] = x<W-1  ? i+1 : -1;
-    }
-  }
+function tryPlaceAt(p, x, y){
+	if (x < 0 || y < 0 || x >= GW || y >= GH) return false;
+	const i = ROWOFF[y] + x;
+	if (grid1[i]) return false;
+	p.x = x; p.y = y; p.newX = x; p.newY = y; p.i = i;
+	grid1[i] = p;
+	return true;
 }
 
-function ringOffsets(W,maxR){
-  const out=[];
-  for (let r=1;r<=maxR;r++){
-    for (let oy=-r;oy<=r;oy++){
-      for (let ox=-r;ox<=r;ox++){
-        if (!ox && !oy) continue;
-        if (Math.max(Math.abs(ox),Math.abs(oy))!==r) continue;
-        out.push(ox + oy*W);
+
+let RINGS = null;
+function buildRings(rMax){
+  RINGS = new Array(rMax + 1);
+  for (let r = 1; r <= rMax; r++){
+    const ring = [];
+    for (let oy = -r; oy <= r; oy++){
+      for (let ox = -r; ox <= r; ox++){
+        if (Math.max(Math.abs(ox), Math.abs(oy)) !== r) continue;
+        ring.push([ox, oy, Math.atan2(oy, ox)]);
       }
     }
+    ring.sort((a,b)=>a[2]-b[2]);
+    RINGS[r] = ring.map(v=>[v[0],v[1]]);
   }
-  return out;
 }
+
+function findEmptyNear(x0, y0, rMax){
+  if (!RINGS || RINGS.length-1 < rMax) buildRings(rMax);
+  const W = GW, H = GH;
+  const base = ((x0*73856093) ^ (y0*19349663)) >>> 0;
+  for (let r = 1; r <= rMax; r++){
+    const ring = RINGS[r];
+    const start = base % ring.length;
+    const rev = ((x0 + y0) & 1) === 1;
+    for (let k = 0; k < ring.length; k++){
+      const idx = rev ? (start - k + ring.length) % ring.length : (start + k) % ring.length;
+      const off = ring[idx];
+      const x = x0 + off[0], y = y0 + off[1];
+      if (x < 0 || y < 0 || x >= W || y >= H) continue;
+      const i = ROWOFF[y] + x;
+      if (!grid1[i]) return [x, y];
+    }
+  }
+  return null;
+}
+
+
+
+
+
+function replaceParticles(scale){
+	const s2 = scale * scale;
+	const orig = activeParticles.slice();
+	activeParticles = [];
+	grid1.fill(null);
+
+	const rBase = Math.max(2, Math.ceil(scale) + 2);
+
+	for (let k=0; k<orig.length; k++){
+		const p = orig[k];
+		p.velX *= scale; p.velY *= scale;
+		let nx = Math.floor(p.x * scale);
+		let ny = Math.floor(p.y * scale);
+		if (nx < 0) nx = 0; else if (nx >= GW) nx = GW - 1;
+		if (ny < 0) ny = 0; else if (ny >= GH) ny = GH - 1;
+		let placed = tryPlaceAt(p, nx, ny);
+		if (!placed){
+			if (s2 >= 1){
+				const spot = findEmptyNear(nx, ny, rBase);
+				if (spot) placed = tryPlaceAt(p, spot[0], spot[1]);
+			} else {
+				p.toRemove();
+			}
+		}
+		if (placed) activeParticles.push(p);
+		if (s2 > 1){
+			let extra = Math.floor(s2) - 1;
+			const frac = s2 - Math.floor(s2);
+			if (Math.random() < frac) extra++;
+
+			for (let t=0; t<extra; t++){
+				const spot = findEmptyNear(nx, ny, rBase);
+				if (!spot) break;
+				const q = new Particle(spot[0], spot[1], p.type);
+				if (p.color) q.setColor(p.color);
+				q.velX = p.velX; q.velY = p.velY;
+			}
+		}
+	}
+}
+
+
 function setNewPixelSize(newPixelSize){
 	if (newPixelSize <= 0 || newPixelSize === PIXELSIZE) return;
 
@@ -75,82 +136,19 @@ function setNewPixelSize(newPixelSize){
 
 	BRUSHSIZE = clamp(Math.round(BRUSHSIZE * scale), 1, MAXBRUSHSIZE);
 
-	const newW = Math.max(1, (CANVW / PIXELSIZE) | 0);
-	const newH = Math.max(1, (CANVH / PIXELSIZE) | 0);
-	const newN = newW * newH;
-
-	const newGrid1 = new Array(newN);
-	const buckets = new Map();
-
-	for (let i = 0; i < activeParticles.length; i++){
-	const p = activeParticles[i];
-	let nx = Math.round(p.x * scale);
-	let ny = Math.round(p.y * scale);
-	if (nx < 0) nx = 0; else if (nx >= newW) nx = newW - 1;
-	if (ny < 0) ny = 0; else if (ny >= newH) ny = newH - 1;
-	const ni = idx(nx,ny,newW);
-	p._ni = ni;
-	p._nx = nx;
-	p._ny = ny;
-	p.velX *= scale;
-	p.velY *= scale;
-	const arr = buckets.get(ni);
-	if (arr) arr.push(p); else buckets.set(ni,[p]);
-	}
-
-	const offs = ringOffsets(newW, 16);
-
-	for (const [ni, arr] of buckets){
-	let placedCenter = false;
-	for (let j=0; j<arr.length; j++){
-		const p = arr[j];
-		let ti = ni;
-
-		if (!placedCenter && !newGrid1[ti]) {
-		placedCenter = true;
-		} else {
-		let found = false;
-		for (let k=0; k<offs.length; k++){
-			const oi = ti + offs[k];
-			if (oi < 0 || oi >= newN) continue;
-			const x = oi % newW;
-			const y = (oi / newW) | 0;
-			if (x < 0 || x >= newW || y < 0 || y >= newH) continue;
-			if (!newGrid1[oi]) { ti = oi; found = true; break; }
-		}
-		if (!found) {
-			p.active = false;
-			destroyedParticles.push(p);
-			continue;
-		}
-		}
-
-		const tx = ti % newW;
-		const ty = (ti / newW) | 0;
-		p.x = tx; p.y = ty; p.newX = tx; p.newY = ty; p.i = ti;
-		newGrid1[ti] = p;
-	}
-  }
-
-  GRIDW = newW;
-  GRIDH = newH;
-  grid1 = newGrid1;
-  rebuildNeighbors4(GRIDW, GRIDH);
-
-  if (typeof buildGridLayer === 'function') buildGridLayer();
-  if (typeof buildWaterShades === 'function') buildWaterShades();
-
-  if (typeof RowCache !== 'undefined' && RowCache) {
-    RowCache.vacL.length = RowCache.vacR.length = RowCache.dropL.length = RowCache.dropR.length =
-    RowCache.barL.length = RowCache.barR.length = RowCache.dirty.length = 0;
-    for (let y = 0; y < GRIDH; y++) RowCache.dirty[y] = 1;
-  }
+	GW = Math.max(1, (CANVW / PIXELSIZE) | 0);
+	GH = Math.max(1, (CANVH / PIXELSIZE) | 0);
+	initGrid();
+	buildWaterShades();
+	replaceParticles(scale);
 }
 
 function switchHud(newActive) {
 	SHOWHUD = newActive;
-	infoMouse.style.display = SHOWHUD ? 'block' : 'none';
-	infoText.style.display = SHOWHUD ? 'block' : 'none';
+	if (!newActive) {
+		infoMouse.textContent = '';
+		infoText.textContent = '';
+	}
 }
 function switchPause(newPause = !inPause) {
     if (newPause == -1) newPause = !inPause;
@@ -158,12 +156,13 @@ function switchPause(newPause = !inPause) {
     if (inPause) pauseButton.classList.add("activeButton");
     else pauseButton.classList.remove("activeButton");
 }
+
 function fillScreen() {
 	initGrid();
 	activeParticles = [];
-	let yStart = (KEYS['Shift'] ? 0 : GRIDH / 2);
-	for (let x = 0; x < GRIDW; x++){
-		for (let y = yStart; y < GRIDH; y++){
+	let yStart = (KEYS['Shift'] ? 0 : Math.floor(GH / 2));
+	for (let x = 0; x < GW; x++){
+		for (let y = yStart; y < GH; y++){
 			new Particle(x, y, particleKeys[TYPEINDEX]);
 		}
 	}

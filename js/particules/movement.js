@@ -8,6 +8,7 @@ p.updateMovement = function() {
 
 	let k = SIMSPEED * dt;
 	if (this.physT == 'GAS') k = 1;
+
 	let newX = this.x + this.velX * k;
 	let newY = this.y + this.velY * k;
 
@@ -19,53 +20,163 @@ p.updateMovement = function() {
 
 	let curX = this.x, curY = this.y;
 	let lastX = curX, lastY = curY;
-	const GW = GRIDW, GH = GRIDH;
 	const side = rdir();
 
 	for (let i = 0; i < steps; i++) {
 		curX += xStep; curY += yStep;
 		const realX = Math.round(curX), realY = Math.round(curY);
-
 		if (realX < 0 || realX >= GW || realY < 0 || realY >= GH) { curX = lastX; curY = lastY; break; }
 
-		const hit = pxAtP(realX, realY, this);
-		if (!hit) { lastX = curX; lastY = curY; continue; }
+		const ii = realY * GW + realX;
+		let hit = grid1[ii];
+		if (!(hit && hit !== this && hit.active)) { lastX = curX; lastY = curY; continue; }
+
 		if (this.physT === 'FISH' && hit.physT === 'LIQUID') continue;
 		if (this.type === 'ANT' && hit.physT === 'LIQUID' && this.inWater > 100) continue;
 		if (this.douse && hit.type !== 'FISH') { if (hit.brnpwr) this.setType('STEAM'); else hit.setWet(100, this.type); }
 		if (shouldBurn(this, hit)) { hit.setToFire(); }
-		if (shouldBurn(hit, this)) this.setToFire();
+		if (shouldBurn(hit, this)) { this.setToFire(); }
 		else if (this.physT === 'GAS' && hit.physT === 'LIQUID' && hit.y < this.y) {
-		this.swap(hit); curX = this.x; curY = this.y; break;
+			this.swap(hit); curX = this.x; curY = this.y; break;
 		}
 		else if (this.physT === 'LIQUID' && hit.physT === 'LIQUID') {
-		const a = this.type, b = hit.type;
-		if ((a === 'LAVA' && b === 'WATER') || (a === 'WATER' && b === 'LAVA')) {
-			if (a === 'LAVA') (dice(5) ? this.setType('COAL') : hit.setType('STEAM'));
-			else this.setType('STEAM');
-			curX -= xStep; curY -= yStep; break;
-		}
-		if (hit.dns < this.dns) { this.swap(hit); curX = this.x; curY = this.y; break; }
+			const a = this.type, b = hit.type;
+			if ((a === 'LAVA' && b === 'WATER') || (a === 'WATER' && b === 'LAVA')) {
+				if (a === 'LAVA') (dice(5) ? this.setType('COAL') : hit.setType('STEAM'));
+				else this.setType('STEAM');
+				curX -= xStep; curY -= yStep; break;
+			}
+			if (hit.dns < this.dns) { this.swap(hit); curX = this.x; curY = this.y; break; }
 		}
 		else if (this.physT === 'SOLID' && hit.physT === 'LIQUID') {
-			if (i !== steps - 1) continue;
+			if (i !== steps - 1) { lastX = curX; lastY = curY; continue; }
 			this.timeInWater++;
 			this.inWater = true;
 			if (this.type != 'ICE' || this.timeInWater < 10) {
 				this.swap(hit); curX = this.x; curY = this.y; break;
 			}
-			else if (this.type === 'ICE') this.velY = this.velX = 0;
+			else if (this.type === 'ICE') { this.velY = this.velX = 0; }
 		}
+
 		const lx = realX + side;
 		if (lx >= 0 && lx < GW) {
-		const s = pxAtP(lx, realY, this);
-		if (!s) { curX += side; continue; }
+			const s = grid1[realY * GW + lx];
+			if (!s) { curX += side; continue; }
 		}
 		const rx = realX - side;
-		if (rx >= 0 && rx < GW && !pxAtP(rx, realY, this)) { curX -= side; continue; }
+		if (rx >= 0 && rx < GW) {
+			const s2 = grid1[realY * GW + rx];
+			if (!s2) { curX -= side; continue; }
+		}
 
 		curX -= xStep; curY -= yStep; break;
 	}
+
 	this.newX = Math.round(curX);
 	this.newY = Math.round(curY);
-}
+};
+
+
+
+// p.updateMovement = function() {
+// 	if (this.type === 'ANT' && this.hasTouchedBorder && !this.inWater) return;
+// 	if (this.type === 'PLANT' || (this.type === 'FISH' && this.inWater)) {
+// 		this.newX = (this.x + this.velX) | 0;
+// 		this.newY = (this.y + this.velY) | 0;
+// 		return;
+// 	}
+// 	let k = SIMSPEED * dt;
+// 	if (this.physT == 'GAS') k = 1;
+// 	let nx = this.x + this.velX * k;
+// 	let ny = this.y + this.velY * k;
+// 	let rx = nx < 0 ? 0 : nx > GW - 1 ? GW - 1 : nx;
+// 	let ry = ny < 0 ? 0 : ny > GH - 1 ? GH - 1 : ny;
+// 	let tx = rx | 0;
+// 	let ty = ry | 0;
+// 	const di = ROWOFF[ty] + tx;
+// 	const tgt = grid1[di];
+// 	if (!tgt) {
+// 		this.newX = tx;
+// 		this.newY = ty;
+// 		return;
+// 	}
+
+// 	let cx = this.x;
+// 	let cy = this.y;
+
+// 	const dx = tx - cx;
+// 	const dy = ty - cy;
+
+// 	const adx = dx < 0 ? -dx : dx;
+// 	const ady = dy < 0 ? -dy : dy;
+
+// 	const steps = adx > ady ? adx : ady;
+// 	if (steps === 0) {
+// 		this.newX = this.x;
+// 		this.newY = this.y;
+// 		return;
+// 	}
+
+// 	const stepx = dx / steps;
+// 	const stepy = dy / steps;
+
+// 	let fx = cx, fy = cy;
+// 	let lasti = this.i;
+
+// 	for (let s = 0; s < steps; s++) {
+// 		fx += stepx; fy += stepy;
+// 		const ix = fx + 0.5 | 0;
+// 		const iy = fy + 0.5 | 0;
+// 		if (ix < 0 || ix >= GW || iy < 0 || iy >= GH) break;
+// 		const ii = ROWOFF[iy] + ix;
+// 		const hit = grid1[ii];
+
+// 		if (!hit) { lasti = ii; continue; }
+
+// 		if (this.physT === 'FISH' && hit.physT === 'LIQUID') continue;
+// 		if (this.type === 'ANT' && hit.physT === 'LIQUID' && this.inWater > 100) continue;
+
+// 		if (this.douse && hit.type !== 'FISH') { if (hit.brnpwr) this.setType('STEAM'); else hit.setWet(100, this.type); }
+// 		if (shouldBurn(this, hit)) { hit.setToFire(); }
+// 		if (shouldBurn(hit, this)) { this.setToFire(); }
+
+// 		if (this.physT === 'GAS' && hit.physT === 'LIQUID' && hit.y < this.y) {
+// 			this.swap(hit);
+// 			fx = this.x; fy = this.y;
+// 			break;
+// 		}
+
+// 		if (this.physT === 'LIQUID' && hit.physT === 'LIQUID') {
+// 			const a = this.type, b = hit.type;
+// 			if ((a === 'LAVA' && b === 'WATER') || (a === 'WATER' && b === 'LAVA')) {
+// 				if (a === 'LAVA') (dice(5) ? this.setType('COAL') : hit.setType('STEAM'));
+// 				else this.setType('STEAM');
+// 				break;
+// 			}
+// 			if (hit.dns < this.dns) { this.swap(hit); fx = this.x; fy = this.y; break; }
+// 		}
+// 		else if (this.physT === 'SOLID' && hit.physT === 'LIQUID') {
+// 			this.timeInWater++;
+// 			this.inWater = true;
+// 			if (this.type != 'ICE' || this.timeInWater < 10) {
+// 				this.swap(hit);
+// 				fx = this.x; fy = this.y;
+// 				break;
+// 			} else if (this.type === 'ICE') { this.velY = 0; this.velX = 0; }
+// 		}
+
+// 		const side = dx === 0 ? 0 : (dx > 0 ? 1 : -1);
+// 		const lx = ix + side;
+// 		if (lx >= 0 && lx < GW) {
+// 			const s1 = grid1[ROWOFF[iy] + lx];
+// 			if (!s1) { fx += side; continue; }
+// 		}
+// 		const rx2 = ix - side;
+// 		if (rx2 >= 0 && rx2 < GW && !grid1[ROWOFF[iy] + rx2]) { fx -= side; continue; }
+
+// 		break;
+// 	}
+
+// 	this.newX = lasti % GW;
+// 	this.newY = (lasti / GW) | 0;
+// };

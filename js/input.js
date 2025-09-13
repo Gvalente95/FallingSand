@@ -4,9 +4,9 @@ canvas.addEventListener('mousedown', (e) => {
 	MOUSEX = e.clientX;
 	MOUSEY = e.clientY;
 	CLICKCOLOR = getRandomColor();
-	if (BRUSHACTION == 'PICK' && PXATMOUSE) setNewType(getCurTypeIndex(PXATMOUSE.type));
 	if (BRUSHACTION == 'CUT') { SHOULDCUT = true};
 	setTimeout(() => { MOUSECLICKED = false }, 50);
+	userInput();
 });
 
 window.addEventListener('mouseup', () => {
@@ -14,12 +14,14 @@ window.addEventListener('mouseup', () => {
 	SHOULDCUT = false;
 	for (let i = 0; i < selParticles.length; i++){
 		let p = selParticles[i];
-		p.updatePosition(p.x, p.y);
+		p.updatePosition(ROWOFF[p.y] + p.x);
 		p.isSel = false;
 		p.velX = MOUSEDX / PIXELSIZE;
 		p.velY = MOUSEDY / PIXELSIZE
 	}
 	selParticles = [];
+	if (BRUSHACTION == 'PICK' && PXATMOUSE) setNewType(particleKeys.indexOf(PXATMOUSE.type));
+	userInput();
 });
 
 window.addEventListener('mousemove', (e) => {
@@ -33,11 +35,12 @@ window.addEventListener('mousemove', (e) => {
 	setTimeout(() => { MOUSEMOVED = false }, 50);
 	let gridX = Math.floor(MOUSEX / PIXELSIZE);
 	let gridY = Math.floor(MOUSEY / PIXELSIZE);
-	MOUSEGRIDX = clamp(gridX, 0, GRIDW - 1);
-	MOUSEGRIDY = clamp(gridY, 0, GRIDH - 1);
+	MOUSEGRIDX = clamp(gridX, 0, GW - 1);
+	MOUSEGRIDY = clamp(gridY, 0, GH - 1);
 });
 
 window.addEventListener('keydown', (e) => {
+	userInput();
 	if (isInInputField) return;
 	if (e.code == 'Tab') e.preventDefault();
 	if (e.key == 't') { ISGAME = !ISGAME; console.warn(ISGAME); updateUi(); }
@@ -57,20 +60,19 @@ window.addEventListener('keyup', (e) => {
 window.addEventListener('resize', () => {
 	CANVW = window.innerWidth; CANVH = window.innerHeight - 180;
 	canvas.width = CANVW; canvas.height = CANVH;
-	GRIDW = Math.floor(CANVW / PIXELSIZE); GRIDH = Math.floor(CANVH / PIXELSIZE);
+	GW = Math.floor(CANVW / PIXELSIZE); GH = Math.floor(CANVH / PIXELSIZE);
 	for (let i = 0; i < grid1.length; i++) if (grid1[i]) grid1[i].toRemove();
-	grid1 = new Array(GRIDW * GRIDH);
+	grid1 = new Array(GW * GH);
 	buildGridLayer();
 });
 
 canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
 	const delta = e.deltaY;
-	if (KEYS['Shift']) setNewPixelSize(clamp(PIXELSIZE + delta * .1, 1, 19));
+	if (KEYS['Shift']) setNewPixelSize(clamp(Math.floor(PIXELSIZE + delta * .1), 2, 19));
 	else BRUSHSIZE = clamp(BRUSHSIZE - delta * 0.1, 1, MAXBRUSHSIZE);
 	SHOWBRUSH = true;
 });
-
 
 function simulateMouseEvent(touchEvent, mouseEventType) {
     const touch = touchEvent.changedTouches[0];
@@ -147,3 +149,18 @@ document.addEventListener('touchend', (e) => {
         lastY = null;
     }
 }, { passive: false });
+
+
+
+let inputTimeout = null;
+let hasInput = false;
+function userInput() {
+    if (inputTimeout) {
+        clearTimeout(inputTimeout);
+    }
+    inputTimeout = setTimeout(() => {
+        inputTimeout = null;
+        hasInput = false;
+    }, 100);
+    hasInput = true;
+}

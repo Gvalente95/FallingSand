@@ -13,7 +13,7 @@ body {
 	background: var(--btn-bg, linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%), linear-gradient(180deg, #ff4d4d, #c31212));
 	color: #ffffff;
 	text-align: center;
-	font-family: 'Press Start 2P', monospace;
+	font-family: 'MyPixelFont', monospace;
 	font-size: 12px;
 	letter-spacing: .5px;
 	text-shadow: 1px 1px 0 #000, 0px 0px 0 #000, 2px 0px 0 #000, 0px 2px 0 #000;
@@ -78,10 +78,20 @@ body {
 	transform: scale(1);
 }
 
+@font-face {
+  font-family: 'MyPixelFont';
+  src: url('Minecraftia-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
 .infoText{
 	color:white;
 	text-align: center;
-	font-family: 'Press Start 2P', monospace;
+	font-family: 'MyPixelFont', monospace;
+	/* image-rendering: pixelated;
+	font-smooth: never;
+	-webkit-font-smoothing: none;
+	-moz-osx-font-smoothing: grayscale; */
 	font-size: 14px;
 	text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
     line-height: 30px;
@@ -101,7 +111,7 @@ body {
 	border: 1px solid #000;
 	background: rgba(0,0,0,.75);
 	color: #fff;
-	font-Family: 'Press Start 2P', monospace;
+	font-Family: 'MyPixelFont', monospace;
 	font-Size: 9px;
 	line-Height: 1;
 	pointer-Events: none;

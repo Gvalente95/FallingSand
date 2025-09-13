@@ -53,7 +53,7 @@ function hasAllNeighborsSet(x,y,set,self){
 	for (let oy=-1; oy<=1; oy++){
 		for (let ox=-1; ox<=1; ox++){
 			if (!ox && !oy) continue;
-			const q = pxAtP(x+ox,y+oy,self);
+			const q = pxAtI(ROWOFF[y+oy] + x+ox,self);
 			if (!q) continue;
 			if (need.has(q.type)) need.delete(q.type);
 			if (!need.size) return true;
@@ -67,7 +67,7 @@ function heatLevel(x,y,self){
 	for (let oy=-1; oy<=1; oy++){
 		for (let ox=-1; ox<=1; ox++){
 			if (!ox && !oy) continue;
-			const q=pxAtP(x+ox,y+oy,self);
+			const q=pxAtI(x+ox,ROWOFF[y+oy] + x+ox,self);
 			if (!q) continue;
 			if (q.type==='FIRE'||q.type==='LAVA'||q.type==='MAGMA'||q.type==='TORCH') n++;
 		}
@@ -78,14 +78,14 @@ function heatLevel(x,y,self){
 function pressureAt(x,y){
 	let n=0;
 	for (let yy=y-1; yy>=0; yy--){
-		const q=pxAtP(x,yy);
+		const q=pxAtI(ROWOFF[yy] + x);
 		if (q && (q.type==='ROCK'||q.physT==='SOLID')) n++; else break;
 	}
 	return n;
 }
 
 function applyCreationAt(x,y,target){
-	const p=pxAtP(x,y);
+	const p=pxAtI(ROWOFF[y] + x);
 	if (p){ if (p.type===target) return false; p.replace(target); return true; }
 	new Particle(x, y, target);
 	return true;

@@ -1,7 +1,3 @@
-function isOutOfBorder(x, y) { return (x < 0 || x > GRIDW - 1 || y < 0 || y > GRIDH - 1) };
-function atCorner(x, y) { return ((x == 0 && y == 0) || (x == 0 && y == GRIDH - 1) || (x == GRIDW - 1 && y == 0) || (x == GRIDW - 1 && y == GRIDH - 1)) };
-function atBorder(x, y) { return (x == 0 || y == 0 || x == GRIDW - 1 || y == GRIDH - 1) };
-
 function deleteParticules(x = MOUSEX, y = MOUSEY, radius = 10, type = null, isDisc = true) {
     const radiusSquared = radius * radius;
     for (let dy = -radius; dy <= radius; dy++) {
@@ -9,9 +5,9 @@ function deleteParticules(x = MOUSEX, y = MOUSEY, radius = 10, type = null, isDi
 			if (!isDisc || (dx * dx + dy * dy) <= radiusSquared) {
 				let px = x + dx * PIXELSIZE;
 				let py = y + dy * PIXELSIZE;
-				let gridX = Math.floor((px) / PIXELSIZE);
-				let gridY = Math.floor(py / PIXELSIZE);
-				const p = pxAtP(gridX, gridY);
+				let gx = Math.floor((px) / PIXELSIZE);
+				let gy = Math.floor(py / PIXELSIZE);
+				const p = pxAtI(ROWOFF[gy] + gx);
 				if (p && (!type || p.type == type)) p.toRemove();
             }
         }
@@ -20,6 +16,7 @@ function deleteParticules(x = MOUSEX, y = MOUSEY, radius = 10, type = null, isDi
 
 function launchParticules(type = 'SAND', x = MOUSEX, y = MOUSEY, radius = BRUSHSIZE, isDisc = BRUSHTYPE == BRUSHTYPES.DISC, useMouseDx = true)
 {
+	if (useMouseDx && hasTag(type, 'GAS')) useMouseDx = false;
 	if (activeParticles.length > MAXPARTICLES) return;
 	const radiusSquared = radius * radius;
     for (let dy = -radius; dy <= radius; dy++) {
@@ -29,23 +26,21 @@ function launchParticules(type = 'SAND', x = MOUSEX, y = MOUSEY, radius = BRUSHS
 				let py = y + dy * PIXELSIZE;
 				let gridX = Math.floor(px / PIXELSIZE);
 				let gridY = Math.floor(py / PIXELSIZE);
-				let clampedX = clamp(gridX, 1, GRIDW - 1);
-				let clampedY = clamp(gridY, 1, GRIDH - 1);
+				let clampedX = clamp(gridX, 1, GW - 1);
+				let clampedY = clamp(gridY, 1, GH - 1);
 				let newP = new Particle(clampedX, clampedY, type);
 				if (type === 'RAINBOW') newP.setColor(getRainbowColor(time, .1));
+				if (radius <= 1) return;
 				if (!useMouseDx) continue;
+				
 				newP.velX += (MOUSEDX / PIXELSIZE) * (newP.physT == PHYSTYPES.LIQUID ? .5 : .2);
 				newP.velY += (MOUSEDY / PIXELSIZE) * (newP.physT == PHYSTYPES.LIQUID ? .5 : .2);
-				if (radius <= 1) return;
             }
         }
 	}
 }
 
-function deleteParticulesAtMouse()
-{
-	deleteParticules(MOUSEX - BRUSHSIZE / 2 + PIXELSIZE, MOUSEY - BRUSHSIZE / 2 + PIXELSIZE, BRUSHSIZE, null, BRUSHTYPE == 'DISC');
-}
+function deleteParticulesAtMouse() {deleteParticules(MOUSEX - BRUSHSIZE / 2 + PIXELSIZE, MOUSEY - BRUSHSIZE / 2 + PIXELSIZE, BRUSHSIZE, null, BRUSHTYPE == 'DISC');}
 
 function deleteAllParticules(type = null)
 {
@@ -77,7 +72,7 @@ function vibrateRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity =
 		let gx = Math.floor(rx / PIXELSIZE);
 		let gy = Math.floor(ry / PIXELSIZE);
 		if (isOutOfBorder(gx, gy)) break;
-		const p = pxAtP(gx, gy);
+		const p = pxAtI(ROWOFF[gy] + gx);
 		if (!p) continue;
 		p.velX = f_range(-intensity, intensity + 1);
 		p.velY = f_range(-intensity, intensity + 1);
@@ -99,7 +94,7 @@ function pushRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, isCircle = BRU
 				let gx = Math.floor(rx / PIXELSIZE);
 				let gy = Math.floor(ry / PIXELSIZE);
 				if (isOutOfBorder(gx,gy)) break;
-				const p = pxAtP(gx, gy);
+				const p = pxAtI(ROWOFF[gy] + gx);
 				if (!p) continue;
 				p.isSel = true;
 				p.velY = p.velX = 0;
@@ -123,7 +118,7 @@ function explodeRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity =
 				let gx = Math.floor(rx / PIXELSIZE);
 				let gy = Math.floor(ry / PIXELSIZE);
 				if (isOutOfBorder(gx, gy)) break;
-				const p = pxAtP(gx, gy);
+				const p = pxAtI(ROWOFF[gy] + gx);
 				if (!p) continue;
 				if (ignoreType && p.type == ignoreType) continue;
 				if (p.expl) p.lt = 0;
@@ -133,7 +128,7 @@ function explodeRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity =
 					ddy = -radius / 2;
 					ddx = r_range(-radius, radius);
 				}
-				if (p.physT = 'STATIC') p.physT = 'DYNAMIC';
+				if (p.physT === 'STATIC') p.physT = 'DYNAMIC';
 				p.velX = ddx * f_range(xPushLimits[0], xPushLimits[1]) * dt;
 				p.velY = ddy * f_range(yPushLimits[0], yPushLimits[1]) * dt;
 				if (setToFire && dice(2000)) p.setToFire(setToFire);

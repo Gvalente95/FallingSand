@@ -8,14 +8,14 @@ p.updateBurn = function () {
 		else this.setType('COAL');
 		this.burning = 0;
 	}
-	else if (dice(10) && !pxAtP(this.x, this.y - 1)) new Particle(this.x, this.y - 1, 'FIRE');
+	else if (dice(10) && !pxAtI(ROWOFF[this.y - 1] + this.x)) new Particle(this.x, this.y - 1, 'FIRE');
 	let depth = 2;
 	for (let x = -depth; x < depth; x++)
 		for (let y = -depth; y < depth; y++)
 		{
 			if (x === 0 && y === 0) continue;
 			if (isOutOfBorder(this.x + x, this.y + y)) continue;
-			let px = pxAtP(this.x + x, this.y + y, this);
+			let px = pxAtI(ROWOFF[this.y + y] + this.x + x, this);
 			if (px && !px.burning && shouldBurnParticle('FIRE', px)) px.setToFire();
 			if (!px && dice(30)) new Particle(this.x + x, this.y + y, 'SMOKE');
 		}
@@ -28,6 +28,7 @@ p.stopFire = function ()
 	this.rgb = hexToRgb(this.color);
 	this.burning = 0;
 }
+
 p.setToFire = function()
 {
 	if (this.frozen) { this.unFreeze(50); return; }
@@ -40,7 +41,7 @@ p.setToFire = function()
 	else if (this.type === 'MAGMA') this.setType('LAVA');
 	else {
 		this.burning = 120 - (this.brn / 10);
-		this.setColor(this.type === 'COAL' ? 'rgba(129, 89, 80, 1)' : 'rgba(228, 76, 16, 1)');
+		this.setColor(addColor(this.baseColor, 'rgba(255, 0, 0, 1)', .3));
 	}
 }
 
@@ -67,21 +68,23 @@ p.updateWet = function () {
 		{
 			if (x === 0 && y === 0) continue;
 			if (isOutOfBorder(this.x + x, this.y + y)) continue;
-			let px = pxAtP(this.x + x, this.y + y, this);
+			let px = pxAtI(ROWOFF[this.y + y] + this.x + x, this);
 			if (px) px.setWet(this.wet - 10, this.wetType);
 		}
 	}
 	if (dice(5000)) {
-		let pxAb = pxAtP(this.x, this.y - 1);
+		let pxAb = pxAtI(ROWOFF[this.y - 1] + this.x);
 		if (pxAb && pxAb.type === this.wetType) {
 			pxAb = pxAb.replace('BUBBLE');
 			pxAb.transformType = this.wetType;
 		}
 	}
-	let shroomChance = (this.type === 'GRASS' ? 1000 : 10000) - this.wet;
-	if (dice(shroomChance)) {
-		this.setType('SHROOM');
-		this.isGrower = true;
+	if (this.hasTouchedBorder && this.updT != 'ALIVE') {
+		let shroomChance = (this.type === 'GRASS' ? 1000 : 10000) - this.wet;
+		if (dice(shroomChance)) {
+			this.setType('SHROOM');
+			this.isGrower = true;
+		}
 	}
 }
 

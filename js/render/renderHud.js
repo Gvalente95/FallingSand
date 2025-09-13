@@ -4,6 +4,10 @@ let hudEvery = 4, hudTick = 0;
 function updateHUD(){
   if (++hudTick % hudEvery !== 0) return;
 
+	if (!SHOWHUD) {
+	infoText.textContent = `Fps:${fps}`;
+	return;
+	}
   const topNow = `x${MOUSEX},y${MOUSEY} gx${MOUSEGRIDX},gy${MOUSEGRIDY}  Pxls: ${activeParticles.length} Tm:${time} Fps:${fps}`;
   if (topNow !== lastTop) { infoText.textContent = topNow; lastTop = topNow; }
 

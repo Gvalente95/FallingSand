@@ -4,15 +4,17 @@ class Particle{
 	{
 		if (isOutOfBorder(x, y)) return (this.toRemove(), 0);
 		this.properties = PARTICLE_PROPERTIES[type];
-		let px = pxAtP(x, y, this);
+		let px = pxAtI(x + y * GW, this);
 		if (px)
 		{
 			if (type === px.type) { this.toRemove(); return; }
 			else if ((type === 'SHROOM' || type === 'SHROOMX') && px.physT === 'SOLID') {color = px.color;}
-			if (this.properties.physT === 'GAS' && type != 'STEAM')
+			if (this.properties.physT === 'GAS')
 			{
 				if (px.physT === 'LIQUID' && type === 'FIRE') {
-					px.replace('FIRE');
+					px.replace('BUBBLE');
+					px.transformType = 'WATER';
+					px.velX = 0;
 				}
 				else if (type != px.type && shouldBurnParticle(type, px)) px.setToFire();
 				return (this.toRemove(), 0);
@@ -24,6 +26,7 @@ class Particle{
 		this.parent = null;
 		this.childrens = [];
 		this.hasTouchedSurface = false;
+		this.isSel = false;
 		this.shouldSpread = true;
 		this.hasTouchedBorder = false;
 		this.id = id++;
@@ -31,37 +34,34 @@ class Particle{
 		this.lt = lt;
 		this.startTime = now;
 		this.timeAlive = 0;
-		this.isSel = false;
+		this.burning = 0;
 		this.wet = 0;
 		this.warm = 0;
 		this.frozen = 0;
 		this.fseed = f_range(.1, 1);
-		this.burning = 0;
 		this.setVel(velX, velY);
 		this.setType(type);
 		if (color) this.setColor(color);
-		this.x = clamp(x, 0, GRIDW - 1);
-		this.y = clamp(y, 0, GRIDH - 1);
-		this.active = true;
+		this.x = x;
+		this.y = y;
 		this.i = idx(this.x, this.y);
 		grid1[this.i] = this;
 		activeParticles.push(this);
+		this.active = true;
 	}
 
-	updatePosition(newX, newY){
+	updatePosition(di){
 		if (!this.active) return 0;
-		const sx = this.x, sy = this.y, si = this.i;
-		let dx = Math.floor(clamp(newX, 0, GRIDW - 1));
-		let dy = Math.floor(clamp(newY, 0, GRIDH - 1));
-		if (dx === sx && dy === sy) return 0;
-		const di = idx(dx, dy);
+		if (di === this.i) return 0;
 		const hit = grid1[di];
 		if (hit && hit !== this && hit.active) {
 			if (this.physT === 'GAS') { this.toRemove(); return 0; }
 			return this.swap(hit);
 		}
-		grid1[si] = null;
-		this.x = dx; this.y = dy; this.i = di;
+		grid1[this.i] = null;
+		this.i = di;
+		this.x = di % GW;
+		this.y = (di / GW) | 0;
 		grid1[di] = this;
 		return 1;
 	};
@@ -95,8 +95,8 @@ class Particle{
 	update() {
 		if (!this.active) return;
 		if (this.isSel) {
-			this.x += Math.round(MOUSEDX / PIXELSIZE);
-			this.y += Math.round(MOUSEDY / PIXELSIZE);
+			this.x = clamp(this.x + Math.round(MOUSEDX / PIXELSIZE), 0, GW - 1);
+			this.y = clamp(this.y + Math.round(MOUSEDY / PIXELSIZE), 0, GH - 1);
 			return;
 		}
 		this.updateState();

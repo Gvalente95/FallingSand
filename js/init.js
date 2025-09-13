@@ -6,6 +6,7 @@ function initInfoText() {
 	infoMouse = initLabelDiv(5, 20);
 }
 
+let pxSizeSlider = null;
 function initParamHeader(yPos)
 {
 	let spread = paramBtnW + uiXmargin;
@@ -14,7 +15,8 @@ function initParamHeader(yPos)
 
 	let sliders = [];
 	sliders.push(createVerticalPressSlider("Brush Sz", spread * n++, 0, 2, 100, 1, BRUSHSIZE, setNewBrushSize));
-	sliders.push(createVerticalPressSlider("Px Size", spread * n++, 0, 2, 19, 1, PIXELSIZE, setNewPixelSize));
+	pxSizeSlider = createVerticalPressSlider("Px Size", spread * n++, 0, 2, 19, 1, PIXELSIZE, setNewPixelSize);
+	sliders.push(pxSizeSlider);
 	sliders.push(createVerticalPressSlider("Gravity", spread * n++, 0, 1, -1, .1, GRAVITY, setNewGravity));
 	sliders.push(createVerticalPressSlider("Speed", spread * n++, 0, .2, 2.2, .2, SIMSPEED, setNewSpeed));
 	sliders.push(createVerticalPressSlider("Rain Pow", spread * n++, 0, 1, 100, 1, RAINPOW, setRAINPOW));
@@ -52,11 +54,10 @@ function initActionHeader(yPos)
 	brushActionButtons.push(initButton("Explode", xs * nn++, 0, w, h, clr, switchBrushAction, 'EXPLODE', hdr, false, "e", p + "explosion.png", wp + "explosion.png", null, false, clr));
 	initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, 'Tab', p + "next.png", null, false, clr);
 	initButton("Rain", xs * nn++, 0, w, h, clr, switchRain, null, hdr, false, 'Enter', p + "drop.png", null, false, clr);
-	initButton("Grid", xs * nn++, 0, w, h, clr, switchGridMode, null, hdr, true, "g", p + "grid.png", null, false, clr);
+	initButton("Grid", xs * nn++, 0, w, h, clr, switchGridMode, null, hdr, false, "g", p + "grid.png", null, false, clr);
 	initButton("Brush", xs * nn++, 0, w, h, clr, setNewBrushType, null, hdr, true, 'b', p + "disk.png", null, false, clr);
 	initButton("Emitter", xs * nn++, 0, w, h, clr, spawnEmitterAtMouse, null, hdr, null, 'l', p + "emit.png", null, false, clr);
 	initButton("Hud", xs * nn++, 0, w, h, clr, switchHud, null, hdr, true, 'u', p + "info.png", null, false, clr);
-
 	fitHeaderDragWidth(hdr);
 }
 
@@ -68,11 +69,11 @@ function initParticlePagesHeader(y) {
     const tabsContentW = tabsCount * buttonSpread + 10;
     const tabsDragW = Math.max(0, tabsContentW - CANVW);
 	const pageHeader = addHeader(10, y, null, btnH, null, tabsDragW);
-	const background = 'rgba(94, 73, 73, 0.16)';
+	const background = 'rgba(73, 86, 94, 0.16)';
     for (let i = 0; i < particleTypes.length; i++) {
         const name = particleTypes[i];
-        const color = TAGS[i].color || getRandomColor();
-        const famButton = initButton(name, i * buttonSpread, 0, w, h, background, switchUiPage, i, pageHeader, null, null, null, null, color);
+        const color = TAGS[i].color;
+        const famButton = initButton(name, i * buttonSpread, 0, w, h, color, switchUiPage, i, pageHeader, null, null, null, null, color);
         famButton.sliders = [];
         famButton.buttons = [];
         famButton.label = name;
@@ -114,37 +115,9 @@ function initUi()
 	setNewType(0);
 	setNewBrushType('DISC');
 	switchUiPage(0);
+	switchGridMode(false);
 	uiLayerIndex = 0;
 	updateUi();
-}
-
-
-grid1 = null;
-N4 = null;
-function buildNeighbors4(){
-	let i = 0;
-	let H = GRIDH, W = GRIDW;
-  for (let y=0;y<H;y++){
-    for (let x=0;x<W;x++,i++){
-      N4[i*4+0] = (y>0    ) ? i-W : -1;
-      N4[i*4+1] = (y<H-1  ) ? i+W : -1;
-      N4[i*4+2] = (x>0    ) ? i-1 : -1;
-      N4[i*4+3] = (x<W-1  ) ? i+1 : -1;
-    }
-  }
-}
-function idx(x,y){ return (x) + (y) * GRIDW; }
-function atI(i,self){ const p = grid1[i]; return (p && p!==self && p.active) ? p : null; }
-function upI(i){ const j=N4[i*4+0]; return j>=0? j : -1; }
-function dnI(i){ const j=N4[i*4+1]; return j>=0? j : -1; }
-function lfI(i){ const j=N4[i*4+2]; return j>=0? j : -1; }
-function rtI(i){ const j=N4[i*4+3]; return j>=0? j : -1; }
-function initGrid() {
-	const W = GRIDW, H = GRIDH, N = W*H;
-	grid1 = new Array(N);
-	N4 = new Int32Array(N*4);
-	buildNeighbors4();
-	buildGridLayer();
 }
 
 let au = null;

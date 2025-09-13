@@ -5,7 +5,7 @@ function buildGridLayer() {
     off.height = canvas.height;
     const g = off.getContext("2d");
 	g.fillStyle = "rgba(75, 75, 75, 0.53)";
-	let rows = GRIDW, cols = GRIDH, size = PIXELSIZE;
+	let rows = GW, cols = GH, size = PIXELSIZE;
 	if (size < 4) {
 		size = 4;
 		rows = canvas.width / size;
@@ -17,11 +17,11 @@ function buildGridLayer() {
         }
     }
     gridLayer = off;
-    gridCacheKey = `${canvas.width}x${canvas.height}:${GRIDW}x${GRIDH}:${PIXELSIZE}`;
+    gridCacheKey = `${canvas.width}x${canvas.height}:${GW}x${GH}:${PIXELSIZE}`;
 }	
 
 function ensureGridLayer() {
-    const key = `${canvas.width}x${canvas.height}:${GRIDW}x${GRIDH}:${PIXELSIZE}`;
+    const key = `${canvas.width}x${canvas.height}:${GW}x${GH}:${PIXELSIZE}`;
     if (!gridLayer || gridCacheKey !== key) buildGridLayer();
 }
 

@@ -30,7 +30,8 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
 	const label = document.createElement("span");
 	label.textContent = labelText;
 	label.style.color = "white";
-	label.style.fontFamily = "'Press Start 2P', monospace";
+	label.style.fontFamily = "'MyPixelFont', monospace";
+	label.style.paddingTop = '10px';
 	label.style.fontSize = "12px";
 	label.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
 
@@ -86,7 +87,7 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
 	maxLabel.style.position = "absolute";
 	maxLabel.style.top = "-2px";
 	maxLabel.style.color = "#fff";
-	maxLabel.style.fontFamily = "'Press Start 2P', monospace";
+	maxLabel.style.fontFamily = "'MyPixelFont', monospace";
 	maxLabel.style.fontSize = "12px";
 	maxLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
 
@@ -95,7 +96,7 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
 	minLabel.style.position = "absolute";
 	minLabel.style.bottom = "0px";
 	minLabel.style.color = "#fff";
-	minLabel.style.fontFamily = "'Press Start 2P', monospace";
+	minLabel.style.fontFamily = "'MyPixelFont', monospace";
 	minLabel.style.fontSize = "12px";
 	minLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
 
@@ -107,7 +108,7 @@ function createVerticalPressSlider(labelText, x, y, min, max, step, value, onCha
 	curLabel.style.transform = "translateY(-50%)";
 	curLabel.style.color = "#fff";
 	curLabel.style.zIndex = 99999;
-	curLabel.style.fontFamily = "'Press Start 2P', monospace";
+	curLabel.style.fontFamily = "'MyPixelFont', monospace";
 	curLabel.style.fontSize = "20px";
 	curLabel.style.textShadow = "1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000";
 	curLabel.style.display = "none";
@@ -260,6 +261,7 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 		div.style.alignItems = "center";
 		div.style.justifyContent = "center";
 		div.textContent = label.substring(0, 5);
+		div.style.paddingTop = '5px';
 		if (clrText) div.style.color = setBrightness(clrText);
 		div.style.fontSize = 13 + "px";
 	}
@@ -275,6 +277,7 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 		if (!isMobile) {
 			div.badge = initLabelDiv(x + w - 5, canvas.height - 5, formatKeyLabel(keyToggle), 'rgba(255, 255, 255, 1)');
 			div.badge.style.fontSize = '12px';
+			div.style.paddingTop = '10px';
 			uiContainer.appendChild(div.badge);
 		}
 	}
@@ -439,7 +442,6 @@ function initLabelDiv(x, y, text = '', color = 'white', parent = document.body) 
 	div.style.top = y + "px";
 	div.style.left = x + "px";
 	div.style.whiteSpace = "pre";
-	div.style.fontFamily = "monospace";
 	div.textContent = text;
 	div.style.color = color;
 	if (parent) parent.appendChild(div);
