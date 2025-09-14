@@ -4,7 +4,6 @@ MOUSECLICKED = MOUSEPRESSED = false;
 MOUSEX = MOUSEY = 0;
 MOUSEDX = MOUSEDY = 0;
 MOUSEGRIDX = MOUSEGRIDY = 0;
-MOUSEMOVED = false;
 CLICKCOLOR = getRandomColor();
 PXATMOUSE = null;
 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);

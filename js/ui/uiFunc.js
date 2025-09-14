@@ -82,10 +82,6 @@ function findEmptyNear(x0, y0, rMax){
   return null;
 }
 
-
-
-
-
 function replaceParticles(scale){
 	const s2 = scale * scale;
 	const orig = activeParticles.slice();

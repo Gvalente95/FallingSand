@@ -4,6 +4,7 @@ let infoMouse = null;
 function initInfoText() {
 	infoText = initLabelDiv(5, 0);
 	infoMouse = initLabelDiv(5, 20);
+	infoFps = initLabelDiv(CANVW - 80, 0);
 }
 
 function initParamHeader(yPos)
@@ -50,12 +51,12 @@ function initActionHeader(yPos)
 	brushActionButtons.push(initButton("Vibrate", xs * nn++, 0, w, h, clr, switchBrushAction, 'VIBRATE', hdr, false, "v", p + "vibrate.png", wp + "vibrate.png", null, false, clr));
 	brushActionButtons.push(initButton("Push", xs * nn++, 0, w, h, clr, switchBrushAction, 'PUSH', hdr, false, "p", p + "push.png", wp + "push.png", null, false, clr));
 	brushActionButtons.push(initButton("Explode", xs * nn++, 0, w, h, clr, switchBrushAction, 'EXPLODE', hdr, false, "e", p + "explosion.png", wp + "explosion.png", null, false, clr));
-	initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, 'Tab', p + "next.png", null, false, clr);
 	initButton("Rain", xs * nn++, 0, w, h, clr, switchRain, null, hdr, false, 'Enter', p + "drop.png", null, false, clr);
 	initButton("Grid", xs * nn++, 0, w, h, clr, switchGridMode, null, hdr, false, "g", p + "grid.png", null, false, clr);
 	initButton("Brush", xs * nn++, 0, w, h, clr, setNewBrushType, null, hdr, true, 'b', p + "disk.png", null, false, clr);
 	initButton("Emitter", xs * nn++, 0, w, h, clr, spawnEmitterAtMouse, null, hdr, null, 'l', p + "emit.png", null, false, clr);
 	initButton("Hud", xs * nn++, 0, w, h, clr, switchHud, null, hdr, true, 'u', p + "info.png", null, false, clr);
+	initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, 'Tab', p + "next.png", null, false, clr);
 	fitHeaderDragWidth(hdr);
 }
 

@@ -80,12 +80,9 @@ function vibrateRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity =
   }
 }
 
-function pushRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, isCircle = BRUSHTYPE == 'DISC') {
-	const r2 = radius * radius;
-	const moved = new Set();
-
+function grabRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, isCircle = BRUSHTYPE == 'DISC') {
 	if (selParticles && selParticles.length > 0) return;
-  
+	const r2 = radius * radius;
 	for (let dy = -radius; dy <= radius; dy++) {
 		for (let dx = -radius; dx <= radius; dx++) {
 			if (!isCircle || (dx * dx + dy * dy) <= r2) {
@@ -94,16 +91,18 @@ function pushRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, isCircle = BRU
 				let gx = Math.floor(rx / PIXELSIZE);
 				let gy = Math.floor(ry / PIXELSIZE);
 				if (isOutOfBorder(gx,gy)) break;
-				const p = pxAtI(ROWOFF[gy] + gx);
+				let i = ROWOFF[gy] + gx
+				const p = pxAtI(i);
 				if (!p) continue;
 				p.isSel = true;
 				p.velY = p.velX = 0;
-				let i = idx(p.x, p.y);
 				if (grid1[i] === p) grid1[i] = null;
+				p.sx = Math.floor(dx);
+				p.sy = Math.floor(dy);
 				selParticles.push(p);
-				}
 			}
 		}
+	}
 }
 
 function explodeRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity = 5, setToFire = 0, ignoreType = null) {

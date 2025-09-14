@@ -4,7 +4,7 @@ function buildGridLayer() {
     off.width = canvas.width;
     off.height = canvas.height;
     const g = off.getContext("2d");
-	g.fillStyle = "rgba(75, 75, 75, 0.53)";
+	g.fillStyle = "rgba(255, 255, 255, 0.23)";
 	let rows = GW, cols = GH, size = PIXELSIZE;
 	if (size < 4) {
 		size = 4;

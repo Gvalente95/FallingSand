@@ -95,8 +95,12 @@ class Particle{
 	update() {
 		if (!this.active) return;
 		if (this.isSel) {
-			this.x = clamp(this.x + Math.round(MOUSEDX / PIXELSIZE), 0, GW - 1);
-			this.y = clamp(this.y + Math.round(MOUSEDY / PIXELSIZE), 0, GH - 1);
+			this.x = clamp(MOUSEGRIDX + this.sx, 0, GW - 1);
+			this.y = clamp(MOUSEGRIDY + this.sy, 0, GH - 1);
+			// console.warn(MOUSEGRIDX, MOUSEGRIDY);
+
+			this.newX = this.x;
+			this.newY = this.y;
 			return;
 		}
 		this.updateState();

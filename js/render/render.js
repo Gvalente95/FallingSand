@@ -98,10 +98,11 @@ function showParticle(prt, x, y, alpha, size) {
 
 function render() {
 	let showSize = PIXELSIZE;
-	if (gridMode) showSize--;
+	let isGridding = (gridMode || (isWheeling && KEYS['Shift']));
+	if (isGridding) showSize--;
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	if (isGridding) { ctx.drawImage(gridLayer, 0, 0); }
 	for (let i = 0; i < activeParticles.length; i++) showParticle(activeParticles[i], activeParticles[i].x, activeParticles[i].y, 1, showSize);
-	if (KEYS['Shift']) { ctx.drawImage(gridLayer, 0, 0); }
 	renderBrush();
-	updateHUD();
+	if (SHOWHUD) updateHUD();
 }

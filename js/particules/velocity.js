@@ -49,7 +49,8 @@ p.updateSolidVelocity = function (g) {
 
 p.updateVelocity = function () {
 	const pt = this.physT;
-	const g = pxAtI(ROWOFF[this.y + (pt === 'GAS' ? -1 : 1)] + this.x, this);
+	let Y = (pt === 'GAS' || GRAVITY < 0 ? -1 : 1);
+	const g = pxAtI(ROWOFF[this.y + Y] + this.x, this);
 	this.ground = g;
 	if (pt === 'LIQUID') return this.updateLiquidVelocity(g);
 	if (pt === 'GAS') return this.updateGasVelocity();

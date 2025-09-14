@@ -14,7 +14,10 @@ window.addEventListener('mouseup', () => {
 	SHOULDCUT = false;
 	for (let i = 0; i < selParticles.length; i++){
 		let p = selParticles[i];
-		p.updatePosition(ROWOFF[p.y] + p.x);
+        let idx = ROWOFF[p.y] + p.x;
+        let pAt = grid1[idx];
+        if (pAt && pAt != p) pAt.toRemove();
+		p.updatePosition(idx);
 		p.isSel = false;
 		p.velX = MOUSEDX / PIXELSIZE;
 		p.velY = MOUSEDY / PIXELSIZE
@@ -28,11 +31,8 @@ window.addEventListener('mousemove', (e) => {
 	MOUSEDX = e.clientX - MOUSEX;
 	MOUSEDY = e.clientY - MOUSEY;
 	setTimeout(() => { MOUSEDX = 0; MOUSEDY = 0; }, 200);
-
   	MOUSEX = e.clientX;
 	MOUSEY = e.clientY;
-	MOUSEMOVED = true;
-	setTimeout(() => { MOUSEMOVED = false }, 50);
 	let gridX = Math.floor(MOUSEX / PIXELSIZE);
 	let gridY = Math.floor(MOUSEY / PIXELSIZE);
 	MOUSEGRIDX = clamp(gridX, 0, GW - 1);
@@ -66,12 +66,17 @@ window.addEventListener('resize', () => {
 	buildGridLayer();
 });
 
+let wheelTimeout = null;
+let isWheeling = false;
 canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
 	const delta = e.deltaY;
 	if (KEYS['Shift']) setNewPixelSize(clamp(Math.floor(PIXELSIZE + delta * .1), 2, 19));
 	else BRUSHSIZE = clamp(BRUSHSIZE - delta * 0.1, 1, MAXBRUSHSIZE);
 	SHOWBRUSH = true;
+    isWheeling = true;
+    if (wheelTimeout) clearTimeout(wheelTimeout);
+    wheelTimeout = setTimeout(() => isWheeling = false, 200);
 });
 
 function simulateMouseEvent(touchEvent, mouseEventType) {

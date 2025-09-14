@@ -4,7 +4,7 @@ function updateInput()
 	if (MOUSEPRESSED && !isTwoFingerTouch) {
 		if ((BRUSHACTION === 'CUT' && SHOULDCUT) || KEYS['Shift']) deleteParticulesAtMouse();
 		else if ((BRUSHACTION === 'PICK')) return;
-		else if (BRUSHACTION === 'PUSH') pushRadius();
+		else if (BRUSHACTION === 'PUSH') grabRadius();
 		else if (BRUSHACTION === 'VIBRATE') vibrateRadius();
 		else if (BRUSHACTION === 'EXPLODE') explodeRadius();
 		else launchParticules(particleKeys[TYPEINDEX]);
@@ -35,6 +35,7 @@ function updateTime() {
 	{
 		prvNow = now;
 		fps = ticks;
+		infoFps.textContent = `FPS: ${fps}`;
 		ticks = 0;
 	}
 }
