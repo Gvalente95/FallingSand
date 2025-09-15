@@ -159,7 +159,8 @@ document.addEventListener('touchend', (e) => {
         isTwoFingerTouch = false;
         lastY = null;
     } else if (e.touches.length === 1) {
-        isTwoFingerTouch = false;
+		isTwoFingerTouch = false;
+		switchBrushAction('CUT');
         lastY = null;
     }
 }, { passive: false });

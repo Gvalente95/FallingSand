@@ -349,7 +349,7 @@ function addHeader(x, y, color, height, borderColor = null, dragWidth = 0) {
   header.style.position = "absolute";
   header.style.userSelect = "none";
   if (borderColor) header.style.border = "1px solid " + borderColor;
-  if (dragWidth <= 0) return header;
+  if (dragWidth <= 0 || !isMobile) return header;
 
   header.style.cursor = "grab";
   header.style.width = dragWidth + "px";
@@ -375,6 +375,7 @@ function addHeader(x, y, color, height, borderColor = null, dragWidth = 0) {
     if (arr[arr.length - 1] !== b.min) arr.push(b.min);
     return arr;
   };
+
   const nearestSnapIdx = (v) => {
     const s = snaps();
     let idx = 0, d = Math.abs(v - s[0]);
@@ -384,6 +385,7 @@ function addHeader(x, y, color, height, borderColor = null, dragWidth = 0) {
     }
     return idx;
   };
+
   const animateTo = (target) => {
     const b = bounds();
     header.style.transition = "left 220ms cubic-bezier(.22,.61,.36,1)";
@@ -391,8 +393,6 @@ function addHeader(x, y, color, height, borderColor = null, dragWidth = 0) {
     const done = () => { header.style.transition = ""; header.removeEventListener("transitionend", done); };
     header.addEventListener("transitionend", done);
   };
-
-  let pointerId = null;
 
   const onMove = (e) => {
     if (!dragging) return;
@@ -407,50 +407,35 @@ function addHeader(x, y, color, height, borderColor = null, dragWidth = 0) {
     lastX = x; lastT = t;
   };
 
-  const inertialSlideThenSnap = (releaseEvent) => {
-    const b = bounds();
-    let v = vx * .5;
-    let prev = performance.now();
-    const F = 0.92;
-    const MIN = 0.1;
-
-    header.style.transition = "";
-
-    const tick = (now) => {
-      const dt = Math.max(1, now - prev);
-      prev = now;
-      let x = getLeft();
-      x += v * dt;
-      if (x <= b.min || x >= b.max) {
-        x = clamp(x, b.min, b.max);
-        v = 0;
-      }
-      header.style.left = x + "px";
-      v *= F;
-      if (Math.abs(v) > MIN) {
-        requestAnimationFrame(tick);
-      } else {
-        const s = snaps();
-        const cur = getLeft();
-        const i = nearestSnapIdx(cur);
-        let targetIdx = i;
-        animateTo(s[targetIdx]);
-      }
-    };
-    requestAnimationFrame(tick);
-  };
-
   const onUp = (e) => {
     if (!dragging) return;
-    dragging = false;
-    if (isDraggingheader) setTimeout(() => { isDraggingheader = false }, 50);
+	dragging = false;
+	if (isDraggingheader) setTimeout(() => { isDraggingheader = false }, 50);
     header.style.cursor = "grab";
     header.releasePointerCapture(pointerId);
-    inertialSlideThenSnap(e);
+
+	
+    const s = snaps();
+    const cur = getLeft();
+    const i = nearestSnapIdx(cur);
+    const dir = Math.sign(vx) || Math.sign(cur - startLeft) || 0;
+    const speed = Math.abs(vx);
+	let targetIdx = i;
+	if (isMobile) {
+		if (e.clientX < 20) targetIdx = 0;
+		if (e.clientX > CANVW - 20) targetIdx = s.length;
+	}
+   	else if (speed > 0.5 && dir !== 0) {
+      targetIdx = clamp(i - (dir > 0 ? 1 : -1), 0, s.length - 1);
+    }
+    animateTo(s[targetIdx]);
+
     header.removeEventListener("pointermove", onMove);
     header.removeEventListener("pointerup", onUp);
     header.removeEventListener("pointercancel", onUp);
   };
+
+  let pointerId = null;
 
   header.addEventListener("pointerdown", (e) => {
     if (settingSlider) return;
@@ -470,6 +455,7 @@ function addHeader(x, y, color, height, borderColor = null, dragWidth = 0) {
 
   return header;
 }
+
 
 function fitHeaderDragWidth(header){
 	let maxRight = 0;
