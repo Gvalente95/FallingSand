@@ -6,11 +6,12 @@ p.FireEffect = function (curX, curY)
 		for (let x = -depth; x < depth; x++) {
 			if ((x === 0 && y === 0) || isOutOfBorder(x + curX, y + curY)) continue;
 			let px = pxAtI(ROWOFF[curY + y] + curX + x, this);
-			if (px && px.physT === 'LIQUID' && (!px.brn && px.type != 'LAVA'))
+			if (!px) continue;
+			if (px.frozen) { this.lt = 0;  if (dice(10)) px.unFreeze(100); return; }
+			if (px.physT === 'LIQUID' && (!px.brn && px.type != 'LAVA'))
 			{
-				if (px.frozen) px.unFreeze(10000);
+				if (px.frozen) px.unFreeze(100);
 				else {
-					this.lt = 50;
 					if (px.y > 0 && dice(20)) {
 						px = px.replace('BUBBLE');
 						px.transformType = px.type === 'WATER' ? 'STEAM' : 'SMOKE';
@@ -18,7 +19,7 @@ p.FireEffect = function (curX, curY)
 				}
 				continue;
 			}
-			if (px && shouldBurn(this, px)) px.setToFire();
+			if (shouldBurn(this, px)) px.setToFire();
 		}
 	}
 	this.updatePosition(ROWOFF[curY] + curX);
@@ -61,40 +62,38 @@ p.LavaEffect = function(curX, curY)
 			let px = pxAtI(ROWOFF[curY + y] + curX + x, this);
 			if (!px) continue;
 			if (px.type === this.type) continue;
-			if (px.type === 'WATER' || px.type === 'BUBBLE') { px.setType('STEAM'); continue; }
-			if (!px.brn) continue;
-			if (dice(1002 - px.brn))
+			if (px.type === 'WATER' || px.type === 'BUBBLE')
 			{
-				px.velY = 0;
-				px.velX = 0;
+				this.setType('ROCK');
+				px.setType('STEAM'); continue;
+			}
+			if (shouldBurn(this, px))
+			{
 				hasExplosion = true;
-				px.setToFire();
+				const n = px.replace('FIRE');
+				// let curClr = n.baseColor;
+				// let newClr = addColor(curClr, thisClr, .5)
+				// n.setColor(newClr);
 				break;
 			}
 		}
 	}
-	if (hasExplosion)
-	{
-		depth = 3;
-		for (let y = -depth; y < depth; y++) {
-		for (let x = -depth; x < depth; x++) {
-			let px = pxAtI(ROWOFF[curY + y] + curX + x, this);
-			if (!px) new Particle(curX + x, curY + y, 'FIRE');
-		} 
-	}
-	}
+	// if (hasExplosion)
+	// {
+	// 	explodeRadius(curX * PIXELSIZE, curY * PIXELSIZE, PIXELSIZE, 1, 500, this.type);
+	// }
 }
 
-p.applyFrost = function (ignoreType = null, frostAmount = this.frozen - 1) {
+p.applyFrost = function (ignoreType = null, frostAmount = this.frozen - 1, resetDur = false) {
     const dirs = [[1, 0],[-1, 0],[0, 1],[0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
-    const rdir = dirs[Math.floor(Math.random() * dirs.length)];
+    const rdir = dirs[r_range(0, dirs.length)];
     const nx = this.x + rdir[0];
     const ny = this.y + rdir[1];
     if (nx < 0 || nx >= GW || ny < 0 || ny >= GH) return;
 	const px = pxAtI(ROWOFF[ny] + nx, this);
-    if (!px || px === this || px.frozen) return;
-    if (ignoreType && px.type === ignoreType) return;
-	if (px.brnpwr) { if (this.frozen && dice(10)) {this.unFreeze(px.warm); this.warm = 500;} }
+	if (!px || px === this || px.freeze) return;
+	if (ignoreType && px.type === ignoreType) return;
+	if (px.brnpwr) { if (this.frozen && dice(10)) { this.unFreeze(px.warm); this.warm = 500; } }
     else  px.setFrozen(frostAmount);
 };
 
@@ -109,8 +108,32 @@ p.applyCorrosion = function(){
 			if (this.cor <= px.dns) continue;
 			if (this.type === 'SHROOMX') return (px.replace('ACID'));
 			if (!dice(1001 - this.cor + (px.dns))) continue;
-			px = px.replace('BUBBLE');
-			px.transformType = this.type;
+			let thisClr = this.baseColor;
+			let newType = this.type;
+			const n = px.replace('BUBBLE');
+			n.transformType = newType;
+			let curClr = n.baseColor;
+			let newClr = addColor(curClr, thisClr, .5)
+			n.setColor(newClr);
 		}
 	}
+}
+
+
+
+p.makeHole = function(px){
+	for (let x = -2; x < 2; x++) {
+		for (let y = -2; y < 2; y++) {
+			let npx = pxAtI(ROWOFF[px.y + y] + px.x + x, this);
+			if (npx) {
+				npx.updT = 'STATIC';
+				npx.setColor(addColor(PARTICLE_PROPERTIES[npx.type].color, "rgba(0,0,0,1)", .1));
+			}
+		}
+	}
+	if (dice(2)) this.xDir = r_range(-1, 1);
+	else this.yDir = r_range(-2, 2);
+	// this.xDir = Math.sign(px.x - this.x);
+	// this.yDir = Math.sign(px.y - this.y);
+	px.toRemove();
 }

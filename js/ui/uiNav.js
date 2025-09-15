@@ -60,19 +60,19 @@ function getScrollTypeIndex(curI, scrollDir) {
 	return (lastFound);
 }
 
-function navigateUi(xScroll, yScroll) {
-	if (yScroll) {
-		uiLayerIndex = yScroll > 0 ? 1 : 0;
+function navigateUi(inpoutxScroll, inputyScroll) {
+	if (inputyScroll) {
+		uiLayerIndex = inputyScroll > 0 ? 1 : 0;
 		let curIndex = uiLayerIndex == 0 ? uiPageIndex : getCurButtonTypeIndex();
 		if (curIndex == -1) { uiLayerIndex = 0; return; }
 		if (uiLayerIndex == 0) switchUiPage(curIndex);
 		else { setNewType(uiPagesButtons[uiPageIndex].buttons[curIndex].value); }
 	}
-	else if (xScroll) {
+	else if (inpoutxScroll) {
 		let buttons = uiLayerIndex == 0 ? uiPagesButtons : uiPagesButtons[uiPageIndex].buttons;
 		let max = buttons.length;
 		let curIndex = uiLayerIndex == 0 ? uiPageIndex : getCurButtonTypeIndex();
-		let newIndex = uiLayerIndex == 0 ? ((curIndex + xScroll) % max) : getScrollTypeIndex(curIndex, xScroll);
+		let newIndex = uiLayerIndex == 0 ? ((curIndex + inpoutxScroll) % max) : getScrollTypeIndex(curIndex, inpoutxScroll);
 		if (newIndex < 0) newIndex = max - 1;
 		if (uiLayerIndex == 0) switchUiPage(newIndex);
 		else

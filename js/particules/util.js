@@ -76,3 +76,14 @@ function shouldBurnParticle(typeA, victim)
 	let sumChance = Math.max(1, 2000 - brn - burnForce);
 	return (dice(sumChance));
 }
+
+p.getRandomNeighbor = function (ignoreType = null) {
+    const dirs = [[1, 0],[-1, 0],[0, 1],[0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
+    const rdir = dirs[r_range(0, dirs.length)];
+    const nx = this.x + rdir[0];
+    const ny = this.y + rdir[1];
+    if (nx < 0 || nx >= GW || ny < 0 || ny >= GH) return;
+	const px = pxAtI(ROWOFF[ny] + nx, this);
+	if (!px || px === this || (ignoreType && px.type === ignoreType)) return null;
+	return px;
+};

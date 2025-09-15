@@ -276,7 +276,9 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 	div.setAttribute("tabindex", "0");
 
 	if (keyToggle) {
-		window.addEventListener("keydown", (e) => { if (!isInInputField && (e.code === keyToggle || e.key == keyToggle || e.key.toLowerCase() == keyToggle)) activate(); });
+		window.addEventListener("keydown", (e) => {
+			if (!isInInputField && (e.code === keyToggle || e.key == keyToggle || e.key.toLowerCase() == keyToggle)) {activate();}
+		});
 		if (!isMobile) {
 			div.badge = initLabelDiv(x + w - 10, canvas.height - 5, formatKeyLabel(keyToggle), 'rgba(203, 185, 211, 1)');
 			div.badge.style.fontSize = '12px';
@@ -300,16 +302,22 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 			const inside = () => MOUSEX >= 0 && MOUSEY >= 0 && MOUSEX < CANVW && MOUSEY < CANVH;
 			const stop = () => { if (rafId) cancelAnimationFrame(rafId); rafId = null; div.cursorImg.style.display = "none"; };
 			const loop = () => {
-				if (!MOUSEPRESSED || !div.active) return stop();
+				if (!div.active) return stop();
 				if (!inside()) { div.cursorImg.style.display = "none"; rafId = requestAnimationFrame(loop); return; }
-				div.cursorImg.style.top = (MOUSEY - 40) + "px";
-				div.cursorImg.style.left = MOUSEX + "px";
+				let brRad = (BRUSHSIZE / 2) * PIXELSIZE;
+				div.cursorImg.style.top = (MOUSEY - brRad) + "px";
+				div.cursorImg.style.left = (MOUSEX + brRad) + "px";
 				div.cursorImg.style.display = "block";
 				rafId = requestAnimationFrame(loop);
 			};
 			window.addEventListener("mousedown", () => { if (div.active && inside() && !rafId) loop(); });
-			window.addEventListener("mouseup", stop);
-			window.addEventListener("blur", stop);
+			// window.addEventListener("mouseup", stop);
+			// window.addEventListener("blur", stop);
+			if (keyToggle) {
+				window.addEventListener("keydown", (e) => {
+					if (!isInInputField && (e.code === keyToggle || e.key == keyToggle || e.key.toLowerCase() == keyToggle)) { loop(); }
+				});
+			}
 		}
 	}
 	function activate() {
@@ -322,7 +330,7 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 		} else if (onChange) onChange(value);
 		div.new = false;
 		updateUi();
-		au.playSound(au.tuk);
+		au.playSound(au.clock, .1);
 		div.classList.add("clicked");
 		setTimeout(() => { div.classList.remove("clicked"); }, 100);
 	}
@@ -346,7 +354,7 @@ function addHeader(x, y, color, height, borderColor = null, dragWidth = 0) {
 	header.style.userSelect = "none";
 	if (borderColor) header.style.border = "1px solid " + borderColor;
 
-	if (dragWidth <= 0 || !isMobile) return header;
+	if (dragWidth <= 0) return header;
 
 	header.style.cursor = "grab";
 	header.style.width = dragWidth + "px";
@@ -375,8 +383,9 @@ function addHeader(x, y, color, height, borderColor = null, dragWidth = 0) {
 		const dx = x - startX;
 		isDraggingheader = Math.abs(dx) > 1;
 
-		if (Math.abs(dx) > CANVW / 10) {
-			const dfx = CANVW * Math.sign(dx);
+		let ddx = Math.abs(dx);
+		if (ddx > CANVW / 50) {
+			const dfx = (Math.sign(dx) * (ddx > CANVW / 10 ? CANVW - 8 : btnW + uiXmargin));
 			dragging = false;
 			setTimeout(() => { isDraggingheader = false; }, 100);
 			header.style.cursor = "grab";
@@ -387,12 +396,6 @@ function addHeader(x, y, color, height, borderColor = null, dragWidth = 0) {
 			document.removeEventListener("touchend", onUp);
 			return;
 		}
-
-		let next = startLeft + dx;
-		const b = bounds();
-		if (next > b.max) next = b.max + (next - b.max) * 0.2;
-		if (next < b.min) next = b.min + (next - b.min) * 0.2;
-		header.style.left = next + "px";
 	}
 
 	function onUp(){

@@ -11,9 +11,10 @@ class Particle{
 			else if ((type === 'SHROOM' || type === 'SHROOMX') && px.physT === 'SOLID') {color = px.color;}
 			if (this.properties.physT === 'GAS')
 			{
-				if (px.physT === 'LIQUID' && type === 'FIRE') {
-					px.replace('BUBBLE');
-					px.transformType = 'WATER';
+				if (this.properties.freeze) { this.x = x, this.y = y; this.applyFrost(type, 50, true);}
+				else if (px.physT === 'LIQUID' && type === 'FIRE') {
+					px.setType('FIRE');
+					px.transformType = 'STEAM';
 					px.velX = 0;
 				}
 				else if (type != px.type && shouldBurnParticle(type, px)) px.setToFire();
@@ -21,18 +22,19 @@ class Particle{
 			}
 			else px.toRemove();
 		}
+		if (type === 'FIRE') velY = -1.5;
 		this.ground = null;
 		this.wetType = null;
 		this.parent = null;
 		this.childrens = [];
 		this.hasTouchedSurface = false;
-		this.isSel = false;
+		this.selType = null;
 		this.shouldSpread = true;
 		this.hasTouchedBorder = false;
 		this.id = id++;
 		this.isCreator = this.id % 100 === 0;
 		this.lt = lt;
-		this.startTime = now;
+		this.startTime = nowSec;
 		this.timeAlive = 0;
 		this.burning = 0;
 		this.wet = 0;
@@ -63,17 +65,23 @@ class Particle{
 		this.x = di % GW;
 		this.y = (di / GW) | 0;
 		grid1[di] = this;
+		if (this.parent) {
+			let px = this.parent.x;
+			if (Math.abs(this.x - px) > 1) px = Math.sign(this.x - px);
+			let newPi = ROWOFF[this.y - 1] + px;
+			this.parent.updatePosition(newPi);
+		}
 		return 1;
 	};
 
 	updateLifeTime(){
-		this.timeAlive = (now - this.startTime) / 1000;
+		this.timeAlive = (nowSec - this.startTime);
 		if (this.timeAlive > this.lt && !this.frozen)
 		{
-			if (this.transformType) return (this.replace(this.transformType));
+			if (this.transformType && (this.type !== 'STEAM' || this.y < 50)) return (this.replace(this.transformType));
 			if (this.type === 'MAGMA') return;
 			if (this.expl) {
-				explodeRadius(this.x * PIXELSIZE, this.y * PIXELSIZE, 5, 10 * PIXELSIZE, 3);
+				explodeRadius(this.x * PIXELSIZE, this.y * PIXELSIZE, 5, 10 * PIXELSIZE, 'FIRE');
 				if (dice(10)) { this.setType('COAL'); this.setToFire(40); return;}
 			}
 			if (this.physT !== 'GAS') {
@@ -88,23 +96,29 @@ class Particle{
 					q.y = ny; q.newY = ny; q.i = i1;
 				}
 			}
+			else if (this.type === 'FIRE' && dice(100)) return (this.setType('SMOKE'));
+
 			this.toRemove();
 			return 0;
 		}
 	}
 	update() {
 		if (!this.active) return;
-		if (this.isSel) {
+		if (this.selType === 'GRAB') {
 			this.x = clamp(MOUSEGRIDX + this.sx, 0, GW - 1);
 			this.y = clamp(MOUSEGRIDY + this.sy, 0, GH - 1);
-			// console.warn(MOUSEGRIDX, MOUSEGRIDY);
-
-			this.newX = this.x;
-			this.newY = this.y;
 			return;
 		}
 		this.updateState();
-		if (this.frozen) return;
+		if (this.frozen) {
+			if (this.y > GH - 1 || !dice(500)) return;
+			let gi = ROWOFF[this.y + 1] + this.x;
+			const g = pxAtI(gi, this);
+			if (!g) {
+				if (this.type != 'WATER') this.updatePosition(gi);
+			this.unFreeze(0);}
+			return;
+		}
 		this.updateLifeTime();
 		this.updateType();
 	}

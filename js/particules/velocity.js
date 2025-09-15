@@ -1,29 +1,35 @@
 p.updateLiquidVelocity = function (g) {
-	if (this.isWater) {
-		if (!g && dice(20000)) {
+	if (this.type != 'BUBBLE') {
+	if (!g && dice(20000)) {
+		let type = this.type;
 			const n = this.replace('BUBBLE');
-			n.transformType = 'WATER';
+			n.transformType = type;
+			let curClr = n.baseColor;
+			let newClr = addColor(curClr, this.baseColor, .5)
+			n.setColor(newClr);
 			return;
 		}
 		if (dice(400) && !pxAtI(ROWOFF[this.y - 1] + this.x, this))
 		{
+			let prvClr = this.baseColor;
+			let type = this.type;
 			const n = this.replace('BUBBLE');
-			n.transformType = 'WATER';
+			n.transformType = type;
+			let curClr = n.baseColor;
+			let newClr = addColor(curClr, prvClr, .5)
+			n.setColor(newClr);
 			return;
 		}
 	}
 	this.velY += GRAVITY;
-	// this.velY *= 1 - g.dns * .1;
-	// this.velX *= .99;
 };
 
 p.updateGasVelocity = function () {
-	if (this.type === 'STEAM' || this.type === 'CLOUD' || ((this.id + time) % 5) === 0)
-		this.velX = getSin(now * 0.002, 5, 0.6, this.id * 0.3);
+	if (this.type === 'SMOKE') this.velX = getSin(now * 0.002, 2, 1.2, this.id * 0.3);
+	else this.velX = getSin(now * 0.002, 10, 0.6, this.id * 0.3);
 };
 
 p.updateSolidVelocity = function (g) {
-	// if (this.type === 'ANT' && this.hasTouchedBorder) return;
 	if (this.type === 'FISH' && this.inWater) return;
 	if (g && g.physT === 'LIQUID') {
 		this.velY += GRAVITY;
@@ -38,7 +44,6 @@ p.updateSolidVelocity = function (g) {
 	else if (this.hasTouchedBorder > 0 && !g && this.y < GH - 1) {
 		this.hasTouchedBorder--;
 	}
-
 	const grounded = g && g.velY === 0 && (g.physT === 'SOLID' || g.frozen);
 	if (grounded && this.updT !== 'ALIVE') {
 		this.velY = g.updT === 'STATIC' ? 1 : 0;

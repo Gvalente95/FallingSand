@@ -4,9 +4,9 @@ function	buildWaterShades() {
 
     for (let y = 0; y < GH; y++) {
         const ny = y / GH;
-        const r = Math.round(10 + 20 * (1 - ny));
-        const g = Math.round(120 + 100 * (1 - ny));
-        const b = Math.round(180 + 60 * (1 - ny));
+        const r = Math.round(5 + 40 * (1 - ny));
+        const g = Math.round(60 + 200 * (1 - ny));
+        const b = Math.round(90 + 120 * (1 - ny));
         waterShades[y] = {
             rgb: [r, g, b],
             color: `rgba(${r},${g},${b},1)`
@@ -35,15 +35,19 @@ function showShroomHead(prt, x, y) {
 }
 
 function renderBrush() {
-	if (!settingBrushSize && BRUSHTYPE != 'PICK' && (MOUSEPRESSED || !SHOWBRUSH)) return;
-	if (MOUSEX < 0 || MOUSEX > canvas.width || MOUSEY < 0 || MOUSEY > canvas.height) return;
+	if (!settingBrushSize) {
+		if (isMobile) { if (!MOUSEPRESSED && !BRUSHACTION) return;}
+		else if (MOUSEPRESSED || !SHOWBRUSH) { return; }
+		if (MOUSEX < 0 || MOUSEX > canvas.width || MOUSEY < 0 || MOUSEY > canvas.height) return;
+	}
 	let px = settingBrushSize ? CANVW / 2 : MOUSEGRIDX * PIXELSIZE; py = settingBrushSize ? CANVH / 2 : MOUSEGRIDY * PIXELSIZE;
 	let rad = BRUSHSIZE * PIXELSIZE;
-	let color = BRUSHCOLOR ? setBrightness(BRUSHCOLOR) : "#ffffff39";
+	let color = BRUSHACTION ? "#ffffff39" : setBrightness(BRUSHCOLOR);
+	let fillColor = BRUSHACTION ? 'rgba(71, 67, 67, 0.31)' : 'rgba(0, 0, 0, 0.1)';
 	if (BRUSHTYPE == BRUSHTYPES.DISC)
-		drawCircle(px, py, rad / 4, 'rgba(0, 0, 0, 0.1)', color);
+		drawCircle(px, py, rad / 4, fillColor, color);
 	else if (BRUSHTYPE == BRUSHTYPES.RECT)
-		drawRect(px - rad, py - rad, rad * 2, rad * 2, null, color, 2);
+		drawRect(px - rad, py - rad, rad * 2, rad * 2, fillColor, color, 2);
 }
 
 function drawRect(x, y, width, height, color, strokeColor, lineWidth) {
@@ -60,6 +64,16 @@ function drawRect(x, y, width, height, color, strokeColor, lineWidth) {
         ctx.strokeStyle = strokeColor;
         ctx.strokeRect(x, y, width, height);
     }
+}
+
+function drawParticleCircle(x, y, radius, color = 'rgba(255,255,255,1)') {
+	const grad = ctx.createRadialGradient(x, y, radius * 0.6, x, y, radius);
+	grad.addColorStop(0, color);
+	grad.addColorStop(1, 'rgba(255,255,255,0)');
+	ctx.beginPath();
+	ctx.arc(x, y, radius, 0, 2 * Math.PI);
+	ctx.fillStyle = grad;
+	ctx.fill();
 }
 
 function drawCircle(x, y, radius, color, strokeColor, lineWidth) {
@@ -89,7 +103,16 @@ function showParticle(prt, x, y, alpha, size) {
 		showShroomHead(prt, x, y);
 		return;
 	}
-	if (prt.physT == 'GAS') alpha = Math.max(0, 1 - prt.timeAlive / prt.lt);
+	const aIn  = prt.fin  ? Math.min(1, prt.timeAlive / prt.fin) : 1;
+	const aOut = prt.fout && Number.isFinite(prt.lt) ? Math.max(0, Math.min(1, (prt.lt - prt.timeAlive) / prt.fout)) : 1;
+	alpha = Math.min(aIn, aOut);
+
+	if (prt.type === 'CLOUD') {
+		let fAlpha = Math.min(alpha, prt.alpha);
+		let clr = setAlpha(prt.baseColor, fAlpha);
+		drawParticleCircle(x * PIXELSIZE - prt.size, y * PIXELSIZE - prt.size, prt.size * 2, clr);
+		return;
+	}
 	if (alpha != 1) ctx.fillStyle = `rgba(${prt.rgb}, ${alpha})`;
 	else if (prt.isWater && !prt.frozen) ctx.fillStyle = waterShades[prt.y].color;
 	else ctx.fillStyle = color;
@@ -98,7 +121,7 @@ function showParticle(prt, x, y, alpha, size) {
 
 function render() {
 	let showSize = PIXELSIZE;
-	let isGridding = (gridMode || (isWheeling && KEYS['Shift']));
+	let isGridding = (gridMode || isWheeling);
 	if (isGridding) showSize--;
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	if (isGridding) { ctx.drawImage(gridLayer, 0, 0); }

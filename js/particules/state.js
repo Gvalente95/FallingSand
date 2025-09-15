@@ -8,7 +8,7 @@ p.updateBurn = function () {
 		else this.setType('COAL');
 		this.burning = 0;
 	}
-	else if (dice(10) && !pxAtI(ROWOFF[this.y - 1] + this.x)) new Particle(this.x, this.y - 1, 'FIRE');
+	else if (dice(3) && !pxAtI(ROWOFF[this.y - 1] + this.x)) new Particle(this.x, this.y - 1, 'FIRE');
 	let depth = 2;
 	for (let x = -depth; x < depth; x++)
 		for (let y = -depth; y < depth; y++)
@@ -41,7 +41,7 @@ p.setToFire = function()
 	else if (this.type === 'MAGMA') this.setType('LAVA');
 	else {
 		this.burning = 120 - (this.brn / 10);
-		this.setColor(addColor(this.baseColor, 'rgba(255, 0, 0, 1)', .3));
+		this.setColor(addColor(this.baseColor, 'rgba(255, 136, 0, 1)', .5));
 	}
 }
 
@@ -51,13 +51,15 @@ p.setWet = function(wetAmount = 100, type = 'WATER') {
 	if (this.brnpwr) return (0);
 	if (this.wet) { this.wet = wetAmount; this.wetType = type; return (1); }
 	if (type != 'OIL') this.burning = 0;
+	this.wetStart = now;
 	this.wetType = type;
 	this.wet = wetAmount;
-	this.setColor(addColor(this.baseColor, PARTICLE_PROPERTIES[this.wetType].color, .3));
+	this.setColor(addColor(this.baseColor, PARTICLE_PROPERTIES[this.wetType].color, (wetAmount / 10) / 100));
 	return (1);
 }
 
 p.updateWet = function () {
+	this.wetDur = now - this.wetStart;
 	if (this.burning) { if (this.wetType === 'OIL') this.wet = 0; else this.stopFire();}
 	if (--this.wet <= 0) { this.setColor(this.baseColor); return;}
 	else if (this.wet > 80)
@@ -79,20 +81,25 @@ p.updateWet = function () {
 			pxAb.transformType = this.wetType;
 		}
 	}
-	if (this.hasTouchedBorder && this.updT != 'ALIVE') {
-		let shroomChance = (this.type === 'GRASS' ? 1000 : 10000) - this.wet;
+	if (this.hasTouchedBorder && this.updT != 'ALIVE' && this.wetDur > 5000) {
+		let shroomChance = 10000;
 		if (dice(shroomChance)) {
 			this.setType('SHROOM');
 			this.isGrower = true;
 		}
 	}
+	this.setColor(addColor(this.baseColor, PARTICLE_PROPERTIES[this.wetType].color, clamp(this.wet / 100, .1, .8)));
 }
 
+FROSTMAX = 50;
 p.setFrozen = function (freezeAmount) {
 	if (this.burning || this.warm) return;
-	if (this.frozen) { this.frozen = freezeAmount; return; }
+	if (this.frozen && freezeAmount < this.frozen) return;
+	this.frostStart = now;
 	this.frozen = freezeAmount;
-	this.setColor(addColor(this.baseColor, 'rgba(146, 195, 205, 1)', .3));
+	let freezeColor = addColor(this.baseColor, 'rgba(95, 211, 211, 1)', this.frozen / FROSTMAX);
+	this.setColor(freezeColor);
+	if (this.type === 'SHROOM' && !this.parent && this.isGrower) this.headColor = freezeColor;
 }
 
 p.unFreeze = function(warmAmount = 5){
@@ -102,9 +109,9 @@ p.unFreeze = function(warmAmount = 5){
 }
 
 p.updateFreeze = function () {
-	
+	this.frostDur = (now - this.frostStart);
 	if (this.warm || this.burning) this.unFreeze();
-	else this.applyFrost('ICE');
+	this.applyFrost('ICE');
 }
 
 p.updateState = function()

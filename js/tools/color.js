@@ -78,29 +78,28 @@ function getRGB(color) {
 
 function setAlpha(color, alpha) {
 	let rgb = getRGB(color);
-	return (`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha}`);
+	return (`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`);
 }
-
 
 function addColor(originalColor, newColor, amount = 1) {
-    const rgb0 = getRGB(originalColor);
-    const rgb1 = getRGB(newColor);
-    const newr = clamp(rgb0[0] * (1 - amount) + rgb1[0] * amount, 0, 255);
-    const newg = clamp(rgb0[1] * (1 - amount) + rgb1[1] * amount, 0, 255);
-    const newb = clamp(rgb0[2] * (1 - amount) + rgb1[2] * amount, 0, 255);
-    return `rgba(${newr}, ${newg}, ${newb})`;
+  const rgb0 = getRGB(originalColor);
+  const rgb1 = getRGB(newColor);
+  const newr = Math.round(clamp(rgb0[0] * (1 - amount) + rgb1[0] * amount, 0, 255));
+  const newg = Math.round(clamp(rgb0[1] * (1 - amount) + rgb1[1] * amount, 0, 255));
+  const newb = Math.round(clamp(rgb0[2] * (1 - amount) + rgb1[2] * amount, 0, 255));
+  return `rgba(${newr}, ${newg}, ${newb})`;
 }
 
-function getRainbowColor(time, speed = 0.002) {
-    const r = Math.floor(127 * Math.sin(speed * time + 0) + 128);
-    const g = Math.floor(127 * Math.sin(speed * time + 2) + 128);
-    const b = Math.floor(127 * Math.sin(speed * time + 4) + 128);
+function getRainbowColor(FRAME, speed = 0.002) {
+    const r = Math.floor(127 * Math.sin(speed * FRAME + 0) + 128);
+    const g = Math.floor(127 * Math.sin(speed * FRAME + 2) + 128);
+    const b = Math.floor(127 * Math.sin(speed * FRAME + 4) + 128);
     return `rgb(${r}, ${g}, ${b})`;
 }
 
 function getTimeColor() {
 	let phase = 50;
-	let t = time;
+	let t = FRAME;
 	let tr = t % 255;
 	let tg = (t + phase) % 255;
 	let tb = (t + phase * 2) % 255;
@@ -109,7 +108,7 @@ function getTimeColor() {
 
 function getMountainColor() {
 	let phase = 50;
-	let t = time;
+	let t = FRAME;
 	let tr = t % 255;
 	let tg = (t + phase) % 255;
 	let tb = (t + phase * 2) % 255;

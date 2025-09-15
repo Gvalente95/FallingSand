@@ -2,11 +2,13 @@ function updateInput()
 {
 	PXATMOUSE = pxAtI(ROWOFF[MOUSEGRIDY] + MOUSEGRIDX);
 	if (MOUSEPRESSED && !isTwoFingerTouch) {
-		if ((BRUSHACTION === 'CUT' && SHOULDCUT) || KEYS['Shift']) deleteParticulesAtMouse();
-		else if ((BRUSHACTION === 'PICK')) return;
-		else if (BRUSHACTION === 'PUSH') grabRadius();
-		else if (BRUSHACTION === 'VIBRATE') vibrateRadius();
-		else if (BRUSHACTION === 'EXPLODE') explodeRadius();
+		if ((BRUSHACTION === 'CUT') || (KEYS['Shift'] && !isWheeling)) deleteParticulesAtMouse();
+		else if (BRUSHACTION) {
+			if (BRUSHACTION === 'VIBRATE') vibrateRadius();
+			else if (BRUSHACTION === 'EXPLODE') explodeRadius();
+			else if (BRUSHACTION === 'LIQUEFY') selectRadius('LIQUID');
+			else return;
+		}
 		else launchParticules(particleKeys[TYPEINDEX]);
 	}
 	if (KEYS['Backspace']) deleteParticulesAtMouse();
@@ -20,24 +22,28 @@ function flushDestroyedParticles()
 }
 
 let now = performance.now();
+let nowSec = now / 1000;
 let last = now;
 let prvNow = now;
 let fps = '?';
 let ticks = 0;
-let time = 0;
+let FRAME = 0;
+let secTick = false;
 function updateTime() {
 	now = performance.now();
-	dt = (now - last) / (1000 / 30);
-	last = now;
+	nowSec = now / 1000;
+	dt = (nowSec - last) / .03;
+	last = nowSec;
 	if (dt > 3) dt = 3;
 	ticks++;
-	if (now - prvNow > 1000)
-	{
+	if (now - prvNow > 1000) {
 		prvNow = now;
 		fps = ticks;
 		infoFps.textContent = `FPS: ${fps}`;
 		ticks = 0;
+		secTick = true;
 	}
+	else secTick = false;
 }
 
 function update(loop = !inPause) {
@@ -51,7 +57,7 @@ function update(loop = !inPause) {
 		requestAnimationFrame(update);
 		return;
 	}
-	time++;
+	FRAME++;
 	for (let i = 0; i < particleEmitters.length; i++) particleEmitters[i].update();
 	for (let i = 0; i < activeParticles.length; i++) activeParticles[i].update();
 	flushDestroyedParticles();
@@ -85,7 +91,7 @@ function update(loop = !inPause) {
 // 		return;
 // 	}
 
-// 	time++;
+// 	FRAME++;
 // 	for (let i = 0; i < particleEmitters.length; i++) particleEmitters[i].update();
 // 	for (let i = 0; i < activeParticles.length; i++) activeParticles[i].update();
 

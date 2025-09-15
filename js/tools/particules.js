@@ -29,7 +29,7 @@ function launchParticules(type = 'SAND', x = MOUSEX, y = MOUSEY, radius = BRUSHS
 				let clampedX = clamp(gridX, 1, GW - 1);
 				let clampedY = clamp(gridY, 1, GH - 1);
 				let newP = new Particle(clampedX, clampedY, type);
-				if (type === 'RAINBOW') newP.setColor(getRainbowColor(time, .1));
+				if (type === 'RAINBOW') newP.setColor(getRainbowColor(FRAME, .1));
 				if (radius <= 1) return;
 				if (!useMouseDx) continue;
 				
@@ -56,7 +56,7 @@ function launchParticlesRect(type, xp, yp, w, h) {
 	for (let y = 0; y < h; y++){
 		for (let x = 0; x < w; x++){
 			newP = new Particle(xp, yp, type);
-			if (type === 'RAINBOW') newP.setColor(getRainbowColor(time, .1));
+			if (type === 'RAINBOW') newP.setColor(getRainbowColor(FRAME, .1));
 		}
 	}
 }
@@ -80,8 +80,7 @@ function vibrateRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity =
   }
 }
 
-function grabRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, isCircle = BRUSHTYPE == 'DISC') {
-	if (selParticles && selParticles.length > 0) return;
+function selectRadius(selType = 'GRAB', cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, isCircle = BRUSHTYPE == 'DISC') {
 	const r2 = radius * radius;
 	for (let dy = -radius; dy <= radius; dy++) {
 		for (let dx = -radius; dx <= radius; dx++) {
@@ -94,8 +93,17 @@ function grabRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, isCircle = BRU
 				let i = ROWOFF[gy] + gx
 				const p = pxAtI(i);
 				if (!p) continue;
-				p.isSel = true;
-				p.velY = p.velX = 0;
+				if (selType === 'LIQUID') {
+					if (p.physT === 'LIQUID') continue;
+					p.physT = 'LIQUID';
+					p.spreadAmount = 20;
+					p.dns = 2;
+					p.setColor(addColor(p.properties.color, 'rgba(68, 146, 170, 1)', .4));
+					continue;
+				}
+				p.selType = selType;
+				p.setColor(addColor(p.baseColor, 'rgba(0, 0, 0, 1)', .4));
+				// p.velY = p.velX = 0;
 				if (grid1[i] === p) grid1[i] = null;
 				p.sx = Math.floor(dx);
 				p.sy = Math.floor(dy);
@@ -105,10 +113,29 @@ function grabRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, isCircle = BRU
 	}
 }
 
-function explodeRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity = 5, setToFire = 0, ignoreType = null) {
+function resetSelectedType(typeToReset) {
+	for (let i = 0; i < selParticles.length; i++){
+		let p = selParticles[i];
+		if (p.selType != typeToReset) continue;
+		if (typeToReset === 'GRAB') {
+			let idx = ROWOFF[p.y] + p.x;
+			let pAt = grid1[idx];
+			if (pAt && pAt != p) pAt.toRemove();
+			p.updatePosition(idx);
+			p.selType = null;
+			p.velX += MOUSEDX / PIXELSIZE;
+			p.velY += MOUSEDY / PIXELSIZE;
+			p.newX = p.x;
+			p.newY = p.y;
+			p.setColor();
+		}
+	}
+}
+
+function explodeRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity = 2, transformType = null, ignoreType = null) {
 	const r2 = radius * radius;
-	let xPushLimits = [intensity * .01, intensity * .09];
-	let yPushLimits = [intensity * .1, intensity * .14];
+	let xPushLimits = [0, intensity];
+	let yPushLimits = [0, intensity];
 	for (let dy = -radius; dy <= radius; dy++) {
         for (let dx = -radius; dx <= radius; dx++) {
             if ((dx * dx + dy * dy) <= r2) {
@@ -121,16 +148,17 @@ function explodeRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity =
 				if (!p) continue;
 				if (ignoreType && p.type == ignoreType) continue;
 				if (p.expl) p.lt = 0;
-				let ddy = gy;
-				let ddx = gx;
+				let ddy = dy;
+				let ddx = rdir();
 				if (dy >= -radius / 2) {
-					ddy = -radius / 2;
-					ddx = r_range(-radius, radius);
+					ddy = -radius / 10;
+					ddx *= 2;
 				}
 				if (p.physT === 'STATIC') p.physT = 'DYNAMIC';
 				p.velX = ddx * f_range(xPushLimits[0], xPushLimits[1]) * dt;
 				p.velY = ddy * f_range(yPushLimits[0], yPushLimits[1]) * dt;
-				if (setToFire && dice(2000)) p.setToFire(setToFire);
+				if (transformType === 'FIRE' && shouldBurnType('FIRE', p.type)) p.setToFire(10);
+				else if (transformType && dice(100)) p.setType(transformType);
             }
         }
 	}

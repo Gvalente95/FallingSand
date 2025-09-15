@@ -31,9 +31,10 @@ p.updateMovement = function() {
 		let hit = grid1[ii];
 		if (!(hit && hit !== this && hit.active)) { lastX = curX; lastY = curY; continue; }
 
+		if (hit.physT === 'STEAM' || hit.physT === 'CLOUD') continue;
 		if (this.physT === 'FISH' && hit.physT === 'LIQUID') continue;
 		if (this.type === 'ANT' && hit.physT === 'LIQUID' && this.inWater > 100) continue;
-		if (this.douse && hit.type !== 'FISH') { if (hit.brnpwr) this.setType('STEAM'); else hit.setWet(100, this.type); }
+		if (this.douse && hit.type !== 'FISH') { if (hit.brnpwr) this.setType('STEAM'); else hit.setWet(100, this.type === 'BUBBLE' ? 'WATER' : this.type); }
 		if (shouldBurn(this, hit)) { hit.setToFire(); }
 		if (shouldBurn(hit, this)) { this.setToFire(); }
 		else if (this.physT === 'GAS' && hit.physT === 'LIQUID' && hit.y < this.y) {

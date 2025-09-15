@@ -1,43 +1,40 @@
 canvas.addEventListener('mousedown', (e) => {
 	MOUSEPRESSED = true;
 	MOUSECLICKED = true;
-	MOUSEX = e.clientX;
-	MOUSEY = e.clientY;
 	CLICKCOLOR = getRandomColor();
-	if (BRUSHACTION == 'CUT') { SHOULDCUT = true};
+	setMousePos(e.clientX, e.clientY);
 	setTimeout(() => { MOUSECLICKED = false }, 50);
 	userInput();
+	if (BRUSHACTION === 'GRAB') selectRadius('GRAB');
+	if (BRUSHACTION === 'CONTROL') selectRadius('CONTROL');
 });
 
 window.addEventListener('mouseup', () => {
 	MOUSEPRESSED = false;
-	SHOULDCUT = false;
-	for (let i = 0; i < selParticles.length; i++){
-		let p = selParticles[i];
-        let idx = ROWOFF[p.y] + p.x;
-        let pAt = grid1[idx];
-        if (pAt && pAt != p) pAt.toRemove();
-		p.updatePosition(idx);
-		p.isSel = false;
-		p.velX = MOUSEDX / PIXELSIZE;
-		p.velY = MOUSEDY / PIXELSIZE
+	if (BRUSHACTION === 'GRAB') {
+		resetSelectedType('GRAB');
+		selParticles = [];
 	}
-	selParticles = [];
 	if (BRUSHACTION == 'PICK' && PXATMOUSE) setNewType(particleKeys.indexOf(PXATMOUSE.type));
 	userInput();
 });
+
+function setMousePos(x, y) {
+	MOUSEX = x;
+	MOUSEY = y;
+	let gridX = Math.floor(MOUSEX / PIXELSIZE);
+	let gridY = Math.floor(MOUSEY / PIXELSIZE);
+	MOUSEGRIDX = clamp(gridX, 0, GW - 1);
+	MOUSEGRIDY = clamp(gridY, 0, GH - 1);
+}
 
 window.addEventListener('mousemove', (e) => {
 	MOUSEDX = e.clientX - MOUSEX;
 	MOUSEDY = e.clientY - MOUSEY;
 	setTimeout(() => { MOUSEDX = 0; MOUSEDY = 0; }, 200);
-  	MOUSEX = e.clientX;
-	MOUSEY = e.clientY;
-	let gridX = Math.floor(MOUSEX / PIXELSIZE);
-	let gridY = Math.floor(MOUSEY / PIXELSIZE);
-	MOUSEGRIDX = clamp(gridX, 0, GW - 1);
-	MOUSEGRIDY = clamp(gridY, 0, GH - 1);
+	setMousePos(e.clientX, e.clientY);
 });
+
 
 window.addEventListener('keydown', (e) => {
 	userInput();
@@ -46,15 +43,18 @@ window.addEventListener('keydown', (e) => {
 	if (e.key == 't') { ISGAME = !ISGAME; console.warn(ISGAME); updateUi(); }
 	if (e.key == 'k') switchUiDisplay();
 	KEYS[e.key] = true;
-	let xScroll = ((KEYS['a'] || KEYS['ArrowLeft']) ? -1 : 0) + ((KEYS['d'] || KEYS['ArrowRight']) ? 1 : 0);
-	let yScroll = ((KEYS['w'] || KEYS['ArrowUp']) ? -1 : 0) + ((KEYS['s'] || KEYS['ArrowDown']) ? 1 : 0);
-	if (!xScroll && !yScroll) return;
+	INPXSCROLL = ((KEYS['a'] || KEYS['ArrowLeft']) ? -1 : 0) + ((KEYS['d'] || KEYS['ArrowRight']) ? 1 : 0);
+	INPYSCROLL = ((KEYS['w'] || KEYS['ArrowUp']) ? -1 : 0) + ((KEYS['s'] || KEYS['ArrowDown']) ? 1 : 0);
+	if (!INPYSCROLL && !INPXSCROLL) return;
 	e.preventDefault();
-	navigateUi(xScroll, yScroll);
+	navigateUi(INPXSCROLL, INPYSCROLL);
+	au.playSound(au.clock, .1);
+	setTimeout(() => { INPXSCROLL = INPYSCROLL = 0; }, 50);
 });
 
 window.addEventListener('keyup', (e) => {
 	KEYS[e.key] = false;
+	if (isWheeling && e.key === 'Shift') isWheeling = false;
 });
 
 window.addEventListener('resize', () => {
@@ -66,18 +66,27 @@ window.addEventListener('resize', () => {
 	buildGridLayer();
 });
 
-let wheelTimeout = null;
+let wheelAcc = 0;
 let isWheeling = false;
+const WHEEL_SPEED = 5;
 canvas.addEventListener('wheel', (e) => {
-    e.preventDefault();
-	const delta = e.deltaY;
-	if (KEYS['Shift']) setNewPixelSize(clamp(Math.floor(PIXELSIZE + delta * .1), 2, 19));
-	else BRUSHSIZE = clamp(BRUSHSIZE - delta * 0.1, 1, MAXBRUSHSIZE);
-	SHOWBRUSH = true;
-    isWheeling = true;
-    if (wheelTimeout) clearTimeout(wheelTimeout);
-    wheelTimeout = setTimeout(() => isWheeling = false, 200);
+	e.preventDefault();
+	const modeScale = e.deltaMode === 1 ? 100 : (e.deltaMode === 2 ? window.innerHeight : 1);
+	wheelAcc += e.deltaY / (modeScale * WHEEL_SPEED);
+	let steps = 0;
+	while (Math.abs(wheelAcc) >= 1) {
+	steps += Math.sign(wheelAcc);
+	wheelAcc -= Math.sign(wheelAcc);}
+	if (!steps) return;
+	if (!KEYS['Shift']) BRUSHSIZE = clamp(BRUSHSIZE - steps, 1, MAXBRUSHSIZE);
+	else {
+		setNewPixelSize(clamp(PIXELSIZE + steps, 2, 19));
+		setMousePos(e.clientX, e.clientY);
+		SHOWBRUSH = true;
+		isWheeling = true;
+	}
 });
+
 
 function simulateMouseEvent(touchEvent, mouseEventType) {
     const touch = touchEvent.changedTouches[0];

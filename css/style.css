@@ -86,7 +86,7 @@ body {
 
 .infoText{
 	color:white;
-	text-align: center;
+	text-align: left;
 	font-family: 'MyPixelFont', monospace;
 	/* image-rendering: pixelated;
 	font-smooth: never;
@@ -94,7 +94,7 @@ body {
 	-moz-osx-font-smoothing: grayscale; */
 	font-size: 14px;
 	text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-    line-height: 30px;
+    line-height: 22px;
     z-index: 1000;
 	user-select: none;
 }

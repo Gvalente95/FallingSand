@@ -2,9 +2,9 @@
 let paramheader = null;
 let infoMouse = null;
 function initInfoText() {
-	infoText = initLabelDiv(5, 0);
-	infoMouse = initLabelDiv(5, 20);
-	infoFps = initLabelDiv(CANVW - 80, 0);
+	infoText = initLabelDiv(10, 10);
+	infoMouse = initLabelDiv(10, 120);
+	infoFps = initLabelDiv(CANVW - 80, 10);
 }
 
 function initParamHeader(yPos)
@@ -49,7 +49,8 @@ function initActionHeader(yPos)
 	initButton("Clear", xs * nn++, 0, w, h, clr, resetParticles, PIXELSIZE, hdr, null, 'r', p + "broom.png", null, false, clr);
 	brushActionButtons.push(initButton("Pick", xs * nn++, 0, w, h, clr, switchBrushAction, 'PICK', hdr, false, "i", p + "eyedropper.png", wp + "eyedropper.png", null, false, clr));
 	brushActionButtons.push(initButton("Vibrate", xs * nn++, 0, w, h, clr, switchBrushAction, 'VIBRATE', hdr, false, "v", p + "vibrate.png", wp + "vibrate.png", null, false, clr));
-	brushActionButtons.push(initButton("Push", xs * nn++, 0, w, h, clr, switchBrushAction, 'PUSH', hdr, false, "p", p + "push.png", wp + "push.png", null, false, clr));
+	brushActionButtons.push(initButton("Grab", xs * nn++, 0, w, h, clr, switchBrushAction, 'GRAB', hdr, false, "p", p + "push.png", wp + "push.png", null, false, clr));
+	brushActionButtons.push(initButton("LIQUID", xs * nn++, 0, w, h, clr, switchBrushAction, 'LIQUEFY', hdr, false, "o", p + "scissors.png", wp + "scissors.png", null, false, clr));
 	brushActionButtons.push(initButton("Explode", xs * nn++, 0, w, h, clr, switchBrushAction, 'EXPLODE', hdr, false, "e", p + "explosion.png", wp + "explosion.png", null, false, clr));
 	initButton("Rain", xs * nn++, 0, w, h, clr, switchRain, null, hdr, false, 'Enter', p + "drop.png", null, false, clr);
 	initButton("Grid", xs * nn++, 0, w, h, clr, switchGridMode, null, hdr, false, "g", p + "grid.png", null, false, clr);
@@ -85,7 +86,7 @@ function initParticlePagesHeader(y) {
 			if (!hasTag(key, name)) continue;
 			let x = xp++ * buttonSpread;
 			const btn = initButton(key, x, 0, w, h, background, setNewType, v, elementsHeader, null, null, null, null, prop.color);
-			let newDiv = initLabelDiv(x, y + 30, 'new', 'rgba(0, 217, 255, 1)');
+			let newDiv = initLabelDiv(x, CANVH + y + 35, 'new', 'rgba(0, 217, 255, 1)');
 			newDiv.style.opacity = '0';
 			btn.newDiv = newDiv;
 			famButton.buttons.push(btn);

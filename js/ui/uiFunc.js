@@ -129,9 +129,7 @@ function setNewPixelSize(newPixelSize){
 
 	const scale = PIXELSIZE / newPixelSize;
 	PIXELSIZE = newPixelSize;
-
 	BRUSHSIZE = clamp(Math.round(BRUSHSIZE * scale), 1, MAXBRUSHSIZE);
-
 	GW = Math.max(1, (CANVW / PIXELSIZE) | 0);
 	GH = Math.max(1, (CANVH / PIXELSIZE) | 0);
 	initGrid();
@@ -146,11 +144,22 @@ function switchHud(newActive) {
 		infoText.textContent = '';
 	}
 }
+
+let pauseDuration = 0;
+let pauseStart = 0;
 function switchPause(newPause = !inPause) {
     if (newPause == -1) newPause = !inPause;
-    inPause = newPause;
-    if (inPause) pauseButton.classList.add("activeButton");
-    else pauseButton.classList.remove("activeButton");
+	inPause = newPause;
+	
+	if (inPause) pauseStart = nowSec;
+	else {
+		pauseDuration = nowSec - pauseStart;
+		for (let i = 0; i < activeParticles.length; i++)
+		{
+			let p = activeParticles[i];
+			p.startTime += pauseDuration;
+		}
+	}
 }
 
 function fillScreen() {
