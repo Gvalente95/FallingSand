@@ -341,95 +341,119 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 let isDraggingheader = false;
 
 function addHeader(x, y, color, height, borderColor = null, dragWidth = 0) {
-	let header = document.createElement("div");
-	uiContainer.appendChild(header);
-	header.style.top = y + "px";
-	header.style.left = x + "px";
-	header.className = "uiHeader";
-	header.style.width = CANVW + "px";
-	if (color) header.style.backgroundColor = color;
-	else header.style.backgroundColor = "rgba(255, 255, 255, 0)";
-	header.style.height = height + "px";
-	header.style.position = "absolute";
-	header.style.userSelect = "none";
-	if (borderColor) header.style.border = "1px solid " + borderColor;
+  const header = document.createElement("div");
+  uiContainer.appendChild(header);
+  header.style.top = y + "px";
+  header.style.left = x + "px";
+  header.className = "uiHeader";
+  header.style.width = CANVW + "px";
+  header.style.backgroundColor = color ? color : "rgba(255, 255, 255, 0)";
+  header.style.height = height + "px";
+  header.style.position = "absolute";
+  header.style.userSelect = "none";
+  if (borderColor) header.style.border = "1px solid " + borderColor;
+  if (dragWidth <= 0) return header;
 
-	if (dragWidth <= 0) return header;
+  header.style.cursor = "grab";
+  header.style.width = dragWidth + "px";
 
-	header.style.cursor = "grab";
-	header.style.width = dragWidth + "px";
+  let dragging = false;
+  let startX = 0;
+  let startLeft = 0;
+  let lastX = 0;
+  let lastT = 0;
+  let vx = 0;
 
-	let dragging = false;
-	let startX = 0;
-	let startLeft = 0;
+  const getLeft = () => parseFloat(getComputedStyle(header).left) || 0;
+  const bounds = () => {
+    const w = parseFloat(header.style.width) || 0;
+    return { min: Math.min(0, CANVW - w), max: 0 };
+  };
 
-	const getLeft = () => parseFloat(getComputedStyle(header).left) || 0;
-	const bounds = () => {
-		const w = parseFloat(header.style.width) || 0;
-		return { min: Math.min(0, CANVW - w), max: 0 };
-	};
+  const step = btnW + uiXmargin;
+  const snaps = () => {
+    const b = bounds();
+    const arr = [];
+    for (let s = 0; s >= b.min; s -= step) arr.push(s);
+    if (arr[arr.length - 1] !== b.min) arr.push(b.min);
+    return arr;
+  };
 
-	function animateTo(target) {
-		const b = bounds();
-		header.style.transition = "left 220ms cubic-bezier(.22,.61,.36,1)";
-		header.style.left = clamp(target, b.min, b.max) + "px";
-		const done = () => { header.style.transition = ""; header.removeEventListener("transitionend", done); };
-		header.addEventListener("transitionend", done);
-	}
+  const nearestSnapIdx = (v) => {
+    const s = snaps();
+    let idx = 0, d = Math.abs(v - s[0]);
+    for (let i = 1; i < s.length; i++) {
+      const di = Math.abs(v - s[i]);
+      if (di < d) { d = di; idx = i; }
+    }
+    return idx;
+  };
 
-	function onMove(e){
-		if (!dragging) return;
-		const x = e.clientX ?? (e.touches && e.touches[0] && e.touches[0].clientX) ?? 0;
-		const dx = x - startX;
-		isDraggingheader = Math.abs(dx) > 1;
+  const animateTo = (target) => {
+    const b = bounds();
+    header.style.transition = "left 220ms cubic-bezier(.22,.61,.36,1)";
+    header.style.left = clamp(target, b.min, b.max) + "px";
+    const done = () => { header.style.transition = ""; header.removeEventListener("transitionend", done); };
+    header.addEventListener("transitionend", done);
+  };
 
-		let ddx = Math.abs(dx);
-		if (ddx > CANVW / 50) {
-			const dfx = (Math.sign(dx) * (ddx > CANVW / 10 ? CANVW - 8 : btnW + uiXmargin));
-			dragging = false;
-			setTimeout(() => { isDraggingheader = false; }, 100);
-			header.style.cursor = "grab";
-			animateTo(startLeft + dfx);
-			document.removeEventListener("mousemove", onMove);
-			document.removeEventListener("mouseup", onUp);
-			document.removeEventListener("touchmove", onMove);
-			document.removeEventListener("touchend", onUp);
-			return;
-		}
-	}
+  const onMove = (e) => {
+    if (!dragging) return;
+    e.preventDefault();
+    const x = e.clientX ?? 0;
+    const t = performance.now();
+    const dx = x - startX;
+    const b = bounds();
+    header.style.left = clamp(startLeft + dx, b.min, b.max) + "px";
+    isDraggingheader = Math.abs(dx) > 1;
+    if (lastT) vx = (x - lastX) / (t - lastT);
+    lastX = x; lastT = t;
+  };
 
-	function onUp(){
-		if (!dragging) return;
-		dragging = false;
-		isDraggingheader = false;
-		header.style.cursor = "grab";
-		document.removeEventListener("mousemove", onMove);
-		document.removeEventListener("mouseup", onUp);
-		document.removeEventListener("touchmove", onMove);
-		document.removeEventListener("touchend", onUp);
-	}
+  const onUp = () => {
+    if (!dragging) return;
+	  dragging = false;
+	  if (isDraggingheader) setTimeout(() => { isDraggingheader = false }, 50);
+    header.style.cursor = "grab";
+    header.releasePointerCapture(pointerId);
 
-	header.addEventListener("mousedown", (e) => {
-		if (settingSlider) return;
-		dragging = true;
-		header.style.cursor = "grabbing";
-		startX = e.clientX;
-		startLeft = getLeft();
-		document.addEventListener("mousemove", onMove);
-		document.addEventListener("mouseup", onUp);
-	});
+    const s = snaps();
+    const cur = getLeft();
+    const i = nearestSnapIdx(cur);
+    const dir = Math.sign(vx) || Math.sign(cur - startLeft) || 0;
+    const speed = Math.abs(vx);
+    let targetIdx = i;
+    if (speed > 0.5 && dir !== 0) {
+      targetIdx = clamp(i - (dir > 0 ? 1 : -1), 0, s.length - 1);
+    }
+    animateTo(s[targetIdx]);
 
-	header.addEventListener("touchstart", (e) => {
-		if (settingSlider) return;
-		dragging = true;
-		header.style.cursor = "grabbing";
-		startX = e.touches[0].clientX;
-		startLeft = getLeft();
-		document.addEventListener("touchmove", onMove, { passive: true });
-		document.addEventListener("touchend", onUp);
-	}, { passive: true });
-	return header;
+    header.removeEventListener("pointermove", onMove);
+    header.removeEventListener("pointerup", onUp);
+    header.removeEventListener("pointercancel", onUp);
+  };
+
+  let pointerId = null;
+
+  header.addEventListener("pointerdown", (e) => {
+    if (settingSlider) return;
+    dragging = true;
+    header.style.cursor = "grabbing";
+    pointerId = e.pointerId;
+    header.setPointerCapture(pointerId);
+    startX = e.clientX;
+    startLeft = getLeft();
+    lastX = startX;
+    lastT = performance.now();
+    vx = 0;
+    header.addEventListener("pointermove", onMove, { passive: false });
+    header.addEventListener("pointerup", onUp);
+    header.addEventListener("pointercancel", onUp);
+  });
+
+  return header;
 }
+
 
 function fitHeaderDragWidth(header){
 	let maxRight = 0;

@@ -187,7 +187,7 @@ for (const k in PARTICLE_PROPERTIES) {
 	p.tagMask = tagMaskOf(p.tags);
 }
 
-ISGAME = true;
+ISGAME = false;
 if (!ISGAME) discoverAll();
 
 function discoverAll() {

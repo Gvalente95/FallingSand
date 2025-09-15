@@ -40,7 +40,7 @@ window.addEventListener('keydown', (e) => {
 	userInput();
 	if (isInInputField) return;
 	if (e.code == 'Tab') e.preventDefault();
-	if (e.key == 't') { ISGAME = !ISGAME; console.warn(ISGAME); updateUi(); }
+	if (e.key == 't') { ISGAME = !ISGAME; updateUi(); }
 	if (e.key == 'k') switchUiDisplay();
 	KEYS[e.key] = true;
 	INPXSCROLL = ((KEYS['a'] || KEYS['ArrowLeft']) ? -1 : 0) + ((KEYS['d'] || KEYS['ArrowRight']) ? 1 : 0);
