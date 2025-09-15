@@ -74,7 +74,7 @@ document.body.appendChild(canvas);
 
 let uiContainer = document.createElement("div");
 document.body.appendChild(uiContainer);
-uiContainer.style.backgroundColor = 'rgba(38, 52, 50, 1)';
+uiContainer.style.backgroundColor = 'rgba(38, 40, 52, 1)';
 uiContainer.style.position = 'fixed';
 uiContainer.style.top = CANVH + "px";
 uiContainer.style.border = '5px solid rgba(123, 123, 123, 0.09)';
