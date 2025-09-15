@@ -369,32 +369,32 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 	div.addEventListener("mouseup", activate);
 	div.setAttribute("tabindex", "0");
 
-	if (imgPath) {
-		const img = new Image();
-		img.onload = ()=>{ div.style.background = `${color} url("${imgPath}") calc(50% - 10px) center/contain no-repeat`; };
-		img.onerror = ()=>{ div.style.setProperty('--btn-bg', color); div.style.backgroundColor = color; };
-		img.src = imgPath;
-		img.backgroundColor = "white";
-		if (mouseFollowImg) {
-			div.cursorImg = initImageDiv(mouseFollowImg, CANVW / 2, CANVH / 2, "rgba(0,0,0,0)", document.body);
-			div.cursorImg.style.display = "none";
-			div.cursorImg.style.pointerEvents = "none";
-			let rafId = null;
-			const inside = () => MOUSEX >= 0 && MOUSEY >= 0 && MOUSEX < CANVW && MOUSEY < CANVH;
-			const stop = () => { if (rafId) cancelAnimationFrame(rafId); rafId = null; div.cursorImg.style.display = "none"; };
-			const loop = () => {
-				if (!MOUSEPRESSED || !div.active) return stop();
-				if (!inside()) { div.cursorImg.style.display = "none"; rafId = requestAnimationFrame(loop); return; }
-				div.cursorImg.style.top = (MOUSEY - 40) + "px";
-				div.cursorImg.style.left = MOUSEX + "px";
-				div.cursorImg.style.display = "block";
-				rafId = requestAnimationFrame(loop);
-			};
-			window.addEventListener("mousedown", () => { if (div.active && inside() && !rafId) loop(); });
-			window.addEventListener("mouseup", stop);
-			window.addEventListener("blur", stop);
-		}
-	}
+	// if (imgPath && 0) {
+	// 	const img = new Image();
+	// 	img.onload = ()=>{ div.style.background = `${color} url("${imgPath}") calc(50% - 10px) center/contain no-repeat`; };
+	// 	img.onerror = ()=>{ div.style.setProperty('--btn-bg', color); div.style.backgroundColor = color; };
+	// 	img.src = imgPath;
+	// 	img.backgroundColor = "white";
+	// 	if (mouseFollowImg) {
+	// 		div.cursorImg = initImageDiv(mouseFollowImg, CANVW / 2, CANVH / 2, "rgba(0,0,0,0)", document.body);
+	// 		div.cursorImg.style.display = "none";
+	// 		div.cursorImg.style.pointerEvents = "none";
+	// 		let rafId = null;
+	// 		const inside = () => MOUSEX >= 0 && MOUSEY >= 0 && MOUSEX < CANVW && MOUSEY < CANVH;
+	// 		const stop = () => { if (rafId) cancelAnimationFrame(rafId); rafId = null; div.cursorImg.style.display = "none"; };
+	// 		const loop = () => {
+	// 			if (!MOUSEPRESSED || !div.active) return stop();
+	// 			if (!inside()) { div.cursorImg.style.display = "none"; rafId = requestAnimationFrame(loop); return; }
+	// 			div.cursorImg.style.top = (MOUSEY - 40) + "px";
+	// 			div.cursorImg.style.left = MOUSEX + "px";
+	// 			div.cursorImg.style.display = "block";
+	// 			rafId = requestAnimationFrame(loop);
+	// 		};
+	// 		window.addEventListener("mousedown", () => { if (div.active && inside() && !rafId) loop(); });
+	// 		window.addEventListener("mouseup", stop);
+	// 		window.addEventListener("blur", stop);
+	// 	}
+	// }
 
 	if (keyToggle) {
 	window.addEventListener("keydown", (e) => {

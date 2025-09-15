@@ -1,10 +1,16 @@
 
 let paramheader = null;
-let infoMouse = null;
 function initInfoText() {
 	infoText = initLabelDiv(10, 10);
-	infoMouse = initLabelDiv(10, 120);
-	infoFps = initLabelDiv(CANVW - 80, 10);
+	infoFps = initLabelDiv(CANVW - 80, 20);
+
+	infoText.style.userSelect = 'block';
+	infoText.style.cursor = 'pointer';
+	infoText.style.paddingTop = '10px';
+	infoText.style.paddingLeft = '10px';
+	infoText.style.paddingRight = '10px';
+	infoText.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+	infoText.addEventListener('mousedown', () => { switchHud(); });
 }
 
 function initParamHeader(yPos)
@@ -56,7 +62,6 @@ function initActionHeader(yPos)
 	initButton("Grid", xs * nn++, 0, w, h, clr, switchGridMode, null, hdr, false, "g", p + "grid.png", null, false, clr);
 	initButton("Brush", xs * nn++, 0, w, h, clr, setNewBrushType, null, hdr, true, 'b', p + "disk.png", null, false, clr);
 	initButton("Emitter", xs * nn++, 0, w, h, clr, spawnEmitterAtMouse, null, hdr, null, 'l', p + "emit.png", null, false, clr);
-	initButton("Hud", xs * nn++, 0, w, h, clr, switchHud, null, hdr, true, 'u', p + "info.png", null, false, clr);
 	initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, 'Tab', p + "next.png", null, false, clr);
 	fitHeaderDragWidth(hdr);
 }
@@ -115,7 +120,8 @@ function initUi()
 	setNewType(0);
 	setNewBrushType('DISC');
 	switchUiPage(0);
-	switchGridMode(false);
+	switchHud(SHOWHUD);
+	switchGridMode(gridMode);
 	uiLayerIndex = 0;
 	updateUi();
 }

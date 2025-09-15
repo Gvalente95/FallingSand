@@ -137,12 +137,12 @@ function setNewPixelSize(newPixelSize){
 	replaceParticles(scale);
 }
 
-function switchHud(newActive) {
+function switchHud(newActive = !SHOWHUD) {
 	SHOWHUD = newActive;
 	if (!newActive) {
-		infoMouse.textContent = '';
-		infoText.textContent = '';
+		infoText.textContent = 'HUD';
 	}
+	infoText.style.width = newActive ? '200px' : '30px';
 }
 
 let pauseDuration = 0;

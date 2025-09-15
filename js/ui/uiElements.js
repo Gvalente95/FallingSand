@@ -271,7 +271,6 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 	div.label = label;
 	div.value = value;
 	div.active = isSwitch;
-	if (div.active) div.classList.add("activeButton");
 	div.addEventListener("mouseup", activate);
 	div.setAttribute("tabindex", "0");
 
@@ -311,8 +310,6 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 				rafId = requestAnimationFrame(loop);
 			};
 			window.addEventListener("mousedown", () => { if (div.active && inside() && !rafId) loop(); });
-			// window.addEventListener("mouseup", stop);
-			// window.addEventListener("blur", stop);
 			if (keyToggle) {
 				window.addEventListener("keydown", (e) => {
 					if (!isInInputField && (e.code === keyToggle || e.key == keyToggle || e.key.toLowerCase() == keyToggle)) { loop(); }
@@ -352,7 +349,7 @@ function addHeader(x, y, color, height, borderColor = null, dragWidth = 0) {
   header.style.position = "absolute";
   header.style.userSelect = "none";
   if (borderColor) header.style.border = "1px solid " + borderColor;
-  if (dragWidth <= 0) return header;
+  if (dragWidth <= 0 || !isMobile) return header;
 
   header.style.cursor = "grab";
   header.style.width = dragWidth + "px";

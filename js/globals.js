@@ -10,7 +10,7 @@ const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 // PARAMS
 SWIMSPEED = 2;
-SHOWHUD = true;
+SHOWHUD = false;
 PIXELSIZE = 4;
 BRUSHSIZE = 8;
 SHOWBRUSH = !isMobile;
@@ -33,7 +33,7 @@ let uiPageContent = [];
 let typeButton = null;
 let gridLayer = null;
 let inPause = false;
-let gridMode = true;
+let gridMode = false;
 let showBgrGrid = false;
 let uiPageIndex = 0;
 let uiLayerIndex = 0;
