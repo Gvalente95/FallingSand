@@ -1,9 +1,8 @@
 p.updateLiquidVelocity = function (g) {
-	if (this.type != 'BUBBLE') {
+	if (this.type === 'WATER') {
 	if (!g && dice(20000)) {
 		let type = this.type;
-			const n = this.replace('BUBBLE');
-			n.transformType = type;
+			const n = this.replace('BUBBLE', type);
 			let curClr = n.baseColor;
 			let newClr = addColor(curClr, this.baseColor, .5)
 			n.setColor(newClr);
@@ -13,8 +12,7 @@ p.updateLiquidVelocity = function (g) {
 		{
 			let prvClr = this.baseColor;
 			let type = this.type;
-			const n = this.replace('BUBBLE');
-			n.transformType = type;
+			const n = this.replace('BUBBLE', type);
 			let curClr = n.baseColor;
 			let newClr = addColor(curClr, prvClr, .5)
 			n.setColor(newClr);

@@ -5,7 +5,7 @@ p.updateBurn = function () {
 		if (this.expl) {return (this.lt = r_range(1, 20));}
 		if (this.type === 'OIL') this.lt = 0;
 		else if (this.type === 'SAND' && dice(20)) this.setType('GLASS');
-		else this.setType('COAL');
+		else { this.setType('COAL'); this.aliveTime = 0; }
 		this.burning = 0;
 	}
 	else if (dice(3) && !pxAtI(ROWOFF[this.y - 1] + this.x)) new Particle(this.x, this.y - 1, 'FIRE');
@@ -47,7 +47,7 @@ p.setToFire = function()
 
 p.setWet = function(wetAmount = 100, type = 'WATER') {
 	if (this.physT != 'SOLID') return (0);
-	if (this.isShroom || this.type === 'FISH') return (0);
+	if (this.type === 'FISH') return (0);
 	if (this.brnpwr) return (0);
 	if (this.wet) { this.wet = wetAmount; this.wetType = type; return (1); }
 	if (type != 'OIL') this.burning = 0;
@@ -74,21 +74,30 @@ p.updateWet = function () {
 			if (px) px.setWet(this.wet - 10, this.wetType);
 		}
 	}
-	if (dice(5000)) {
+	if (dice(500)) {
 		let pxAb = pxAtI(ROWOFF[this.y - 1] + this.x);
 		if (pxAb && pxAb.type === this.wetType) {
-			pxAb = pxAb.replace('BUBBLE');
-			pxAb.transformType = this.wetType;
+			pxAb = pxAb.replace('BUBBLE', this.wetType);
 		}
+	}
+	if (this.isShroom && this.isGrower && dice(100)) {
+		let px = pxAtI(ROWOFF[this.y + 1] + this.x);
+		if (px && px.physT === 'LIQUID') {
+			px.setType('BUBBLE', px.type);
+		}		
 	}
 	if (this.hasTouchedBorder && this.updT != 'ALIVE' && this.wetDur > 5000) {
-		let shroomChance = 10000;
-		if (dice(shroomChance)) {
-			this.setType('SHROOM');
-			this.isGrower = true;
+		if (this.type === 'GRASS') {
+			let shroomChance = 10000;
+			if (dice(shroomChance)) {
+				if (dice(2)) this.setType('SHROOM');
+				else this.setType('TREE');
+				this.isGrower = true;
+			}
 		}
+		else if (this.type === 'SAND' && dice(100)) this.setType('GRASS');
 	}
-	this.setColor(addColor(this.baseColor, PARTICLE_PROPERTIES[this.wetType].color, clamp(this.wet / 100, .1, .8)));
+	this.setColor(addColor(this.baseColor, PARTICLE_PROPERTIES[this.wetType].color, clamp(this.wet / 100, .1, .5)));
 }
 
 FROSTMAX = 50;

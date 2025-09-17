@@ -13,8 +13,7 @@ class Particle{
 			{
 				if (this.properties.freeze) { this.x = x, this.y = y; this.applyFrost(type, 50, true);}
 				else if (px.physT === 'LIQUID' && type === 'FIRE') {
-					px.setType('FIRE');
-					px.transformType = 'STEAM';
+					px.setType('FIRE', 'STEAM');
 					px.velX = 0;
 				}
 				else if (type != px.type && shouldBurnParticle(type, px)) px.setToFire();

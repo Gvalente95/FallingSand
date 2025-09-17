@@ -13,8 +13,7 @@ p.FireEffect = function (curX, curY)
 				if (px.frozen) px.unFreeze(100);
 				else {
 					if (px.y > 0 && dice(20)) {
-						px = px.replace('BUBBLE');
-						px.transformType = px.type === 'WATER' ? 'STEAM' : 'SMOKE';
+						px = px.replace('BUBBLE', px.type === 'WATER' ? 'STEAM' : 'SMOKE');
 					}
 				}
 				continue;
@@ -110,8 +109,7 @@ p.applyCorrosion = function(){
 			if (!dice(1001 - this.cor + (px.dns))) continue;
 			let thisClr = this.baseColor;
 			let newType = this.type;
-			const n = px.replace('BUBBLE');
-			n.transformType = newType;
+			const n = px.replace('BUBBLE', newType);
 			let curClr = n.baseColor;
 			let newClr = addColor(curClr, thisClr, .5)
 			n.setColor(newClr);

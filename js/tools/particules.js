@@ -98,12 +98,12 @@ function selectRadius(selType = 'GRAB', cx = MOUSEX, cy = MOUSEY, radius = BRUSH
 					p.physT = 'LIQUID';
 					p.spreadAmount = 20;
 					p.dns = 2;
-					p.setColor(addColor(p.properties.color, 'rgba(68, 146, 170, 1)', .4));
+					p.color = addColor(p.properties.color, 'rgba(68, 146, 170, 1)', .4);
 					continue;
 				}
+				p.velX = p.velY = 0;
 				p.selType = selType;
-				p.setColor(addColor(p.baseColor, 'rgba(0, 0, 0, 1)', .4));
-				// p.velY = p.velX = 0;
+				p.color = addColor(p.baseColor, 'rgba(0, 0, 0, 1)', .4);
 				if (grid1[i] === p) grid1[i] = null;
 				p.sx = Math.floor(dx);
 				p.sy = Math.floor(dy);
@@ -127,7 +127,7 @@ function resetSelectedType(typeToReset) {
 			p.velY += MOUSEDY / PIXELSIZE;
 			p.newX = p.x;
 			p.newY = p.y;
-			p.setColor();
+			p.color = p.baseColor;
 		}
 	}
 }

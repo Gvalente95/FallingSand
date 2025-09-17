@@ -44,10 +44,12 @@ p.setColor = function(color = this.properties.color) {
     } else this.rgb = hexToRgb(color);
 }
 
-p.replace = function(newType){
+p.replace = function(newType, transformType = null){
 	let p = [this.x, this.y];
 	this.toRemove();
-	return (new Particle(p[0], p[1], newType));
+	let newP = new Particle(p[0], p[1], newType);
+	if (transformType) newP.transformType = transformType;
+	return (newP);
 }
 
 function shouldBurn(agressor, victim)

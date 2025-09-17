@@ -15,8 +15,8 @@ function	buildWaterShades() {
 }
 
 function showShroomHead(prt, x, y) {
-	let h = clamp(prt.heigth / 10, 2, 6);
-	let w = Math.round(h * .75);
+	let h = clamp(prt.heigth / 10, 1, 5);
+	let w = Math.round(h * 2.5);
 
 	let baseColor = prt.headColor;
 
@@ -93,7 +93,7 @@ function showParticle(prt, x, y, alpha, size) {
 		color = addColor(PARTICLE_PROPERTIES[prt.type].color, 'rgba(255, 0, 0, 1)', 1 - (timeLeft / prt.lt));
 	}
 	if (prt.isShroom && prt.digType) color = PARTICLE_PROPERTIES[prt.digType].color;
-	if (prt.isShroom && prt.isGrower && !prt.isLoop && !prt.parent && prt.hasTouchedBorder) {
+	if (prt.isShroom && !prt.isLoop && prt.isHead) {
 		let px = atI(ROWOFF[y - 1] + x, prt);
 		if (px && px.type == prt.type) {
 			ctx.fillStyle = prt.digType ? color : prt.baseColor;
