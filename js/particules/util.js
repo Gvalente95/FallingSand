@@ -34,8 +34,6 @@ p.hasTouchedSurfaceCheck = function()
 		return (px != null);
 }
 
-p.setVel = function (newX = 0, newY = 0) { this.velX = newX; this.velY = newY; }
-
 p.setColor = function(color = this.properties.color) {
 	this.color = color;
     if (color.startsWith("rgb")) {

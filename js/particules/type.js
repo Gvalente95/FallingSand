@@ -34,7 +34,6 @@ p.updateLiquid = function (curX, curY, spreadAm = this.spreadAmount) {
 		const xp = curX + i * xDir;
 		const cell = pxAtI(ROWOFF[curY] + xp);
 		if (!cell) { newX = xp; found = true; break; }
-		// if (cell.type === 'LEAF') { this.swap(cell); return; }
 		if (cell.updT === 'ALIVE') continue;
 		if (cell.physT !== 'LIQUID') break;
 		if (cell.type !== this.type && cell.dns > this.dns) { this.swap(cell); return; }
@@ -405,18 +404,27 @@ p.updateSteam = function(newX, newY){
 	else this.updatePosition(newI);
 }
 
+TREEPERFRAME = 1;
 p.updateTree = function (newX, newY) {
-	if (!this.hasTouchedBorder && !this.child) {
-		this.yDir = -1;
-		this.xDir = 0;
+	if (this.deadTree) {
+		this.updatePosition(ROWOFF[newY] + newX);
+		return;
+	}
+	if ((!this.growerSet && this.timeAlive < .5) || (!this.hasTouchedBorder && !this.child)) {
 		this.updatePosition(ROWOFF[newY] + newX);
 		return;
 	}
 	if (!this.growerSet) {
 		let l = pxAtI(this.i - 1);
 		let r = pxAtI(this.i + 1);
-		if (l || r) this.isGrower = false;
+		if ((l && l.type === this.type) || (r && r.type === this.type)) {
+			this.isGrower = false;
+			this.deadTree = true;
+		}
 		else {
+			this.treeId = r_range(0, 100000);
+			this.isBaobab = this.x < GW / 2;
+			this.cut = 0;
 			this.branch = 0;
 			this.isGrower = true;
 			this.maxHeight = Math.round(GH * f_range(.3, .99));
@@ -424,24 +432,31 @@ p.updateTree = function (newX, newY) {
 		this.growerSet = true;
 	}
 	if (!this.isGrower) { return;}
-	// if (this.timeAlive < .1) return;
-	if (this.heigth > this.maxHeight) { growLeaves(this, 0); this.isGrower = 0; return;}
+	if (this.timeAlive < .1 && this.cut > TREEPERFRAME) { this.cut = 0; return;}
+	if (this.heigth > this.maxHeight || this.y <= 15) { stopHead(this, true); return;}
 	if (this.parent) return;
 	if (this.xDir && dice(10)) this.xDir = 0;
 	if (this.branch && dice(40)) this.xDir = rdir();
-	if (this.branch) this.yDir = r_range(-1, 0);
-	newX = this.x + this.xDir, newY = this.y + this.yDir;
+	if (this.branch) this.yDir = r_range(-1, this.isBaobab ? 0 : 1);
+	newX = clamp(this.x + this.xDir, 3, GW - 4), newY = clamp(this.y + this.yDir, 0, GH - 1);
 	if (this.heigth > this.maxHeight / 3 && dice(10)) makeBranch(this);
-	let spot = pxAtI[ROWOFF[newY] + newX];
-	// if (spot && (spot.type === this.type || spot.type === 'LEAF'))
-	// {
-	// 	this.swap(spot);
-	// 	newX = this.x + this.xDir, newY = this.y + this.yDir;
-	// 	spot = null;
-	// }
+	let spot = pxAtI([ROWOFF[newY] + newX], this);
+	if (spot) {
+		this.inWater = spot.physT === 'LIQUID';
+		if (spot.type === 'LEAF' || this.inWater) {
+			spot.toRemove();
+			spot = null;
+		}
+		else return (stopHead(this, spot.type !== 'TREE'));
+	}
 	if (!spot) growNewHead(newX, newY, this);
-	else if (!pxAtI[ROWOFF[newY] + this.x - this.xDir]) this.xDir *= -1;
+	else if (!pxAtI[ROWOFF[newY] + this.x - this.xDir, this]) this.xDir *= -1;
 	else this.xDir = 0;
+
+	function stopHead(head, hasLeaves) {
+		if (hasLeaves) growLeaves(head, false);
+		head.isGrower = false;
+	}
 
 	function makeBranch(head) {
 		let xDir = rdir();
@@ -454,7 +469,7 @@ p.updateTree = function (newX, newY) {
 			px = pxAtI(ROWOFF[ny] + nx);
 		}
 		if (px && (px.type === 'LEAF')) px.toRemove();
-		else if (px) return;
+		else if (px) { return;}
 		let newP = growNewHead(nx, ny, head);
 		newP.xDir = xDir;
 		newP.branch = head.branch + 1;
@@ -462,29 +477,36 @@ p.updateTree = function (newX, newY) {
 
 	function growNewHead(x, y, headChild, leavesBehind = !dice(10)) {
 		let head = new Particle(x, y, headChild.type);
+		head.treeId = headChild.treeId;
 		head.child = headChild;
 		head.xDir = headChild.xDir;
 		head.isGrower = true;
 		head.yDir = headChild.yDir;
+		head.cut = headChild.cut + 1;
 		head.branch = headChild.branch;
 		head.growerSet = true;
+		head.isBaobab = headChild.isBaobab;
 		head.leavesColor = headChild.leavesColor;
 		head.heigth = headChild.heigth + 1;
 		headChild.parent = head;
 		head.maxHeight = headChild.maxHeight;
 		head.hasTouchedBorder = true;
+		if (headChild.isBaobab || headChild.inWater) return (head);
 		if ((head.heigth > head.maxHeight / 3) || head.branch) growLeaves(head, leavesBehind);
 		return head;
 	}
 
 	function growLeaves(head, isBehind) {
-		let depth = r_range(3, 8);
-		if (depth < 2) return;
+		// return;
+		let depth;
+		if (head.isBaobab) { depth = r_range(4, 8); isBehind = true; }
+		else depth = r_range(5, 12);
 		let color;
 		if (isBehind) color = addColor(head.leavesColor, 'rgba(0, 0, 0, 1)', f_range(.1, .5));
 		else color = randomizeColor(head.leavesColor);
 
 		let dist = isBehind ? 3 : 8;
+		if (head.isBaobab) dist = 0;
 		let startX = head.x + r_range(-dist, dist);
 		let startY = head.y + r_range(-dist, dist);
 		if (depth < 2) return;
@@ -494,6 +516,7 @@ p.updateTree = function (newX, newY) {
 				if ((x * x + y * y) >= r2) continue;
 				let sx = startX + x;
 				let sy = startY + y;
+				if (isOutOfBorder(sx, sy)) continue;
 				let i = ROWOFF[sy] + sx;
 				let px = pxAtI(i);
 				if (px && px.physT === 'LIQUID') {
@@ -501,36 +524,36 @@ p.updateTree = function (newX, newY) {
 					px = null;
 				}
 				if (isBehind) {
-					if (px) {
-						continue;
-					}
-					let leaf = new Particle(sx, sy, 'LEAF');
-					if (!leaf.active) continue;
-					leaf.setColor(color);
-					leaf.isBehind = true;
-					if (!dice(20)) leaf.updT = 'STATIC';
+					if (px) continue;
+					newLeaf(head, sx, sy, color, true);
 					continue;
 				}
 				if (!px) {
-					let leaf = new Particle(sx, sy, 'LEAF');
-					if (!leaf.active) continue;
-					leaf.setColor(color);
-					leaf.isBehind = false;
-					if (!dice(20)) leaf.updT = 'STATIC';
+					newLeaf(head, sx, sy, color, false);
 					continue;
 				}
 				if (px.type === 'TREE' || px.type === 'LEAF') {
 					px.setColor(color);
 					px.isBehind = false;
+					px.treeId = head.treeId;
 				}
 			}
 		}
+	}
+
+	function newLeaf(head, x, y, color, isBehind) {
+		let leaf = new Particle(x, y, 'LEAF');
+		if (!leaf.active) return;
+		leaf.setColor(color);
+		leaf.treeId = head.treeId;
+		leaf.isBehind = isBehind;
+		if (!dice(20)) leaf.updT = 'STATIC';
 	}
 }
 
 
 p.updateLeaf = function () {
-	if (FRAME % 5 != 0) return;
+	if (FRAME % 2 != 0) return;
 	if (this.y >= GH) return;
 
 	if (this.updT === 'STATIC') {
@@ -582,7 +605,7 @@ p.updateType = function () {
 	else if (this.type === 'CLOUD') return this.updateCloud();
 	else if (this.type === 'LEAF') return this.updateLeaf();
 	else if (this.isShroom && this.hasTouchedBorder && this.isGrower) return this.updateShroom(this.x, this.y);
-	else if (this.type === 'TREE' && this.isGrower) return this.updateTree();
+	else if (this.type === 'TREE' && this.isGrower && !this.deadTree) return this.updateTree(this.x, this.y);
 	else if (this.type === 'TORCH' && dice(10)) new Particle(this.x, this.y - 1, 'FIRE');
 	if (this.updT === 'STATIC') return;
 	if (this.type !== 'PLANT') this.updateVelocity();
@@ -657,8 +680,9 @@ p.setType = function(newType, transformType = null)
 		this.oscAmp = f_range(2, 6);
 	}
 	else if (this.type === 'TREE') {
+		this.treeId = -1; this.yDir = -1; this.xDir = 0;
 		let colors = ['rgba(189, 131, 212, 1)', 'rgba(199, 132, 132, 1)', 'rgba(145, 202, 157, 1)', 'rgba(191, 169, 41, 1)', 'rgba(204, 34, 34, 1)', 'rgba(34, 204, 173, 1)'];
-		this.leavesColor = colors[r_range(0, colors.length)];
+		this.leavesColor = randomizeColor(colors[Math.round(nowSec / 2) % colors.length], 30);
 	}
 	else if (this.type == 'ANTEGG') this.transformType = 'ANT';
 	else if (this.type == 'COAL') { this.velX = 0; }

@@ -29,7 +29,7 @@ p.stopFire = function ()
 	this.burning = 0;
 }
 
-p.setToFire = function()
+p.setToFire = function(duration = 1000 - this.brn)
 {
 	if (this.frozen) { this.unFreeze(50); return; }
 	if (this.type === 'ROCK') {return (this.setType('MAGMA'));}
@@ -40,7 +40,7 @@ p.setToFire = function()
 	if (this.type === 'MAGMA') this.setType('MAGMA');
 	else if (this.type === 'MAGMA') this.setType('LAVA');
 	else {
-		this.burning = 120 - (this.brn / 10);
+		this.burning = duration;
 		this.setColor(addColor(this.baseColor, 'rgba(255, 136, 0, 1)', .5));
 	}
 }
@@ -61,8 +61,16 @@ p.setWet = function(wetAmount = 100, type = 'WATER') {
 p.updateWet = function () {
 	this.wetDur = now - this.wetStart;
 	if (this.burning) { if (this.wetType === 'OIL') this.wet = 0; else this.stopFire();}
-	if (--this.wet <= 0) { this.setColor(this.baseColor); return;}
-	else if (this.wet > 80)
+	if (--this.wet <= 0) {
+		let l = pxAtI(ROWOFF[this.y] + this.x - 1);
+		if (l && l.physT === 'LIQUID') this.wet = 200;
+		else {
+			l = pxAtI(ROWOFF[this.y] + this.x + 1);
+			if (l && l.physT === 'LIQUID') this.wet = 200;
+		}
+		if (this.wet <= 0) { this.setColor(this.baseColor); return; }
+	}
+	if (this.wet > 80)
 	{
 		let depth = 2;
 		for (let x = -depth; x < depth; x++)

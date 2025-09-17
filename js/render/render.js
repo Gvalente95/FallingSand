@@ -15,7 +15,7 @@ function	buildWaterShades() {
 }
 
 function showShroomHead(prt, x, y) {
-	let h = clamp(prt.heigth / 10, 1, 5);
+	let h = clamp(prt.heigth / 10, 1, 3);
 	let w = Math.round(h * 2.5);
 
 	let baseColor = prt.headColor;

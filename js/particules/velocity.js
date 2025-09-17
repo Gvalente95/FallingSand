@@ -1,7 +1,7 @@
 p.updateLiquidVelocity = function (g) {
 	if (this.type === 'WATER') {
-	if (!g && dice(20000)) {
-		let type = this.type;
+		if (!g && dice(20000)) {
+			let type = this.type;
 			const n = this.replace('BUBBLE', type);
 			let curClr = n.baseColor;
 			let newClr = addColor(curClr, this.baseColor, .5)
@@ -52,7 +52,7 @@ p.updateSolidVelocity = function (g) {
 
 p.updateVelocity = function () {
 	const pt = this.physT;
-	let Y = (pt === 'GAS' || GRAVITY < 0 ? -1 : 1);
+	let Y = ((pt === 'GAS' || GRAVITY < 0) ? -1 : 1);
 	const g = pxAtI(ROWOFF[this.y + Y] + this.x, this);
 	this.ground = g;
 	if (pt === 'LIQUID') return this.updateLiquidVelocity(g);

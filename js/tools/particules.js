@@ -8,7 +8,7 @@ function deleteParticules(x = MOUSEX, y = MOUSEY, radius = 10, type = null, isDi
 				let gx = Math.floor((px) / PIXELSIZE);
 				let gy = Math.floor(py / PIXELSIZE);
 				const p = pxAtI(ROWOFF[gy] + gx);
-				if (p && (!type || p.type == type)) p.toRemove();
+				if (p && (!type || p.type == type)) p.toRemove(true);
             }
         }
 	}

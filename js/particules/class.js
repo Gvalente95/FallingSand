@@ -40,12 +40,13 @@ class Particle{
 		this.warm = 0;
 		this.frozen = 0;
 		this.fseed = f_range(.1, 1);
-		this.setVel(velX, velY);
+		this.velX = velX;
+		this.velY = velY;
 		this.setType(type);
 		if (color) this.setColor(color);
 		this.x = x;
 		this.y = y;
-		this.i = idx(this.x, this.y);
+		this.i = ROWOFF[this.y] + this.x;
 		grid1[this.i] = this;
 		activeParticles.push(this);
 		this.active = true;
@@ -64,7 +65,7 @@ class Particle{
 		this.x = di % GW;
 		this.y = (di / GW) | 0;
 		grid1[di] = this;
-		if (this.parent) {
+		if (this.isShroom && this.parent) {
 			let px = this.parent.x;
 			if (Math.abs(this.x - px) > 1) px = Math.sign(this.x - px);
 			let newPi = ROWOFF[this.y - 1] + px;
@@ -81,7 +82,7 @@ class Particle{
 			if (this.type === 'MAGMA') return;
 			if (this.expl) {
 				explodeRadius(this.x * PIXELSIZE, this.y * PIXELSIZE, 5, 10 * PIXELSIZE, 'FIRE');
-				if (dice(10)) { this.setType('COAL'); this.setToFire(40); return;}
+				if (dice(10)) { this.setType('COAL'); this.setToFire(); return;}
 			}
 			if (this.physT !== 'GAS') {
 				const x = this.x;
@@ -122,13 +123,25 @@ class Particle{
 		this.updateType();
 	}
 
-	toRemove(){
+	toRemove(destroyFamily = false){
 		this.x = -100; this.y = -100; this.active = false;
-		if (this.parent) {if (this.isShroom) this.parent.toRemove(); else this.parent.child = null;}
+		if (this.parent) { if (this.isShroom) this.parent.toRemove(); else this.parent.child = null; }
 		if (this.child) this.child.parent = null;
+		if (destroyFamily && this.familyId != -1) {
+			for (let i = 0; i < activeParticles.length; i++){
+				let p = activeParticles[i];
+				if (p === this) continue;
+				if (p.familyId === this.familyId) {
+					p.familyId = -1;
+					p.deadTree = true;
+					p.velY = p.velX = 0;
+					if (p.type === 'LEAF' && p.updT === 'STATIC') p.updT = 'ALIVE';
+				}
+			}
+		}
 		destroyedParticles.push(this);
 	}
-	onRemove(){
+	onRemove() {
 		const i = activeParticles.indexOf(this);
 		if (i !== -1) activeParticles.splice(i, 1);
 		const si = this.i;

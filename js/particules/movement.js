@@ -5,7 +5,6 @@ p.updateMovement = function() {
 		this.newY = Math.round(this.y + this.velY);
 		return;
 	}
-
 	let k = SIMSPEED * dt;
 	if (this.physT == 'GAS') k = 1;
 
@@ -58,18 +57,15 @@ p.updateMovement = function() {
 			}
 			else if (this.type === 'ICE') { this.velY = this.velX = 0; }
 		}
-
-		if (this.type != 'LEAF') {
-			const lx = realX + side;
-			if (lx >= 0 && lx < GW) {
-				const s = grid1[realY * GW + lx];
-				if (!s) { curX += side; continue; }
-			}
-			const rx = realX - side;
-			if (rx >= 0 && rx < GW) {
-				const s2 = grid1[realY * GW + rx];
-				if (!s2) { curX -= side; continue; }
-			}
+		const lx = realX + side;
+		if (lx >= 0 && lx < GW) {
+			const s = grid1[realY * GW + lx];
+			if (!s) { curX += side; continue; }
+		}
+		const rx = realX - side;
+		if (rx >= 0 && rx < GW) {
+			const s2 = grid1[realY * GW + rx];
+			if (!s2) { curX -= side; continue; }
 		}
 		curX -= xStep; curY -= yStep; break;
 	}
