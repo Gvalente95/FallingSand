@@ -46,6 +46,7 @@ class Particle{
 		if (color) this.setColor(color);
 		this.x = x;
 		this.y = y;
+		this.startX = x, this.startY = y;
 		this.i = ROWOFF[this.y] + this.x;
 		grid1[this.i] = this;
 		activeParticles.push(this);
@@ -123,21 +124,25 @@ class Particle{
 		this.updateType();
 	}
 
-	toRemove(destroyFamily = false){
-		this.x = -100; this.y = -100; this.active = false;
-		if (this.parent) { if (this.isShroom) this.parent.toRemove(); else this.parent.child = null; }
-		if (this.child) this.child.parent = null;
-		if (destroyFamily && this.familyId != -1) {
-			for (let i = 0; i < activeParticles.length; i++){
-				let p = activeParticles[i];
-				if (p === this) continue;
-				if (p.familyId === this.familyId) {
-					p.familyId = -1;
-					p.deadTree = true;
-					p.velY = p.velX = 0;
-					if (p.type === 'LEAF' && p.updT === 'STATIC') p.updT = 'ALIVE';
-				}
+	killFamily() {
+		for (let i = 0; i < activeParticles.length; i++){
+			let p = activeParticles[i];
+			if (p === this) continue;
+			if (p.familyId === this.familyId) {
+				p.familyId = -1;
+				p.dead = true;
+				p.velY = p.velX = 0;
+				if (p.type === 'LEAF' && p.updT === 'STATIC') p.updT = 'ALIVE';
 			}
+		}
+	}
+
+	toRemove(killFam = false){
+		this.x = -100; this.y = -100; this.active = false;
+		if (this.parent) { this.parent.child = null; }
+		if (this.child) this.child.parent = null;
+		if (killFam && this.familyId != -1) {
+			this.killFamily();
 		}
 		destroyedParticles.push(this);
 	}

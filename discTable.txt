@@ -19,7 +19,7 @@ TO DISCOVER:
 	SMOKE
 	CLOUD
 	STEAM
-	PLANT
+	ALIEN
 	SHROOM
 	SHROOMX
 	BLOB
@@ -80,7 +80,7 @@ TNT : OIL + CHEMX + WOOD adjacent → TNT (inerte). TNT + FIRE → explosion.
 COAL : WOOD enterré (ROCK au-dessus) + HEAT faible + pauvre en oxygène + TIME → COAL.
 RAINBOW : BOLT à travers STEAM/CLOUD au-dessus d’eau → RAINBOW (éphémère, décor/catalyseur).
 MAGMA : ROCK en profondeur + HEAT fort → MAGMA. (MAGMA = “lava” souterraine.)
-OIL : PLANT/WOOD enterrés (SAND/ROCK, PRESSURE) + TIME long → OIL.
+OIL : ALIEN/WOOD enterrés (SAND/ROCK, PRESSURE) + TIME long → OIL.
 ACID : CHEMX + WATER → ACID.
 Alternatives: SHROOMX + WATER → ACID; OIL + CHEMX + HEAT → ACID + SMOKE.
 CHEMX : BOLT frappant ROCK proche de WATER → CHEMX (cristal/goutte).
@@ -90,20 +90,20 @@ WATER : base; STEAM + COLD → WATER; ICE + HEAT → WATER.
 LAVA : MAGMA exposé (pas de ROCK au-dessus) → LAVA. ROCK + HEAT très fort → LAVA.
 BOLT : CLOUD dense + CHARGE (rng) → BOLT vers le sol.
 FIRE : GRASS/WOOD + frottement (déplacements rapides) ou BOLT → FIRE. LAVA adjacente enflamme.
-SMOKE : FIRE + matière organique (GRASS/PLANT/WOOD/OIL) → SMOKE.
+SMOKE : FIRE + matière organique (GRASS/ALIEN/WOOD/OIL) → SMOKE.
 CLOUD : STEAM qui monte + COLD d’altitude → CLOUD.
 STEAM : WATER + HEAT → STEAM.
-PLANT : GRASS + WATER + TIME → PLANT (pousse). SAND humide près de GRASS → PLANT.
-SHROOM : PLANT à l’ombre (sous ROCK) + humidité (WATER/STEAM) + TIME → SHROOM.
+ALIEN : GRASS + WATER + TIME → ALIEN (pousse). SAND humide près de GRASS → ALIEN.
+SHROOM : ALIEN à l’ombre (sous ROCK) + humidité (WATER/STEAM) + TIME → SHROOM.
 SHROOMX : SHROOM + CHEMX/ACID voisin + TIME → SHROOMX (muté).
 BLOB : OIL + WATER agités (cisaillement) → BLOB (émulsion/goo).
-Option: matière organique (PLANT) + ACID → BLOB.
-ANTEGG : dans SAND sous WOOD/PLANT, humidité légère + TIME → ANTEGG.
-ANT : ANTEGG + TIME → ANT. Nourri par PLANT/WOOD; peut déplacer SAND.
-FISH : WATER profonde + PLANT (algues) + TIME → FISH.
+Option: matière organique (ALIEN) + ACID → BLOB.
+ANTEGG : dans SAND sous WOOD/ALIEN, humidité légère + TIME → ANTEGG.
+ANT : ANTEGG + TIME → ANT. Nourri par ALIEN/WOOD; peut déplacer SAND.
+FISH : WATER profonde + ALIEN (algues) + TIME → FISH.
 ICE : WATER + COLD (altitude, voisin ICE) → ICE.
 TORCH : WOOD + FIRE maintenu → TORCH (source de HEAT/lumière).
-WOOD : PLANT mature + TIME → WOOD.
+WOOD : ALIEN mature + TIME → WOOD.
 
 
 
@@ -125,7 +125,7 @@ Chaleur/froid (GLASS/STEAM/ICE/LAVA).
 
 Géologie/pression (ROCK/COAL/OIL/DIAMOND).
 
-Bio (PLANT/WOOD/SHROOM/ANT/FISH).
+Bio (ALIEN/WOOD/SHROOM/ANT/FISH).
 
 Chimie (CHEMX/ACID/BLOB).
 

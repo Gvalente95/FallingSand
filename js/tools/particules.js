@@ -16,7 +16,16 @@ function deleteParticules(x = MOUSEX, y = MOUSEY, radius = 10, type = null, isDi
 
 function launchParticules(type = 'SAND', x = MOUSEX, y = MOUSEY, radius = BRUSHSIZE, isDisc = BRUSHTYPE == BRUSHTYPES.DISC, useMouseDx = true)
 {
+	let color = null;
+
 	if (useMouseDx && hasTag(type, 'GAS')) useMouseDx = false;
+	let addedX = !useMouseDx ? 0 : (MOUSEDX / PIXELSIZE) * (PARTICLE_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05);
+	let addedY = !useMouseDx ? 0 : (MOUSEDY / PIXELSIZE) * (PARTICLE_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05);
+
+	let isRandomized = PARTICLE_PROPERTIES[type].physT === 'SOLID' && type != 'Rainbow';
+	if (type === 'RAINBOW') color = getRainbowColor(FRAME, .1);
+	else if (isRandomized) color = addColor(PARTICLE_PROPERTIES[type].color, getRainbowColor(FRAME, .1), .1);
+
 	if (activeParticles.length > MAXPARTICLES) return;
 	const radiusSquared = radius * radius;
     for (let dy = -radius; dy <= radius; dy++) {
@@ -29,12 +38,13 @@ function launchParticules(type = 'SAND', x = MOUSEX, y = MOUSEY, radius = BRUSHS
 				let clampedX = clamp(gridX, 1, GW - 1);
 				let clampedY = clamp(gridY, 1, GH - 1);
 				let newP = new Particle(clampedX, clampedY, type);
-				if (type === 'RAINBOW') newP.setColor(getRainbowColor(FRAME, .1));
+				if (color) {
+					if (isRandomized) newP.setColor(randomizeColor(color, 5));
+					else newP.setColor(color);
+				}
 				if (radius <= 1) return;
-				if (!useMouseDx) continue;
-				
-				newP.velX += (MOUSEDX / PIXELSIZE) * (newP.physT == PHYSTYPES.LIQUID ? .5 : .2);
-				newP.velY += (MOUSEDY / PIXELSIZE) * (newP.physT == PHYSTYPES.LIQUID ? .5 : .2);
+				newP.velX += addedX;
+				newP.velY += addedY;
             }
         }
 	}
@@ -98,12 +108,12 @@ function selectRadius(selType = 'GRAB', cx = MOUSEX, cy = MOUSEY, radius = BRUSH
 					p.physT = 'LIQUID';
 					p.spreadAmount = 20;
 					p.dns = 2;
-					p.color = addColor(p.properties.color, 'rgba(68, 146, 170, 1)', .4);
+					p.color = addColor(p.properties.color, 'rgb(68, 146, 170)', .4);
 					continue;
 				}
 				p.velX = p.velY = 0;
 				p.selType = selType;
-				p.color = addColor(p.baseColor, 'rgba(0, 0, 0, 1)', .4);
+				p.color = addColor(p.baseColor, 'rgb(0, 0, 0)', .4);
 				if (grid1[i] === p) grid1[i] = null;
 				p.sx = Math.floor(dx);
 				p.sy = Math.floor(dy);

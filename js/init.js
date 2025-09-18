@@ -22,7 +22,7 @@ function initParamHeader(yPos)
 	let sliders = [];
 	sliders.push(createVerticalPressSlider("Brush Sz", spread * n++, 0, 2, 100, 1, BRUSHSIZE, setNewBrushSize));
 	sliders.push(createVerticalPressSlider("Gravity", spread * n++, 0, 1, -1, .1, GRAVITY, setNewGravity));
-	sliders.push(createVerticalPressSlider("Speed", spread * n++, 0, .2, 2.2, .2, SIMSPEED, setNewSpeed));
+	sliders.push(createVerticalPressSlider("Speed", spread * n++, 0, .1, 1.5, .1, SIMSPEED, setNewSpeed));
 	sliders.push(createVerticalPressSlider("Px Size", spread * n++, 0, 2, 19, 1, PIXELSIZE, setNewPixelSize));
 	sliders.push(createVerticalPressSlider("Rain Pow", spread * n++, 0, 1, 100, 1, RAINPOW, setRAINPOW));
 	let sldW = 30;
@@ -56,7 +56,7 @@ function initActionHeader(yPos)
 	brushActionButtons.push(initButton("Pick", xs * nn++, 0, w, h, clr, switchBrushAction, 'PICK', hdr, false, "i", p + "eyedropper.png", wp + "eyedropper.png", null, false, clr));
 	brushActionButtons.push(initButton("Vibrate", xs * nn++, 0, w, h, clr, switchBrushAction, 'VIBRATE', hdr, false, "v", p + "vibrate.png", wp + "vibrate.png", null, false, clr));
 	brushActionButtons.push(initButton("Grab", xs * nn++, 0, w, h, clr, switchBrushAction, 'GRAB', hdr, false, "p", p + "push.png", wp + "push.png", null, false, clr));
-	brushActionButtons.push(initButton("LIQUID", xs * nn++, 0, w, h, clr, switchBrushAction, 'LIQUEFY', hdr, false, "o", p + "scissors.png", wp + "scissors.png", null, false, clr));
+	brushActionButtons.push(initButton("LIQUID", xs * nn++, 0, w, h, clr, switchBrushAction, 'LIQUEFY', hdr, false, "o", p + "melt2.png", wp + "melt2.png", null, false, clr));
 	brushActionButtons.push(initButton("Explode", xs * nn++, 0, w, h, clr, switchBrushAction, 'EXPLODE', hdr, false, "e", p + "explosion.png", wp + "explosion.png", null, false, clr));
 	initButton("Rain", xs * nn++, 0, w, h, clr, switchRain, null, hdr, false, 'Enter', p + "drop.png", null, false, clr);
 	initButton("Grid", xs * nn++, 0, w, h, clr, switchGridMode, null, hdr, false, "g", p + "grid.png", null, false, clr);

@@ -11,7 +11,7 @@ const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 // PARAMS
 SWIMSPEED = 2;
 SHOWHUD = false;
-PIXELSIZE = 4;
+PIXELSIZE = 3;
 BRUSHSIZE = 8;
 SHOWBRUSH = !isMobile;
 BRUSHCOLOR = null;
@@ -19,7 +19,7 @@ MAXPARTICLES = 200000;
 MAXBRUSHSIZE = 40;
 XDRAG = .1;
 GRAVITY = .5;
-SIMSPEED = .5;
+SIMSPEED = .7;
 TYPEINDEX = 0;
 MAXREWIND = 30;
 RAINPOW = 50;
@@ -92,43 +92,45 @@ const physKeys = Object.keys(PHYSTYPES);
 const UPDATE_TYPES = Object.freeze({ STATIC: 'STATIC', DYNAMIC: 'DYNAMIC', ALIVE: 'ALIVE', GEL: 'GEL'});
 
 let PARTICLE_PROPERTIES = {
-['GRASS']:	{ color: 'rgba(86, 223, 36, 1)',	lt: Infinity,	brn: 940,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 15,	spread: 0,	expl: 0, kn: 1, rclr: 1, fin: 0, fout: 0},
-['SAND']:	{ color: 'rgba(255, 221, 0, 1)',	lt: Infinity,	brn: 10,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 50,	spread: 0,	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['GLASS']:	{ color: 'rgba(208, 226, 239, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 90,	spread: 0,	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['ROCK']:	{ color: 'rgba(76, 78, 1, 1)',		lt: Infinity,	brn: 1,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 95,	spread: 0,	expl: 0, kn: 1, rclr: 1, fin: 0, fout: 0},
-['DIAMOND']:{ color: 'rgba(102, 203, 221, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 1000,	spread: 0,	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['TNT']: 	{ color: 'rgba(74, 104, 115, 1)', 	lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'DYNAMIC', dns: 50, 	spread: 0, 	expl: 5, kn: 0, rclr: 1, fin: 0, fout: 0},
-['DYNAMITE']:{color: 'rgba(115, 99, 74, 1)',	lt: 5,			brn: 999,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 50,	spread: 0,	expl: 5, kn: 0, rclr: 1, fin: 0, fout: 0},
-['COAL']:	{ color: 'rgba(68, 68, 68, 1)',	lt: 10,			brn: 1,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 45,	spread: 2,	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['RAINBOW']:{ color: 'rgba(255, 0, 234, 1)',	lt: Infinity,	brn: 100,	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 10,	spread: 0,	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['MAGMA']:	{ color: 'rgba(198, 64, 2, 1)',	lt: 12,			brn: 0,		brnpwr: 1000,	douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 100,	spread: 0,	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['WATER']:	{ color: 'rgba(0, 191, 255, 1)', 	lt: Infinity, 	brn: 0,		brnpwr: 0, 		douse: 1, freeze: 0, cor: 0, physT: 'LIQUID', updT: 'DYNAMIC',  dns: 2, 	spread: 20,	expl: 0, kn: 1, rclr: 0, fin: 0, fout: 0},
-['OIL']:	{ color: 'rgba(50, 96, 84, 1)',	lt: Infinity,	brn: 1000,	brnpwr: 0,		douse: 1, freeze: 0, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 1,	spread: 20,	expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0},
-['ACID']:	{ color: 'rgba(131, 35, 163, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, freeze: 0, cor: 1000, physT:'LIQUID',updT: 'DYNAMIC', dns: 1.8,	spread: 6,	expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0},
-['LAVA']:	{ color: 'rgba(255, 0, 0, 1)',		lt: Infinity,	brn: 0,		brnpwr: 1000,	douse: 0, freeze: 0, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 2.1,	spread: 5,	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['CHEMX']:	{ color: 'rgba(16, 96, 28, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, freeze: 0, cor: 1500, physT:'LIQUID',updT: 'DYNAMIC', dns: 1.9,	spread: 6,	expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0},
-['BUBBLE']:	{ color: 'rgba(255, 255, 255, 1)',	lt: 1,			brn: 0,		brnpwr: 0,		douse: 1, freeze: 0, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 1,	spread: 20,	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['HYDROGEL']:{ color: 'rgba(97, 160, 181, 1)',	lt: Infinity, 	brn: 0,		brnpwr: 0, 		douse: 1, freeze: 0, cor: 0, physT: 'LIQUID', 	updT: 'DYNAMIC', dns: 2, 	spread: 1,	expl: 0, kn: 1, rclr: 0, fin: 0, fout: 0},
-['FIRE']:	{ color: 'rgba(214, 113, 40, 1)',	lt: .3,			brn: 0,		brnpwr: 1000,	douse: 0, freeze: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 1, rclr: 1, fin: .05, fout: .4},
-['SMOKE']:	{ color: 'rgba(171, 171, 171, 1)',	lt: 1.2,		brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 0, rclr: 0, fin: 2, fout: 2},
-['BOLT']:	{ color: 'rgba(212, 255, 0, 1)',	lt: .1,			brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 100,	spread: 0,	expl: 0, kn: 0, rclr: 1, fin: .2, fout: .1},
-['CLOUD']:	{ color: 'rgba(255, 255, 255, 1)',	lt: 20,			brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 2,	expl: 0, kn: 0, rclr: 0, fin: 20, fout: 20},
-['PYROGEL']:{ color: 'rgba(39, 218, 200, 1)',	lt: .4,			brn: 0,		brnpwr: 0,		douse: 0, freeze: 1, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 10,	spread: 2,	expl: 0, kn: 0, rclr: 0, fin: .4, fout: .5},
-['STEAM']:	{ color: 'rgba(70, 65, 74, 1)',	lt: 4,			brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 0, rclr: 0, fin: 0, fout: 7},
-['PLANT']:	{ color: 'rgba(45, 119, 83, 1)', 	lt: Infinity, 	brn: 975, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'STATIC', 	updT: 'ALIVE', 	 dns: 4, 	spread: 0, 	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['SHROOM']: { color: 'rgba(218, 41, 31, 1)', 	lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 4, 	spread: 0, 	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['SHROOMX']:{ color: 'rgba(209, 31, 218, 1)',  lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 2000, physT: 'SOLID',updT: 'ALIVE', 	 dns: 4, 	spread: 0, 	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['TREE']: 	{ color: 'rgba(61, 41, 37, 1)', 	lt: Infinity, 	brn: 900, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 4, 	spread: 0, 	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['LEAF']: 	{ color: 'rgba(28, 212, 56, 1)', 	lt: Infinity, 	brn: 990, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE',  dns: 4, 	spread: 0, 	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['ANT']: 	{ color: 'rgba(185, 115, 115, 1)', lt: Infinity,	brn: 970, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 25, 	spread: 0, 	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['ANTEGG']: { color: 'rgba(226, 224, 206, 1)', lt: 5, 			brn: 970, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 25, 	spread: 0, 	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['HONEY']:	{ color: 'rgba(199, 160, 33, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'FOOD',  	 dns: 2,	spread: 0,	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['FISH']:	{ color: 'rgba(27, 80, 133, 1)',	lt: Infinity,	brn: 970,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'ALIVE', 	 dns: 25,	spread: 0,	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['ICE']:	{ color: 'rgba(126, 166, 205, 1)',	lt: Infinity,	brn: 400,	brnpwr: 0,		douse: 0, freeze: 1, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 10,	spread: 2,	expl: 0, kn: 0, rclr: 0, fin: .4, fout: .2},
-['TORCH']:	{ color: 'rgba(214, 113, 40, 1)',		lt: Infinity,	brn: 0,		brnpwr: 1000,	douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'STATIC',  dns: 30,	spread: 0,	expl: 0, kn: 0, rclr: 1, fin: 0, fout: 0},
-['WOOD']: 	{ color: 'rgba(61, 41, 37, 1)',	lt: Infinity, 	brn: 950, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'STATIC',  dns: 40, 	spread: 0,  expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0},
-['METAL']: 	{ color: 'rgba(72, 79, 94, 1)',	lt: Infinity,	brn: 0, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'STATIC',  dns: 800, 	spread: 0, 	expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0},
+['GRASS']:	{ color: 'rgb(86, 223, 36)',	lt: Infinity,	brn: 970,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 15,	spread: 0,	expl: 0, kn: 1, rclr: 5, fin: 0, fout: 0},
+['SAND']:	{ color: 'rgb(255, 221, 0)',	lt: Infinity,	brn: 10,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 50,	spread: 0,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
+['GLASS']:	{ color: 'rgb(208, 226, 239)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 90,	spread: 0,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
+['ROCK']:	{ color: 'rgba(45, 46, 37, 1)',		lt: Infinity,	brn: 1,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 95,	spread: 0,	expl: 0, kn: 1, rclr: 5, fin: 0, fout: 0},
+['DIAMOND']:{ color: 'rgb(102, 203, 221)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 1000,	spread: 0,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
+['TNT']: 	{ color: 'rgb(74,104,115)', 	lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'DYNAMIC', dns: 50, 	spread: 0, 	expl: 5, kn: 0, rclr: 5, fin: 0, fout: 0},
+['DYNAMITE']:{color: 'rgb(115, 99, 74)',	lt: 5,			brn: 999,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 50,	spread: 0,	expl: 5, kn: 0, rclr: 5, fin: 0, fout: 0},
+['COAL']:	{ color: 'rgb(68, 68, 68)',	lt: 10,			brn: 1,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 45,	spread: 2,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
+['RAINBOW']:{ color: 'rgb(255, 0, 234)',	lt: Infinity,	brn: 100,	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 10,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['MAGMA']:	{ color: 'rgb(198, 64, 2)',	lt: 12,			brn: 0,		brnpwr: 1000,	douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 100,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['WATER']:	{ color: 'rgb(0,91, 255)', 	lt: Infinity, 	brn: 0,		brnpwr: 0, 		douse: 1, freeze: 0, cor: 0, physT: 'LIQUID', updT: 'DYNAMIC',  dns: 2, 	spread: 20,	expl: 0, kn: 1, rclr: 0, fin: 0, fout: 0},
+['OIL']:	{ color: 'rgb(50, 96, 84)',	lt: Infinity,	brn: 1000,	brnpwr: 0,		douse: 1, freeze: 0, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 1,	spread: 20,	expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0},
+['ACID']:	{ color: 'rgba(84, 26, 96, 1)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, freeze: 0, cor: 1000, physT:'LIQUID',updT: 'DYNAMIC', dns: 1.8,	spread: 6,	expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0},
+['LAVA']:	{ color: 'rgb(255, 0, 0)',		lt: Infinity,	brn: 0,		brnpwr: 1000,	douse: 0, freeze: 0, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 2.1,	spread: 5,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['CHEMX']:	{ color: 'rgb(16, 96, 28)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 1, freeze: 0, cor: 1500, physT:'LIQUID',updT: 'DYNAMIC', dns: 1.9,	spread: 6,	expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0},
+['BUBBLE']:	{ color: 'rgb(255, 255, 255)',	lt: 1,			brn: 0,		brnpwr: 0,		douse: 1, freeze: 0, cor: 0, physT: 'LIQUID',	updT: 'DYNAMIC', dns: 1,	spread: 20,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['HYDROGEL']:{ color:'rgb(97,60,81)',	lt: Infinity, 	brn: 0,		brnpwr: 0, 		douse: 1, freeze: 0, cor: 0, physT: 'LIQUID', 	updT: 'DYNAMIC', dns: 2, 	spread: 1,	expl: 0, kn: 1, rclr: 0, fin: 0, fout: 0},
+['FIRE']:	{ color: 'rgb(214, 113, 40)',	lt: .3,			brn: 0,		brnpwr: 1000,	douse: 0, freeze: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 1, rclr: 10, fin: .05, fout: .4},
+['SMOKE']:	{ color: 'rgb(171, 171, 171)',	lt: 1.2,		brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 0, rclr: 0, fin: 2, fout: 2},
+['BOLT']:	{ color: 'rgb(212, 255, 0)',	lt: .1,			brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 100,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: .2, fout: .1},
+['CLOUD']:	{ color: 'rgb(255, 255, 255)',	lt: 20,			brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 2,	expl: 0, kn: 0, rclr: 0, fin: 20, fout: 20},
+['PYROGEL']:{ color: 'rgb(39, 218, 200)',	lt: .4,			brn: 0,		brnpwr: 0,		douse: 0, freeze: 1, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 10,	spread: 2,	expl: 0, kn: 0, rclr: 0, fin: .4, fout: .5},
+['STEAM']:	{ color: 'rgba(210, 218, 227, 1)',	lt: 4,			brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'GAS',		updT: 'DYNAMIC', dns: 1,	spread: 0,	expl: 0, kn: 0, rclr: 0, fin: 0, fout: .2},
+['PLANT']:	{ color: 'rgb(45,19, 83)', 	lt: Infinity, 	brn: 975, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'STATIC', 	updT: 'ALIVE', 	 dns: 4, 	spread: 0, 	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['SHROOM']: { color: 'rgb(218, 41, 31)', 	lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 4, 	spread: 0, 	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['SHROOMX']:{ color: 'rgb(209, 31, 218)',  lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 2000, physT: 'SOLID',updT: 'ALIVE', 	 dns: 4, 	spread: 0, 	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['TREE']: 	{ color: 'rgb(61, 41, 37)', 	lt: Infinity, 	brn: 900, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 4, 	spread: 0, 	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['LEAF']: 	{ color: 'rgb(28, 212, 56)', 	lt: Infinity, 	brn: 990, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE',  dns: 4, 	spread: 0, 	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['BEE']:	{ color: 'rgb(87, 76, 56)',	lt: Infinity,	brn: 970,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'ALIVE', 	 dns: 2,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['ANT']: 	{ color: 'rgb(185,15,15)', lt: Infinity,	brn: 970, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 25, 	spread: 0, 	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['ANTEGG']: { color: 'rgb(226, 224, 206)', lt: 5, 			brn: 970, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 25, 	spread: 0, 	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['FISH']:	{ color: 'rgb(27, 80,33)',	lt: Infinity,	brn: 970,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'ALIVE', 	 dns: 25,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['ICE']:	{ color: 'rgb(126,66, 205)',	lt: Infinity,	brn: 400,	brnpwr: 0,		douse: 0, freeze: 1, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 10,	spread: 2,	expl: 0, kn: 0, rclr: 0, fin: .4, fout: .2},
+['TORCH']:	{ color: 'rgb(214,13, 40)',		lt: Infinity,	brn: 0,		brnpwr: 1000,	douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'STATIC',  dns: 30,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['WOOD']: 	{ color: 'rgb(61, 41, 37)',	lt: Infinity, 	brn: 950, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'STATIC',  dns: 40, 	spread: 0,  expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0},
+['METAL']: 	{ color: 'rgb(72, 79, 94)',	lt: Infinity,	brn: 0, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'STATIC',  dns: 800, 	spread: 0, 	expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0},
+['HONEY']:	{ color: 'rgb(199,60, 33)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'FOOD',  	 dns: 2,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
 }; let particleKeys = Object.keys(PARTICLE_PROPERTIES);
+
 
 const CREATIONMODE = Object.freeze({ HEAT: 'HEAT', COLD: 'COLD', PRESSURE: 'PRESSURE', TIME: 'TIME', CHARGE: 'CHARGE'})
 function initCreationRules() {

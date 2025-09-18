@@ -4,11 +4,10 @@ function splitList(n){
 	return String(n).split(',').map(s=>s.trim()).filter(Boolean);
 }
 function splitModes(m){ return splitList(m).map(s=>s.toUpperCase()); }
-function getAge(self){ return (self && (self.timeAlive ?? 0)) | 0; }
 
 function compileModeCheck(mode, v){
-	if (mode==='TIME'){ const min=v??0; return (x,y,self)=> !min || getAge(self)>=min; }
-	if (mode==='HEAT'){ const min=v||1; return (x,y,self)=> heatLevel(x,y,self)>=min; }
+	if (mode==='TIME'){ const min=v??0; return (x,y,self)=> !min || self.timeAlive>=min; }
+	if (mode==='HEAT'){ const min=v||1; return (x,y,self)=> heatLevel(self)>=min; }
 	if (mode==='PRESSURE'){ const min=v||8; return (x,y,self)=> pressureAt(x,y)>=min; }
 	return ()=>true;
 }
@@ -47,30 +46,22 @@ function buildCreationRules(props){
 	return out;
 }
 
-function hasAllNeighborsSet(x,y,set,self){
+function hasAllNeighborsSet(set,self){
 	if (!set || !set.size) return true;
 	const need = new Set(set);
-	for (let oy=-1; oy<=1; oy++){
-		for (let ox=-1; ox<=1; ox++){
-			if (!ox && !oy) continue;
-			const q = pxAtI(ROWOFF[y+oy] + x+ox,self);
-			if (!q) continue;
-			if (need.has(q.type)) need.delete(q.type);
-			if (!need.size) return true;
-		}
+	for (let i = 0; i < self.neigbors; i++){
+		const q = self.neigbors[i];
+		if (need.has(q.type)) need.delete(q.type);
+		if (!need.size) return true;
 	}
 	return need.size===0;
 }
 
-function heatLevel(x,y,self){
-	let n=0;
-	for (let oy=-1; oy<=1; oy++){
-		for (let ox=-1; ox<=1; ox++){
-			if (!ox && !oy) continue;
-			const q=pxAtI(x+ox,ROWOFF[y+oy] + x+ox,self);
-			if (!q) continue;
-			if (q.type==='FIRE'||q.type==='LAVA'||q.type==='MAGMA'||q.type==='TORCH') n++;
-		}
+function heatLevel(self){
+	let n = 0;
+	for (let i = 0; i < self.neigbors.length; i++){
+		const q = self.neigbors[i];
+		if (q.brnpwr) n++;
 	}
 	return n;
 }
@@ -79,7 +70,7 @@ function pressureAt(x,y){
 	let n=0;
 	for (let yy=y-1; yy>=0; yy--){
 		const q=pxAtI(ROWOFF[yy] + x);
-		if (q && (q.type==='ROCK'||q.physT==='SOLID')) n++; else break;
+		if (q && (q.physT==='SOLID')) n++; else break;
 	}
 	return n;
 }
@@ -97,7 +88,7 @@ function rebuildCreationRules(){ CREATE_RULES = buildCreationRules(PARTICLE_PROP
 function runCreationAt(x,y,self){
 	for (const rules of Object.values(CREATE_RULES)){
 		for (const rule of rules){
-			if (!hasAllNeighborsSet(x,y,rule.needSet,self)) continue;
+			if (!hasAllNeighborsSet(rule.needSet,self)) continue;
 			let ok = rule.op==='OR'
 				? rule.checks.some(fn=>fn(x,y,self))
 				: rule.checks.every(fn=>fn(x,y,self));

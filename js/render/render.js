@@ -90,7 +90,7 @@ function showParticle(prt, x, y, alpha, size) {
 	color = prt.color;
 	if (prt.expl && !prt.frozen && prt.lt != Infinity) {
 		let timeLeft = prt.lt - prt.timeAlive;
-		color = addColor(PARTICLE_PROPERTIES[prt.type].color, 'rgba(255, 0, 0, 1)', 1 - (timeLeft / prt.lt));
+		color = addColor(PARTICLE_PROPERTIES[prt.type].color, 'rgb(255, 0, 0)', 1 - (timeLeft / prt.lt));
 	}
 	if (prt.isShroom && prt.digType) color = PARTICLE_PROPERTIES[prt.digType].color;
 	if (prt.isShroom && !prt.isLoop && prt.isHead) {
@@ -119,10 +119,37 @@ function showParticle(prt, x, y, alpha, size) {
 	ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, size, size);
 }
 
+
+
+let skyLayer = null, skyW = 0, skyH = 0;
+
+function makeSkyLayer(w, h) {
+  const off = document.createElement('canvas');
+  off.width = w; off.height = h;
+  const g = off.getContext('2d');
+  const grad = g.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.00, '#c4a4ceff');
+  grad.addColorStop(0.35, '#875b98ff');
+  grad.addColorStop(0.65, '#4c2e5eff');
+  grad.addColorStop(1.00, '#000000ff');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, w, h);
+  return off;
+}
+
+function drawSky(ctx, w, h) {
+  if (!skyLayer || w !== skyW || h !== skyH) {
+    skyLayer = makeSkyLayer(w, h);
+    skyW = w; skyH = h;
+  }
+  ctx.drawImage(skyLayer, 0, 0);
+}
+
 function render() {
 	let showSize = PIXELSIZE;
 	let isGridding = (gridMode || isWheeling);
 	if (isGridding) showSize--;
+	// ctx.fillRect(0);
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	if (isGridding) { ctx.drawImage(gridLayer, 0, 0); }
 	for (let i = 0; i < activeParticles.length; i++) showParticle(activeParticles[i], activeParticles[i].x, activeParticles[i].y, 1, showSize);

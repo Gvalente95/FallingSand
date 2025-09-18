@@ -36,10 +36,8 @@ p.hasTouchedSurfaceCheck = function()
 
 p.setColor = function(color = this.properties.color) {
 	this.color = color;
-    if (color.startsWith("rgb")) {
-        const rgb = color.match(/\d+/g);
-        this.rgb = `${rgb[0]},${rgb[1]},${rgb[2]}`;
-    } else this.rgb = hexToRgb(color);
+	const rgb = color.match(/\d+/g);
+	this.rgb = `${rgb[0]},${rgb[1]},${rgb[2]}`;
 }
 
 p.replace = function(newType, transformType = null){

@@ -279,7 +279,7 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 			if (!isInInputField && (e.code === keyToggle || e.key == keyToggle || e.key.toLowerCase() == keyToggle)) {activate();}
 		});
 		if (!isMobile) {
-			div.badge = initLabelDiv(x + w - 10, canvas.height - 5, formatKeyLabel(keyToggle), 'rgba(203, 185, 211, 1)');
+			div.badge = initLabelDiv(x + w - 10, canvas.height + 5, formatKeyLabel(keyToggle), 'rgba(203, 185, 211, 1)');
 			div.badge.style.fontSize = '12px';
 			div.style.paddingTop = '10px';
 			div.style.zIndex = "0";

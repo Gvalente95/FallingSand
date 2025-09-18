@@ -36,7 +36,7 @@ p.updateSolidVelocity = function (g) {
 		return;
 	}
 	if (!this.hasTouchedBorder) {
-		this.hasTouchedBorder = (this.y >= GH - 1 || (g && g.hasTouchedBorder));
+		this.hasTouchedBorder = (this.y >= GH - 1 || (g && (g.physT === 'STATIC' || g.hasTouchedBorder)));
 		if (this.hasTouchedBorder) {this.velX = 0;}	
 	}
 	else if (this.hasTouchedBorder > 0 && !g && this.y < GH - 1) {
@@ -52,8 +52,9 @@ p.updateSolidVelocity = function (g) {
 
 p.updateVelocity = function () {
 	const pt = this.physT;
-	let Y = ((pt === 'GAS' || GRAVITY < 0) ? -1 : 1);
-	const g = pxAtI(ROWOFF[this.y + Y] + this.x, this);
+	// let Y = ((pt === 'GAS' || GRAVITY < 0) ? -1 : 1);
+	// const g = pxAtI(ROWOFF[this.y + Y] + this.x, this);
+	const g = ((GRAVITY < 0 || pt === 'GAS') ? this.u : this.d);
 	this.ground = g;
 	if (pt === 'LIQUID') return this.updateLiquidVelocity(g);
 	if (pt === 'GAS') return this.updateGasVelocity();

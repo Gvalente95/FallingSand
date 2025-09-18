@@ -74,7 +74,11 @@ function navigateUi(inpoutxScroll, inputyScroll) {
 		let curIndex = uiLayerIndex == 0 ? uiPageIndex : getCurButtonTypeIndex();
 		let newIndex = uiLayerIndex == 0 ? ((curIndex + inpoutxScroll) % max) : getScrollTypeIndex(curIndex, inpoutxScroll);
 		if (newIndex < 0) newIndex = max - 1;
-		if (uiLayerIndex == 0) switchUiPage(newIndex);
+		if (uiLayerIndex == 0) {
+			switchUiPage(newIndex);
+			// setNewType(uiPagesButtons[uiPageIndex].buttons[0].value);
+			// uiLayerIndex = 0;
+		}
 		else
 			setNewType(uiPagesButtons[uiPageIndex].buttons[newIndex].value);
 	}

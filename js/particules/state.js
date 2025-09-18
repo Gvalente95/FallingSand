@@ -23,14 +23,13 @@ p.updateBurn = function () {
 
 p.stopFire = function ()
 {
-	if (this.wet) this.color = addColor(PARTICLE_PROPERTIES[this.type].color, "rgba(6, 88, 241, 1)", .3);
-	else this.color = PARTICLE_PROPERTIES[this.type].color;
-	this.rgb = hexToRgb(this.color);
+	this.setColor();
 	this.burning = 0;
 }
 
 p.setToFire = function(duration = 1000 - this.brn)
 {
+	this.dead = true;
 	if (this.frozen) { this.unFreeze(50); return; }
 	if (this.type === 'ROCK') {return (this.setType('MAGMA'));}
 	if (this.type === 'ICE') {return (this.setType('WATER'));}
@@ -41,7 +40,7 @@ p.setToFire = function(duration = 1000 - this.brn)
 	else if (this.type === 'MAGMA') this.setType('LAVA');
 	else {
 		this.burning = duration;
-		this.setColor(addColor(this.baseColor, 'rgba(255, 136, 0, 1)', .5));
+		this.setColor(addColor(this.baseColor, 'rgb(255, 136, 0)', .5));
 	}
 }
 
@@ -114,7 +113,7 @@ p.setFrozen = function (freezeAmount) {
 	if (this.frozen && freezeAmount < this.frozen) return;
 	this.frostStart = now;
 	this.frozen = freezeAmount;
-	let freezeColor = addColor(this.baseColor, 'rgba(95, 211, 211, 1)', this.frozen / FROSTMAX);
+	let freezeColor = addColor(this.baseColor, 'rgb(95, 211, 211)', this.frozen / FROSTMAX);
 	this.setColor(freezeColor);
 	if (this.type === 'SHROOM' && !this.parent && this.isGrower) this.headColor = freezeColor;
 }
