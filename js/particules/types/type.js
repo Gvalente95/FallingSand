@@ -59,7 +59,9 @@ p.updateType = function () {
 	else if (this.type === 'LEAF') return this.updateLeaf();
 	else if (this.isShroom && this.hasTouchedBorder && this.isGrower && !this.dead) return this.updateShroom(this.x, this.y);
 	else if (this.type === 'TREE' && this.parent && !this.dead) return this.updateTree(this.x, this.y);
-	else if (this.type === 'TORCH' && dice(10)) new Particle(this.x, this.y - 1, 'FIRE');
+	else if (this.type === 'TORCH' && dice(10)) {
+		new Particle(this.x, this.y - 1, 'FIRE');
+	}
 	if (this.updT === 'STATIC') return;
 	if (this.type !== 'ALIEN') this.updateVelocity();
 	if (this.velX || this.velY) this.updateMovement();
@@ -70,7 +72,11 @@ p.updateType = function () {
 
 p.setType = function(newType, transformType = null)
 {
-	if (newType === 'TORCH' && !dice(8)) newType = 'FIRE';
+	if (newType === 'TORCH' && dice(2)) {
+		newType = 'FIRE';
+		transformType = 'FIRE';
+		this.velY = -1;
+	}
 
 	this.type = newType;
 	this.isWater = this.type == 'WATER' || this.type == 'HYDROGEL';

@@ -167,7 +167,7 @@ function explodeRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity =
 				if (p.physT === 'STATIC') p.physT = 'DYNAMIC';
 				p.velX = ddx * f_range(xPushLimits[0], xPushLimits[1]) * dt;
 				p.velY = ddy * f_range(yPushLimits[0], yPushLimits[1]) * dt;
-				if (transformType === 'FIRE' && shouldBurnType('FIRE', p.type)) p.setToFire(10);
+				if (transformType === 'FIRE' && shouldBurnType('FIRE', p.type)) p.setToFire('FIRE', 10);
 				else if (transformType && dice(100)) p.setType(transformType);
             }
         }

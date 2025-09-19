@@ -16,12 +16,11 @@ class Particle{
 					px.setType('FIRE', 'STEAM');
 					px.velX = 0;
 				}
-				else if (type != px.type && shouldBurnParticle(type, px)) px.setToFire();
+				else if (type != px.type && shouldBurnParticle(type, px)) px.setToFire(type);
 				return (this.toRemove(), 0);
 			}
 			else px.toRemove();
 		}
-		if (type === 'FIRE') velY = -1.5;
 		this.ground = null;
 		this.wetType = null;
 		this.parent = null;
@@ -79,6 +78,16 @@ class Particle{
 		this.timeAlive = (nowSec - this.startTime);
 		if (this.timeAlive > this.lt && !this.frozen)
 		{
+			if (this.type === 'HESTIA' && this.id != -1) {
+				let spawnX = this.startX, spawnY = this.startY;
+				let i = pxAtI(ROWOFF[spawnY] + spawnX);
+				if (i) {
+					if (i.type != this.type) i.toRemove();
+					return;
+				}
+				new Particle(spawnX, spawnY, this.type);
+				if (dice(10)) { this.replace('SMOKE'); return; }
+			}
 			if (this.transformType && (this.type !== 'STEAM' || this.y < 50)) return (this.replace(this.transformType));
 			if (this.type === 'MAGMA') return;
 			if (this.expl) {

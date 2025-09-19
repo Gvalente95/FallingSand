@@ -8,7 +8,9 @@ p.updateBurn = function () {
 		else { this.setType('COAL'); this.aliveTime = 0; }
 		this.burning = 0;
 	}
-	else if (dice(3) && !pxAtI(ROWOFF[this.y - 1] + this.x)) new Particle(this.x, this.y - 1, 'FIRE');
+	else if (dice(3) && !pxAtI(ROWOFF[this.y - 1] + this.x)) {
+		let newp = new Particle(this.x, this.y - 1, 'FIRE');
+	}
 	let depth = 2;
 	for (let x = -depth; x < depth; x++)
 		for (let y = -depth; y < depth; y++)
@@ -16,7 +18,7 @@ p.updateBurn = function () {
 			if (x === 0 && y === 0) continue;
 			if (isOutOfBorder(this.x + x, this.y + y)) continue;
 			let px = pxAtI(ROWOFF[this.y + y] + this.x + x, this);
-			if (px && !px.burning && shouldBurnParticle('FIRE', px)) px.setToFire();
+			if (px && !px.burning && shouldBurnParticle('FIRE', px)) px.setToFire(this.burnType);
 			if (!px && dice(30)) new Particle(this.x + x, this.y + y, 'SMOKE');
 		}
 }
@@ -27,7 +29,7 @@ p.stopFire = function ()
 	this.burning = 0;
 }
 
-p.setToFire = function(duration = 1000 - this.brn)
+p.setToFire = function(burnType = 'FIRE', duration = 1000 - this.brn)
 {
 	this.dead = true;
 	if (this.frozen) { this.unFreeze(50); return; }
@@ -40,7 +42,8 @@ p.setToFire = function(duration = 1000 - this.brn)
 	else if (this.type === 'MAGMA') this.setType('LAVA');
 	else {
 		this.burning = duration;
-		this.setColor(addColor(this.baseColor, 'rgb(255, 136, 0)', .5));
+		this.burnType = burnType;
+		this.setColor(addColor(this.baseColor, PARTICLE_PROPERTIES[burnType].color, .5));
 	}
 }
 

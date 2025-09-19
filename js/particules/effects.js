@@ -14,7 +14,7 @@ p.FireEffect = function (curX, curY)
 				}
 				continue;
 			}
-			if (shouldBurn(this, px)) px.setToFire();
+			if (shouldBurn(this, px)) px.setToFire(this.type);
 		}
 		this.updatePosition(ROWOFF[curY] + curX);
 		return;
