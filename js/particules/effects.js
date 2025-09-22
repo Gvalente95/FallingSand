@@ -161,7 +161,7 @@ p.applyCorrosion = function () {
 			if (px.physT === 'LIQUID') continue;
 			if (px.cor >= this.cor) continue;
 			if (this.cor <= px.dns) continue;
-			if (this.type === 'SHROOMX') { px.replace?.('ACID'); continue; }
+			if (this.type === 'MUSHX') { px.replace?.('ACID'); continue; }
 			if (!dice(1001 - this.cor + px.dns)) continue;
 			const res = px.replace?.('BUBBLE', this.type);
 			const n = res || px;
@@ -185,7 +185,7 @@ p.applyCorrosion = function () {
 			if (px.physT === 'LIQUID') continue;
 			if (px.cor >= this.cor) continue;
 			if (this.cor <= px.dns) continue;
-			if (this.type === 'SHROOMX') return (px.replace('ACID'));
+			if (this.type === 'MUSHX') return (px.replace('ACID'));
 			if (!dice(1001 - this.cor + (px.dns))) continue;
 			let thisClr = this.baseColor;
 			let newType = this.type;

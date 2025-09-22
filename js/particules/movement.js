@@ -33,7 +33,7 @@ p.updateMovement = function () {
 		if (hit.physT === 'STEAM' || hit.physT === 'CLOUD') continue;
 		if (this.physT === 'FISH' && hit.physT === 'LIQUID') continue;
 		if (this.type === 'ANT' && hit.physT === 'LIQUID' && this.inWater > 100) continue;
-		if (this.douse && hit.type !== 'FISH') { if (hit.brnpwr) this.setType('STEAM'); else hit.setWet(100, this.type === 'BUBBLE' ? 'WATER' : this.type); }
+		if (this.douse && hit.type !== 'FISH' && hit.type != 'BEE') { if (hit.brnpwr) this.setType('STEAM'); else hit.setWet(100, this.type === 'BUBBLE' ? 'WATER' : this.type); }
 		if (shouldBurn(this, hit)) { hit.setToFire(this.type); }
 		if (shouldBurn(hit, this)) { this.setToFire(this.type); }
 		else if (this.physT === 'GAS' && hit.physT === 'LIQUID' && hit.y < this.y) {
@@ -72,88 +72,4 @@ p.updateMovement = function () {
 
 	this.newX = Math.round(curX);
 	this.newY = Math.round(curY);
-};
-
-
-
-p.updateStepMovement = function() {
-  if (this.type === 'ANT' && this.hasTouchedBorder && !this.inWater) return;
-
-  if (this.type === 'ALIEN' || (this.type === 'FISH' && this.inWater)) {
-    // still cap to 1 cell per frame if you want uniformity
-    const sx = Math.max(-1, Math.min(1, Math.trunc(this.velX)));
-    const sy = Math.max(-1, Math.min(1, Math.trunc(this.velY)));
-    this.newX = this.x + sx;
-    this.newY = this.y + sy;
-    return;
-  }
-
-  this.newX = this.x;
-  this.newY = this.y;
-
-  const stepX = Math.max(-1, Math.min(1, Math.trunc(this.velX)));
-  const stepY = Math.max(-1, Math.min(1, Math.trunc(this.velY)));
-
-  const nextX = this.x + stepX;
-  const nextY = this.y + stepY;
-
-  if (nextX < 0 || nextX >= GW || nextY < 0 || nextY >= GH) return;
-
-  const ii = ROWOFF[nextY] + nextX;            // FIX: y*GW + x
-  const hit = grid1[ii];
-
-  if (!hit || hit === this || !hit.active) {
-    this.newX = nextX; this.newY = nextY;
-    return;
-  }
-
-  if (hit.physT === 'STEAM' || hit.physT === 'CLOUD') {
-    this.newX = nextX; this.newY = nextY; return;
-  } else if (this.physT === 'FISH' && hit.physT === 'LIQUID') {
-    this.newX = nextX; this.newY = nextY; return;
-  } else if (this.type === 'ANT' && hit.physT === 'LIQUID' && this.inWater > 100) {
-    this.newX = nextX; this.newY = nextY; return;
-  }
-
-  if (this.douse && hit.type !== 'FISH') {
-    if (hit.brnpwr) this.setType('STEAM');
-    else hit.setWet(100, this.type === 'BUBBLE' ? 'WATER' : this.type);
-  }
-
-  if (shouldBurn(this, hit)) hit.setToFire(this.type);
-  if (shouldBurn(hit, this)) this.setToFire(this.type);
-  else if (this.physT === 'GAS' && hit.physT === 'LIQUID' && hit.y < this.y) {
-    this.swap(hit); this.newX = this.x; this.newY = this.y; return;
-  }
-  else if (this.physT === 'LIQUID' && hit.physT === 'LIQUID') {
-    const a = this.type, b = hit.type;
-    if ((a === 'LAVA' && b === 'WATER') || (a === 'WATER' && b === 'LAVA')) {
-      if (a === 'LAVA') (dice(5) ? this.setType('COAL') : hit.setType('STEAM'));
-      else this.setType('STEAM');
-      return;
-    }
-    if (hit.dns < this.dns) { this.swap(hit); this.newX = this.x; this.newY = this.y; return; }
-  }
-  else if (this.physT === 'SOLID' && hit.physT === 'LIQUID') {
-    this.timeInWater++; this.inWater = true;
-    if (this.type != 'ICE' || this.timeInWater < 10) {
-      this.swap(hit); this.newX = this.x; this.newY = this.y; return;
-    } else if (this.type === 'ICE') { this.velY = 0; this.velX = 0; }
-  }
-
-  const side = rdir();
-
-  const lx = nextX + side;
-  if (lx >= 0 && lx < GW) {
-    const s = grid1[ROWOFF[nextY] + lx];       // FIX: index
-    if (!s) { this.newX = nextX - 1; this.newY = nextY; return; }
-  }
-
-  const rx = nextX - side;
-  if (rx >= 0 && rx < GW) {
-    const s2 = grid1[ROWOFF[nextY] + rx];      // FIX: index
-    if (!s2) { this.newX = nextX + 1; this.newY = nextY; return; }
-  }
-
-  this.newX = nextX; this.newY = nextY;
 };

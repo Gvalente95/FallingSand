@@ -6,7 +6,7 @@ const UPDATE_HANDLERS = {
 	BEE: p => p.updateBee(p.newX, p.newY),
 	TREE: p => p.updateTree(p.newX, p.newY),
 	SHROOM: p => p.updateShroom(p.newX, p.newY),
-	SHROOMX: p => p.updateShroom(p.newX, p.newY),
+	MUSHX: p => p.updateShroom(p.newX, p.newY),
 	FIRE:  p => p.FireEffect(p.newX, p.newY),
 	TORCH: p => p.FireEffect(p.newX, p.newY),
 	MAGMA: p => p.MagmaEffect(p.newX, p.newY),
@@ -80,7 +80,7 @@ p.setType = function(newType, transformType = null)
 
 	this.type = newType;
 	this.isWater = this.type == 'WATER' || this.type == 'HYDROGEL';
-	this.isShroom = this.type == 'SHROOM' || this.type == 'SHROOMX';
+	this.isShroom = this.type == 'SHROOM' || this.type == 'MUSHX';
 	this.properties = PARTICLE_PROPERTIES[newType];
 	this.cr = this.properties.cr;
 	this.lt = this.properties.lt;
@@ -115,7 +115,7 @@ p.setType = function(newType, transformType = null)
 	else if (this.isShroom) {
 		this.familyId = -1;
 		this.headColor = randomizeColor(this.properties.color, this.rclr);
-		let color = newType == 'SHROOMX' ? 'rgb(71, 45, 119)' : 'rgb(45, 119, 83)';
+		let color = newType == 'MUSHX' ? 'rgb(71, 45, 119)' : 'rgb(45, 119, 83)';
 		if (this.properties.rclr) color = randomizeColor(color);
 		this.setColor(color);
 		this.isGrowing = false;

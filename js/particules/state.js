@@ -107,7 +107,7 @@ p.updateWet = function () {
 		}
 		else if (this.type === 'SAND' && dice(100)) this.setType('GRASS');
 	}
-	this.setColor(addColor(this.baseColor, PARTICLE_PROPERTIES[this.wetType].color, clamp(this.wet / 100, .1, .5)));
+	// this.setColor(addColor(this.baseColor, PARTICLE_PROPERTIES[this.wetType].color, clamp(this.wet / 100, .1, .5)));
 }
 
 FROSTMAX = 50;

@@ -8,7 +8,7 @@ class Particle{
 		if (px)
 		{
 			if (type === px.type) { this.toRemove(); return; }
-			else if ((type === 'SHROOM' || type === 'SHROOMX') && px.physT === 'SOLID') {color = px.color;}
+			else if ((type === 'SHROOM' || type === 'MUSHX') && px.physT === 'SOLID') {color = px.color;}
 			if (this.properties.physT === 'GAS')
 			{
 				if (this.properties.freeze) { this.x = x, this.y = y; this.applyFrost(type, 50, true);}

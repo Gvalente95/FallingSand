@@ -21,7 +21,7 @@ TO DISCOVER:
 	STEAM
 	ALIEN
 	SHROOM
-	SHROOMX
+	MUSHX
 	BLOB
 	ANT
 	ANTEGG
@@ -39,7 +39,7 @@ DISCOVER NEW ELEMENTS
 
 ACID : 
 CHEMX : ACID + LAVA
-SHROOMX : CHEMX + SHROOM
+MUSHX : CHEMX + SHROOM
 
 
 
@@ -82,7 +82,7 @@ RAINBOW : BOLT à travers STEAM/CLOUD au-dessus d’eau → RAINBOW (éphémère
 MAGMA : ROCK en profondeur + HEAT fort → MAGMA. (MAGMA = “lava” souterraine.)
 OIL : ALIEN/WOOD enterrés (SAND/ROCK, PRESSURE) + TIME long → OIL.
 ACID : CHEMX + WATER → ACID.
-Alternatives: SHROOMX + WATER → ACID; OIL + CHEMX + HEAT → ACID + SMOKE.
+Alternatives: MUSHX + WATER → ACID; OIL + CHEMX + HEAT → ACID + SMOKE.
 CHEMX : BOLT frappant ROCK proche de WATER → CHEMX (cristal/goutte).
 Option catalyseur: RAINBOW voisin de WATER → CHEMX avec p≈0.1.
 BUBBLE : WATER voisin d’une réaction gaz (STEAM, SMOKE, ACID neutralisé) → BUBBLE (qui monte et éclate).
@@ -95,7 +95,7 @@ CLOUD : STEAM qui monte + COLD d’altitude → CLOUD.
 STEAM : WATER + HEAT → STEAM.
 ALIEN : GRASS + WATER + TIME → ALIEN (pousse). SAND humide près de GRASS → ALIEN.
 SHROOM : ALIEN à l’ombre (sous ROCK) + humidité (WATER/STEAM) + TIME → SHROOM.
-SHROOMX : SHROOM + CHEMX/ACID voisin + TIME → SHROOMX (muté).
+MUSHX : SHROOM + CHEMX/ACID voisin + TIME → MUSHX (muté).
 BLOB : OIL + WATER agités (cisaillement) → BLOB (émulsion/goo).
 Option: matière organique (ALIEN) + ACID → BLOB.
 ANTEGG : dans SAND sous WOOD/ALIEN, humidité légère + TIME → ANTEGG.
