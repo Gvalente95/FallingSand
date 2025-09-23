@@ -32,8 +32,95 @@ p.updateAlien = function (curX, curY) {
 	}
 }
 
+p.updateAnt2 = function (curX, curY) {
+	if (this.burning) {
+		this.updatePosition(ROWOFF[curY] + curX);
+		return;
+	}
+
+	function isDirOk(prt, dir) {
+		let newGround = null;
+		switch (dir) {
+			case 'UP':
+				if (prt.u) return (false);
+				if (prt.y <= 0) return (false);
+				newGround = prt.lu ? prt.lu : prt.ru;
+				if (!newGround && prt.y > 0) return (false);
+				return (true);
+			case 'DOWN':
+				if (prt.d) return (false);
+				if (prt.y > GH - 1) return (false);
+				newGround = prt.ld ? prt.ld : prt.rd;
+				if (!newGround && prt.y > 0) return (false);
+				return (true);
+			case 'LEFT':
+				if (prt.l) return (false);
+				if (prt.x <= 0) return (false);
+				newGround = prt.lu ? prt.lu : prt.ld;
+				if (!newGround && prt.x > 0) return (false);
+				return (true);
+			case 'RIGHT':
+				if (prt.r) return (false);
+				if (prt.x > GW - 1) return (false);
+				newGround = prt.ru ? prt.ru : prt.rd;
+				if (!newGround && prt.x < GW - 1) return (false);
+				return (true);
+			case 'LEFTUP':
+				if (prt.lu) return (false);
+				if (prt.x - 1 < 0 || prt.y - 1 < 0) return (false);
+				if ((!prt.l && prt.x < GW - 1) && (!prt.u && prt.y < GH - 1)) return (false);
+				return (true);
+			case 'RIGHTUP':
+				if (prt.ru) return (false);
+				if (prt.x + 1 > GW - 1 || prt.y - 1 < 0) return (false);
+				if ((!prt.r && prt.x > 0) && (!prt.u && prt.y < GH - 1)) return (false);
+				return true;
+			case 'LEFTDOWN':
+				if (prt.ld) return (false);
+				if (prt.x - 1 < 0 || prt.y + 1 > GH - 1) return (false);
+				if (!prt.d) return (false);
+				return true;
+			case 'RIGHTDOWN':
+				if (prt.rd) return (false);
+				if (prt.x + 1 > GW - 1 || prt.y + 1 > GH - 1) return (false);
+				if (!prt.d) return (false);
+				return true;
+			default: break;
+		}
+	}
+	if (this.dir != undefined && this.dir && isDirOk(this, this.dir)) {
+		let xDir = (this.dir === 'LEFT' ? -1 : this.dir === 'RIGHT' ? 1 : 0);
+		let yDir = (this.dir === 'UP' ? -1 : this.dir === 'DOWN' ? 1 : 0);
+		this.updatePosition(ROWOFF[this.y + yDir] + this.x + xDir);
+	}
+	else {
+		if (this.y < GH - 1 && !pxAtI(ROWOFF[this.y + 1] + this.x)) this.updatePosition(ROWOFF[this.y + 1] + this.x);
+		// if (!isOutOfBorder(curX, curY))
+		// 	this.updatePosition(ROWOFF[curY] + curX);
+		const dirs = ['LEFT', 'RIGHT', 'UP', 'DOWN'];
+		for (let i = dirs.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+		}
+		for (let i = 0; i < dirs.length; i++){
+			if (isDirOk(this, dirs[i])) {this.dir = dirs[i]; break;}
+		}
+	}
+}
+
 p.updateAnt = function (curX, curY) {
-	if (this.burning) return;
+	// this.updateAnt2(curX, curY);
+	// return;
+	if (this.type === 'FIREANT' && dice(5)) {
+		var xx = this.x + this.xDir;
+		var yy = this.y + this.yDir;
+		let flameX = (xx === 0 ? 1 : xx >= GW - 1 ? GW - 2 : xx);
+		let flameY = (yy === 0 ? 1 : yy >= GH - 1 ? GH - 2 : yy);
+		newP = new Particle(flameX, flameY, 'FIRE');
+		if (this.xDir) {newP.velX = 0; newP.velY = this.y < 50 ? 1 : -1}
+		if (this.yDir) { newP.velY = 0; newP.velX = this.x < 50 ? 1 : -1 };
+	}
+	if (this.burning) { this.updatePosition(ROWOFF[curY] + curX); return;}
 	if (this.inWater) {
 		if (this.timeInWater === 100) { this.xDir = rdir();}
 		else if (this.timeInWater > 100) {
@@ -51,21 +138,28 @@ p.updateAnt = function (curX, curY) {
 		}
 		else this.velX = 0, this.xDir = 0;
 	}
+	if (!this.d && !atBorder(curX, curY)) {
+		this.hasTouchedSurface = false;
+		this.updatePosition(ROWOFF[curY] + curX);
+		return;
+	}
 	if (!this.hasTouchedSurface) {
-		this.hasTouchedSurface = (this.y >= GH - 1) || (this.ground && this.ground.type != this.type);
+		let gr = this.d;
+		this.hasTouchedSurface = (this.y >= GH - 1) || (gr && ((gr.type === this.type && gr.hasTouchedSurface) || gr.hasTouchedBorder));
 		if (!this.hasTouchedSurface) {
 			let px = pxAtI(ROWOFF[curY] + curX, this);
-			if (px) this.swap(px);
-			else this.updatePosition(ROWOFF[curY] + curX);
+			if (px) { px = pxAtI(ROWOFF[curY] + curX + this.xDir, this); if (!px) curX++; else this.xDir *= -1; }
+			if (!px) this.updatePosition(ROWOFF[curY] + curX);
 			return;
 		}
+		this.isBurrower = dice(30);
 		this.xDir = rdir();
 		this.yDir = 0;
 	}
-	let rChance = r_range(0, 3000);
-	if (rChance > 2950) return;
+	let rChance = r_range(0, 12000);
+	if (rChance > 11500) return;
 	curX = this.x; curY = this.y;
-	if (rChance == 0) {
+	if (this.timeAlive > 10 && rChance == 0) {
 		new Particle(curX - this.xDir, curY - this.yDir, 'ANTEGG');
 		this.xDir = this.yDir = 0;
 	}
@@ -98,6 +192,7 @@ p.updateAnt = function (curX, curY) {
 		let l = pxAtI(ROWOFF[curY] + curX - 1, this);
 		let r = pxAtI(ROWOFF[curY] + curX + 1, this);
 		if (!d && !l && !r) {
+			this.hasTouchedSurface = false;
 			curY++;
 			this.yDir = 1;
 			this.xDir = 0;
@@ -108,8 +203,8 @@ p.updateAnt = function (curX, curY) {
 	
 	let px = pxAtI(ROWOFF[curY + this.yDir] + curX + this.xDir);
 	if (px && px.type === this.type) px = null;
-	if (!px && dice(10)) {
-		px = this.getRandomNeighbor(this.type);
+	if (!px && dice(10) && this.neighborCount) {
+		px = this.neighbors[r_range(0, this.neighbors.length)];
 	}
 	if (px) {
 		if (px.physT === 'LIQUID' || px.wet) { this.inWater = true; this.timeInWater++;  }
@@ -117,23 +212,32 @@ p.updateAnt = function (curX, curY) {
 			this.swap(px);
 			return;
 		}
-		if (px.physT === 'SOLID' && dice(px.dns / 10)) {return (this.makeHole(px));}
+		if (px.physT === 'SOLID')
+		{
+			if (this.isBurrower && dice(px.dns / 10))
+				return (this.makeHole(px));
+			if (this.xDir === 1) {
+				if (!this.ru || this.ru.type === this.type) this.updatePosition(ROWOFF[px.y - 1] + px.x);
+				else if (!this.rd || this.rd.type === this.type) this.updatePosition(ROWOFF[px.y + 1] + px.x);
+				else this.xDir *= -1;
+			}
+			else {
+				if (!this.lu || this.lu.type === this.type) this.updatePosition(ROWOFF[px.y - 1] + px.x);
+				else if (!this.ld || this.ld.type === this.type) this.updatePosition(ROWOFF[px.y + 1] + px.x);
+				else this.xDir *= -1;
+			}
+			return;
+		}
 	}
 	if (isValid(curX, curY, this.xDir, this.yDir))
 		this.updatePosition(ROWOFF[curY + this.yDir] + curX + this.xDir);
 	else {
-		// let tr = 1;
-		// while (!isValid(curX, --curY, this.xDir, this.yDir) && curY > 0 && tr--) {
-		// 	continue;
-		// }
 		if (px && isValid(curX, curY, this.xDir, this.yDir))
 			this.updatePosition(ROWOFF[curY + this.yDir] + curX + this.xDir);
 		else if (px && isValid(curX, curY, this.xDir, 1)) {
 			this.hasTouchedSurface = false;
 			this.velY = 0;
 			this.updatePosition(ROWOFF[curY + 1] + curX + this.xDir);}
-		// else if (isValid(curX, curY - 1, this.xDir, 0))
-		// 	this.updatePosition(ROWOFF[curY - 1] + curX + this.xDir);
 		else {
 			if (dice(10)) this.xDir *= -1;
 			else if (dice(10)) this.yDir *= -1;
@@ -297,12 +401,9 @@ p.updateShroom = function (curX, curY) {
 	if (dice(10)) px += rdir();
 	let up = pxAtI(ROWOFF[py] + px, this);
 	if (up && (up.physT === 'SOLID' && up.updT != 'ALIVE')) {
-		this.digType = up.type;
-		up.toRemove();
-		up = null;
-		this.maxHeight = this.heigth + r_range(2, this.heigth / 3);
+		this.swap(up);
+		return;
 	}
-	else this.digType = null;
 	if (up) {
 		if (up.physT != 'LIQUID') return;
 		if (up.type === 'WATER' && this.type != 'SHROOM') return;
@@ -321,7 +422,6 @@ p.updateShroom = function (curX, curY) {
 		newHead.hasTouchedBorder = true;
 		newHead.isGrower = this.isGrower;
 		newHead.growSpeed = this.growSpeed;
-		newHead.digType = this.digType;
 		newHead.maxHeight = this.maxHeight;
 		newHead.timeAlive = this.timeAlive;
 		newHead.familyId = this.familyId;
@@ -487,7 +587,7 @@ p.updateTree = function (newX, newY) {
 	}
 
 	function newLeaf(head, x, y, color, isBehind) {
-		let isBee = dice(5000);
+		let isBee = dice(200);
 		let leaf = new Particle(x, y, isBee ? 'BEE' : 'LEAF');
 		if (!leaf.active) return;
 		leaf.familyId = head.familyId;
@@ -531,8 +631,6 @@ p.updateBee = function () {
 		if (FRAME % 4 !== 0) return;
 		if (this.fx == null) { this.fx = this.x; this.fy = this.y; }
 		this.angle += 0.1;
-
-		// if (dice(200)) this.angle = f_range(-Math.PI, Math.PI);
 		if (this.angle > Math.PI) this.angle -= Math.PI * 2;
 		else if (this.angle <= -Math.PI) this.angle += Math.PI * 2;
 		const speed = 0.5;
@@ -546,7 +644,8 @@ p.updateBee = function () {
 	}
 
 
-	else if (0) {
+	else if (this.id % 6 === 0) {
+		if (FRAME % 2 !== 0) return;
 		if (this._phase === undefined) this._phase = Math.random() * Math.PI * 2;
 		const amplitude = 1;
 		const speed = 0.3;
@@ -559,7 +658,8 @@ p.updateBee = function () {
 		let newI = ROWOFF[newY] + newX;
 		let down = pxAtI(newI);
 
-		if (down) {
+		var isTooFar = Math.abs(newX - this.startX) > 20;
+		if (down || isTooFar) {
 			this.xDir *= -1;
 			return;
 		}

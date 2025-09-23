@@ -1,5 +1,5 @@
 p.updateMovement = function () {
-	if (this.type === 'ANT' && this.hasTouchedBorder && !this.inWater) return;
+	if (this.isAnt && this.hasTouchedSurface && !this.inWater) return;
 	if (this.type === 'ALIEN' || (this.type === 'FISH' && this.inWater)) {
 		this.newX = Math.round(this.x + this.velX);
 		this.newY = Math.round(this.y + this.velY);
@@ -29,10 +29,10 @@ p.updateMovement = function () {
 		const ii = realY * GW + realX;
 		let hit = grid1[ii];
 		if (!(hit && hit !== this && hit.active)) { lastX = curX; lastY = curY; continue; }
-
+		if (hit && hit.physT === 'GAS' && this.type != 'HESTIA') continue;
 		if (hit.physT === 'STEAM' || hit.physT === 'CLOUD') continue;
 		if (this.physT === 'FISH' && hit.physT === 'LIQUID') continue;
-		if (this.type === 'ANT' && hit.physT === 'LIQUID' && this.inWater > 100) continue;
+		if (this.isAnt && hit.physT === 'LIQUID' && this.inWater > 100) continue;
 		if (this.douse && hit.type !== 'FISH' && hit.type != 'BEE') { if (hit.brnpwr) this.setType('STEAM'); else hit.setWet(100, this.type === 'BUBBLE' ? 'WATER' : this.type); }
 		if (shouldBurn(this, hit)) { hit.setToFire(this.type); }
 		if (shouldBurn(hit, this)) { this.setToFire(this.type); }

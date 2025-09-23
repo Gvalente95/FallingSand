@@ -1,34 +1,17 @@
 let id = 0;
 class Particle{
-	constructor(x, y, type, velX = f_range(-.3, .3), velY = (PARTICLE_PROPERTIES[type].physT == 'GAS' ? -1 : f_range(0, 3)), lt = PARTICLE_PROPERTIES[type].lt * f_range(.5, 1.5), color = null)
+	constructor(x, y, type, velX = f_range(-.3, .3), velY = (PARTICLE_PROPERTIES[type].physT == 'GAS' ? -1 : f_range(0, 3)), lt = PARTICLE_PROPERTIES[type].lt * f_range(.5, 1.5))
 	{
-		if (isOutOfBorder(x, y)) return (this.toRemove(), 0);
-		this.properties = PARTICLE_PROPERTIES[type];
-		let px = pxAtI(x + y * GW, this);
-		if (px)
-		{
-			if (type === px.type) { this.toRemove(); return; }
-			else if ((type === 'SHROOM' || type === 'MUSHX') && px.physT === 'SOLID') {color = px.color;}
-			if (this.properties.physT === 'GAS')
-			{
-				if (this.properties.freeze) { this.x = x, this.y = y; this.applyFrost(type, 50, true);}
-				else if (px.physT === 'LIQUID' && type === 'FIRE') {
-					px.setType('FIRE', 'STEAM');
-					px.velX = 0;
-				}
-				else if (type != px.type && shouldBurnParticle(type, px)) px.setToFire(type);
-				return (this.toRemove(), 0);
-			}
-			else px.toRemove();
-		}
+		if (!this.spawn(x, y, type)) { this.toRemove(); return;}
+		this.childrens = [];
 		this.ground = null;
 		this.wetType = null;
 		this.parent = null;
-		this.childrens = [];
 		this.hasTouchedSurface = false;
 		this.selType = null;
 		this.shouldSpread = true;
 		this.hasTouchedBorder = false;
+		this.fseed = f_range(.1, 1);
 		this.id = id++;
 		this.isCreator = this.id % 100 === 0;
 		this.lt = lt;
@@ -38,11 +21,9 @@ class Particle{
 		this.wet = 0;
 		this.warm = 0;
 		this.frozen = 0;
-		this.fseed = f_range(.1, 1);
 		this.velX = velX;
 		this.velY = velY;
 		this.setType(type);
-		if (color) this.setColor(color);
 		this.x = x;
 		this.y = y;
 		this.startX = x, this.startY = y;
@@ -50,6 +31,21 @@ class Particle{
 		grid1[this.i] = this;
 		activeParticles.push(this);
 		this.active = true;
+	}
+
+	spawn(x, y, type) {
+		if (isOutOfBorder(x, y)) return (false);
+		let px = pxAtI(x + y * GW, this);
+		if (!px) return (true);
+		if (type === px.type) return (false);
+		if (PARTICLE_PROPERTIES[type].physT !== 'GAS') { px.toRemove(); return (true); }
+		if (PARTICLE_PROPERTIES[type].freeze) { this.x = x, this.y = y; this.applyFrost(type, 50, true); }
+		if (shouldBurnParticle(type, px)) px.setToFire(type);
+		else if (px.physT === 'LIQUID' && type === 'FIRE') {
+			px.setType('FIRE', 'STEAM');
+			px.velX = 0;		
+		}
+		return (false);
 	}
 
 	updatePosition(di){
@@ -86,13 +82,16 @@ class Particle{
 					return;
 				}
 				new Particle(spawnX, spawnY, this.type);
-				if (dice(10)) { this.replace('SMOKE'); return; }
+				if (dice(10)) { this.replace('DUST'); return; }
 			}
 			if (this.transformType && (this.type !== 'STEAM' || this.y < 50)) return (this.replace(this.transformType));
 			if (this.type === 'MAGMA') return;
 			if (this.expl) {
 				explodeRadius(this.x * PIXELSIZE, this.y * PIXELSIZE, 5, 10 * PIXELSIZE, 'FIRE');
-				if (dice(10)) { this.setType('COAL'); this.setToFire(); return;}
+				if (!this.u && this.id % 5 === 0) {
+					launchParticules('SMOKE', (this.x - 4) * PIXELSIZE, (this.y - 6) * PIXELSIZE, 8, true);
+				}
+				if (1) { this.setType('COAL'); this.setToFire(); return; }
 			}
 			if (this.physT !== 'GAS') {
 				const x = this.x;
@@ -106,8 +105,6 @@ class Particle{
 					q.y = ny; q.newY = ny; q.i = i1;
 				}
 			}
-			else if (this.type === 'FIRE' && dice(100)) return (this.setType('SMOKE'));
-
 			this.toRemove();
 			return 0;
 		}

@@ -25,7 +25,7 @@ function setNewGravity(newGravity) { GRAVITY = newGravity;}
 function setNewSpeed(newSpeed) { SIMSPEED = newSpeed; }
 function switchGridMode(newGridMode) { gridMode = newGridMode; }
 function setRAINPOW(newIntensity) { RAINPOW = (newIntensity / (PIXELSIZE));}
-function goToNextFrame() { switchPause(true); update(false); };
+function goToNextFrame() { switchPause(true); updateParticules(); };
 function deactivateSwitchButton(button) {button.active = false; button.classList.remove("activeButton");}
 function switchRain(newActive) { ISRAINING = newActive; }
 function switchBrushAction(newAction) {
@@ -34,7 +34,6 @@ function switchBrushAction(newAction) {
 		if (b.value != newAction) deactivateSwitchButton(b);
 	}
 }
-
 
 function tryPlaceAt(p, x, y){
 	if (x < 0 || y < 0 || x >= GW || y >= GH) return false;

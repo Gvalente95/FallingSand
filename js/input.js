@@ -38,7 +38,6 @@ window.addEventListener('mousemove', (e) => {
 
 window.addEventListener('keydown', (e) => {
 	userInput();
-	if (isInInputField) return;
 	if (e.code == 'Tab') e.preventDefault();
 	if (e.key == 't') { ISGAME = !ISGAME; updateUi(); }
 	if (e.key == 'k') switchUiDisplay();

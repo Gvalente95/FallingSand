@@ -1,5 +1,6 @@
 let waterShades = [];
-function	buildWaterShades() {
+
+function buildWaterShades() {
     waterShades = new Array(GH);
 
     for (let y = 0; y < GH; y++) {
@@ -17,9 +18,7 @@ function	buildWaterShades() {
 function showShroomHead(prt, x, y) {
 	let h = clamp(prt.heigth / 10, 1, 3);
 	let w = Math.round(h * 2.5);
-
 	let baseColor = prt.headColor;
-
 	let startY = y - h + 1;
 	let startX = x - w / 2;
 	let curW = w;
@@ -86,73 +85,86 @@ function drawCircle(x, y, radius, color, strokeColor, lineWidth) {
 	ctx.closePath();
 }
 
+function drawSnowflake(prt, x, y, color, size) {
+	ctx.fillStyle = color;
+	let rx = x * PIXELSIZE;
+	let ry = y * PIXELSIZE;
+	switch (prt.variant) {
+		case 1:
+			ctx.fillRect(rx - size, ry, size * 3, size);
+			ctx.fillRect(rx, ry - size, size, size * 3);
+			break;
+		case 2:
+			ctx.fillRect(rx - size, ry - size, size, size);
+			ctx.fillRect(rx + size, ry + size, size, size);
+			ctx.fillRect(rx + size, ry - size, size, size);
+			ctx.fillRect(rx - size, ry + size, size, size);
+			ctx.fillRect(rx, ry, size, size);
+			break;
+		case 3:
+			ctx.fillRect(rx, ry - size * 2, size, size * 5);
+			ctx.fillRect(rx - size, ry, size * 3, size);
+			break;
+		default:
+			ctx.fillRect(rx - size, ry, size * 3, size);
+			ctx.fillRect(rx, ry - size, size, size * 3);
+			break;
+	}
+}
+
+var prevCtx = null;
 function showParticle(prt, x, y, alpha, size) {
-	color = prt.color;
+	let color = prt.color;
+	if (prt.type === 'SNOW') {
+		drawSnowflake(prt, x, y, color, size);
+		return;
+	}
 	if (prt.expl && !prt.frozen && prt.lt != Infinity) {
 		let timeLeft = prt.lt - prt.timeAlive;
 		color = addColor(PARTICLE_PROPERTIES[prt.type].color, 'rgb(255, 0, 0)', 1 - (timeLeft / prt.lt));
 	}
-	if (prt.isShroom && prt.digType) color = PARTICLE_PROPERTIES[prt.digType].color;
 	if (prt.isShroom && !prt.isLoop && prt.isHead) {
 		let px = atI(ROWOFF[y - 1] + x, prt);
 		if (px && px.type == prt.type) {
-			ctx.fillStyle = prt.digType ? color : prt.baseColor;
+			ctx.fillStyle = prt.baseColor;
 			ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, size, size);
 			return;
 		}
 		showShroomHead(prt, x, y);
 		return;
 	}
-	const aIn  = prt.fin  ? Math.min(1, prt.timeAlive / prt.fin) : 1;
-	const aOut = prt.fout && Number.isFinite(prt.lt) ? Math.max(0, Math.min(1, (prt.lt - prt.timeAlive) / prt.fout)) : 1;
-	alpha = Math.min(aIn, aOut);
-
-	if (prt.type === 'CLOUD') {
+	if ((prt.type === 'GLASS' || prt.type === 'ICE') && dice(50000)) color = 'rgba(255, 255, 255, 1)';
+	if (prt.fin || prt.fout && Number.isFinite(prt.lt)) {
+		const aIn  = prt.fin  ? Math.min(1, prt.timeAlive / prt.fin) : 1;
+		const aOut = prt.fout && Number.isFinite(prt.lt) ? Math.max(0, Math.min(1, (prt.lt - prt.timeAlive) / prt.fout)) : 1;
+		alpha = Math.min(aIn, aOut);
+	}
+	if (prt.type === 'CLOUD' || prt.type === 'SMOKE') {
 		let fAlpha = Math.min(alpha, prt.alpha);
 		let clr = setAlpha(prt.baseColor, fAlpha);
 		drawParticleCircle(x * PIXELSIZE - prt.size, y * PIXELSIZE - prt.size, prt.size * 2, clr);
 		return;
 	}
-	if (alpha != 1) ctx.fillStyle = `rgba(${prt.rgb}, ${alpha})`;
-	else if (prt.isWater && !prt.frozen) ctx.fillStyle = waterShades[prt.y].color;
-	else ctx.fillStyle = color;
+	if (alpha != 1) color = `rgba(${prt.rgb}, ${alpha})`;
+	else if (prt.isWater && !prt.frozen) color = waterShades[prt.y].color;
+	if (prevCtx != color) {
+		ctx.fillStyle = color;
+		prevCtx = color;
+	}
 	ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, size, size);
 }
 
-
-
-let skyLayer = null, skyW = 0, skyH = 0;
-
-function makeSkyLayer(w, h) {
-  const off = document.createElement('canvas');
-  off.width = w; off.height = h;
-  const g = off.getContext('2d');
-  const grad = g.createLinearGradient(0, 0, 0, h);
-  grad.addColorStop(0.00, '#c4a4ceff');
-  grad.addColorStop(0.35, '#875b98ff');
-  grad.addColorStop(0.65, '#4c2e5eff');
-  grad.addColorStop(1.00, '#000000ff');
-  g.fillStyle = grad;
-  g.fillRect(0, 0, w, h);
-  return off;
-}
-
-function drawSky(ctx, w, h) {
-  if (!skyLayer || w !== skyW || h !== skyH) {
-    skyLayer = makeSkyLayer(w, h);
-    skyW = w; skyH = h;
-  }
-  ctx.drawImage(skyLayer, 0, 0);
-}
-
 function render() {
+	prevCtx = null;
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	let showSize = PIXELSIZE;
 	let isGridding = (gridMode || isWheeling);
-	if (isGridding) showSize--;
-	// ctx.fillRect(0);
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	if (isGridding) { ctx.drawImage(gridLayer, 0, 0); }
+	if (isGridding) {
+		showSize--;
+		ctx.drawImage(gridLayer, 0, 0);
+	}
 	for (let i = 0; i < activeParticles.length; i++) showParticle(activeParticles[i], activeParticles[i].x, activeParticles[i].y, 1, showSize);
 	renderBrush();
+	FRAME++;
 	if (SHOWHUD) updateHUD();
 }

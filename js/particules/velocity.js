@@ -19,16 +19,29 @@ p.updateLiquidVelocity = function (g) {
 			return;
 		}
 	}
-	this.velY += GRAVITY;
+	if (this.updT != 'STATIC')
+		this.velY += GRAVITY;
 };
 
 p.updateGasVelocity = function () {
-	if (this.type === 'SMOKE') this.velX = getSin(now * 0.002, 2, 1.2, this.id * 0.3);
+	if (atBorder(this.x, this.y)) this.toRemove();
+	if (this.type === 'SMOKE') {
+		this.velY = -1.5;
+		if (FRAME % 2 === 0) return;
+	}
+	if (this.type === 'DUST') this.velX = getSin(now * 0.002, 2, 1.2, this.id * 0.3);
 	else this.velX = getSin(now * 0.002, 10, 0.6, this.id * 0.3);
 };
 
 p.updateSolidVelocity = function (g) {
+	if (this.y < GH - 1 && (this.x === 0 || this.x == GW - 1 || this.y === 0)) { this.velX *= -1; this.velY = 2; }
 	if (this.type === 'FISH' && this.inWater) return;
+	if (this.type === 'SNOW') {
+		if (FRAME % 2 != 0) { this.velX = this.velY = 0; return; }
+		if (!this.velX && dice(10)) this.velX = rdir() * 2;
+		this.velY = 2;
+		return;
+	}
 	if (g && g.physT === 'LIQUID') {
 		this.velY += GRAVITY;
 		this.velY *= 1 - g.dns * .1;
@@ -36,7 +49,7 @@ p.updateSolidVelocity = function (g) {
 		return;
 	}
 	if (!this.hasTouchedBorder) {
-		this.hasTouchedBorder = (this.y >= GH - 1 || (g && (g.physT === 'STATIC' || g.hasTouchedBorder)));
+		this.hasTouchedBorder = (this.y >= GH - 1 || (g && (g.updT === 'STATIC' || g.hasTouchedBorder)));
 		if (this.hasTouchedBorder) {this.velX = 0;}	
 	}
 	else if (this.hasTouchedBorder > 0 && !g && this.y < GH - 1) {

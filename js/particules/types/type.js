@@ -1,6 +1,7 @@
 const UPDATE_HANDLERS = {
 	STEAM: p => p.updateSteam(p.newX, p.newY),
-	ANT:   p => p.updateAnt(p.newX, p.newY),
+	ANT: p => p.updateAnt(p.newX, p.newY),
+	FIREANT:   p => p.updateAnt(p.newX, p.newY),
 	FISH:  p => p.updateFish(p.newX, p.newY),
 	ALIEN: p => p.updateAlien(p.newX, p.newY),
 	BEE: p => p.updateBee(p.newX, p.newY),
@@ -39,11 +40,11 @@ p.getNeighborCells = function () {
 }
 
 p.updateType = function () {
+	this.neighbors = null;
 	this.getNeighborCells();
-	// this.neighbors = null;
 	// this.noUpdate = this.neighborCount >= 8;
 	// if (this.noUpdate) return;
-	if (this.type === 'SMOKE' && FRAME % 2 == 0) return;
+	if (this.type === 'DUST' && FRAME % 2 == 0) return;
 	if (this.cor) this.applyCorrosion();
 	if (this.freeze) this.applyFrost(this.type, 50, true);
 	if (this.physT === 'LIQUID') {
@@ -77,14 +78,17 @@ p.setType = function(newType, transformType = null)
 		transformType = 'FIRE';
 		this.velY = -1;
 	}
-
+	this.parent = null;
+	this.child = null;
 	this.type = newType;
 	this.isWater = this.type == 'WATER' || this.type == 'HYDROGEL';
 	this.isShroom = this.type == 'SHROOM' || this.type == 'MUSHX';
+	this.isAnt = (this.type === 'ANT' || this.type === 'FIREANT');
+	this.inWater = false;
+	this.timeInWater = 0;
 	this.properties = PARTICLE_PROPERTIES[newType];
 	this.cr = this.properties.cr;
-	this.lt = this.properties.lt;
-	this.lt *= f_range(.5, 1.5);
+	this.lt = this.properties.lt * f_range(.5, 1.5);
 	this.douse = this.properties.douse;
 	this.physT = this.properties.physT;
 	this.expl = this.properties.expl;
@@ -95,18 +99,16 @@ p.setType = function(newType, transformType = null)
 	this.spreadAmount = this.properties.spread;
 	this.freeze = this.properties.freeze;
 	this.updT = this.properties.updT;
-	this.inWater = false;
-	this.timeInWater = 0;
 	this.fin = this.properties.fin;
 	this.fout = this.properties.fout;
-	this.ground = null;
 	this.xDir = rdir(); this.yDir = rdir();
 	this.heigth = 0;
-	this.parent = null;
-	this.child = null;
 	this.transformType = transformType;
-	if (ISGAME) setTimeout(() => { discoverType(this) }, 50);
+	this.setTypeSpecifics();
+}
 
+p.setTypeSpecifics = function(){
+	if (ISGAME && !this.properties.kn) setTimeout(() => { discoverType(this) }, 50);
 	if (this.updT == 'STATIC') { this.velY = 0; this.velX = 0; }
 	if (this.type == 'FISH') {
 		let clrs = ["rgb(135, 60, 163)", "rgb(11, 93, 61)", this.properties.color];
@@ -115,7 +117,7 @@ p.setType = function(newType, transformType = null)
 	else if (this.isShroom) {
 		this.familyId = -1;
 		this.headColor = randomizeColor(this.properties.color, this.rclr);
-		let color = newType == 'MUSHX' ? 'rgb(71, 45, 119)' : 'rgb(45, 119, 83)';
+		let color = this.type === 'MUSHX' ? 'rgb(71, 45, 119)' : 'rgb(45, 119, 83)';
 		if (this.properties.rclr) color = randomizeColor(color);
 		this.setColor(color);
 		this.isGrowing = false;
@@ -128,9 +130,14 @@ p.setType = function(newType, transformType = null)
 		this.alpha = f_range(.1, .2);
 		if (dice(10))
 			this.setColor(addColor(this.properties.color, 'rgb(132, 132, 132)', r_range(1, 10)));
-		else	this.setColor(this.properties.color);
+		else this.setColor(this.properties.color);
 	}
-	else this.setColor(this.properties.rclr ? randomizeColor(this.properties.color, this.rclr) : this.properties.color);
+	else if (this.type === 'SMOKE') {
+		this.size = r_range(2, 10);
+		this.alpha = f_range(.05, .1);
+		this.setColor(this.properties.color);
+	}
+	else this.setColor(this.properties.color);
 	this.baseColor = this.color;
 	if (this.type == 'ALIEN') {
 		this.growSpeed = r_range(1, 3);
@@ -142,11 +149,12 @@ p.setType = function(newType, transformType = null)
 	else if (this.type === 'TREE') {
 		this.familyId = -1; this.yDir = -1; this.xDir = 0;
 		let colors = ['rgb(189, 131, 212)', 'rgb(199, 132, 132)', 'rgb(145, 202, 157)', 'rgb(191, 169, 41)', 'rgb(204, 34, 34)', 'rgb(34, 204, 173)'];
-		this.leavesColor = randomizeColor(colors[Math.round(nowSec / 10) % colors.length], 30);
+		this.leavesColor = colors[Math.round(nowSec / 10) % colors.length];
 	}
-	else if (this.type === 'BEE') {
-		this.angle = f_range(-Math.PI, Math.PI);
+	else if (this.type === 'SNOW') {
+		this.variant = r_range(0, 4);
 	}
+	else if (this.type === 'BEE') {this.angle = f_range(-Math.PI, Math.PI);}
 	else if (this.type == 'ANTEGG') this.transformType = 'ANT';
 	else if (this.type == 'COAL') { this.velX = 0; }
 }

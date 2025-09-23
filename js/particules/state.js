@@ -19,7 +19,7 @@ p.updateBurn = function () {
 			if (isOutOfBorder(this.x + x, this.y + y)) continue;
 			let px = pxAtI(ROWOFF[this.y + y] + this.x + x, this);
 			if (px && !px.burning && shouldBurnParticle('FIRE', px)) px.setToFire(this.burnType);
-			if (!px && dice(30)) new Particle(this.x + x, this.y + y, 'SMOKE');
+			if (!px && dice(30)) new Particle(this.x + x, this.y + y, 'DUST');
 		}
 }
 
@@ -97,17 +97,19 @@ p.updateWet = function () {
 		}		
 	}
 	if (this.hasTouchedBorder && this.updT != 'ALIVE' && this.wetDur > 5000) {
-		if (this.type === 'GRASS') {
+		if (this.type === 'GRASS' && (!this.u || this.u.physT === 'LIQUID')) {
 			let shroomChance = 10000;
 			if (dice(shroomChance)) {
 				if (dice(2)) this.setType('SHROOM');
+				else if (dice(2)) this.setType('FISH')
 				else this.setType('TREE');
 				this.isGrower = true;
 			}
 		}
-		else if (this.type === 'SAND' && dice(100)) this.setType('GRASS');
+		else if (this.type === 'SAND' && dice(100)) {
+			this.setType('GRASS');
+		}
 	}
-	// this.setColor(addColor(this.baseColor, PARTICLE_PROPERTIES[this.wetType].color, clamp(this.wet / 100, .1, .5)));
 }
 
 FROSTMAX = 50;

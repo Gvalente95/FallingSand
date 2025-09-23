@@ -398,7 +398,7 @@ function initButton(label, x, y, color, onChange, value = null, parent = documen
 
 	if (keyToggle) {
 	window.addEventListener("keydown", (e) => {
-		if (!isInInputField && (e.code === keyToggle || e.key == keyToggle)) activate();
+		if (e.code === keyToggle || e.key == keyToggle) activate();
 	});
 		if (!isMobile) {
 			const badge=document.createElement("span");

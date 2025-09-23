@@ -21,12 +21,12 @@ p.hasTouchedSurfaceCheck = function()
 		{
 			newY = this.y + y;
 			if (newY >= GH - 1) {
-				if (hasBubble && dice(10)) new Particle(this.newX, this.newY - 1, this.type == 'LAVA' ? 'SMOKE' : 'BUBBLE');
+				if (hasBubble && dice(10)) new Particle(this.newX, this.newY - 1, this.type == 'LAVA' ? 'DUST' : 'BUBBLE');
 				return (true);
 			}
 			px = pxAtI(ROWOFF[newY] + this.x);
 			if (px && (px.physT == 'SOLID')) {
-				if (hasBubble && dice(10)) new Particle(this.newX, this.newY - 1, this.type == 'LAVA' ? 'SMOKE' : 'BUBBLE');
+				if (hasBubble && dice(10)) new Particle(this.newX, this.newY - 1, this.type == 'LAVA' ? 'DUST' : 'BUBBLE');
 				return (true);
 			}
 			if (!px) break;

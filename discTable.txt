@@ -16,7 +16,7 @@ TO DISCOVER:
 	LAVA
 	BOLT
 	FIRE
-	SMOKE
+	DUST
 	CLOUD
 	STEAM
 	ALIEN
@@ -82,15 +82,15 @@ RAINBOW : BOLT à travers STEAM/CLOUD au-dessus d’eau → RAINBOW (éphémère
 MAGMA : ROCK en profondeur + HEAT fort → MAGMA. (MAGMA = “lava” souterraine.)
 OIL : ALIEN/WOOD enterrés (SAND/ROCK, PRESSURE) + TIME long → OIL.
 ACID : CHEMX + WATER → ACID.
-Alternatives: MUSHX + WATER → ACID; OIL + CHEMX + HEAT → ACID + SMOKE.
+Alternatives: MUSHX + WATER → ACID; OIL + CHEMX + HEAT → ACID + DUST.
 CHEMX : BOLT frappant ROCK proche de WATER → CHEMX (cristal/goutte).
 Option catalyseur: RAINBOW voisin de WATER → CHEMX avec p≈0.1.
-BUBBLE : WATER voisin d’une réaction gaz (STEAM, SMOKE, ACID neutralisé) → BUBBLE (qui monte et éclate).
+BUBBLE : WATER voisin d’une réaction gaz (STEAM, DUST, ACID neutralisé) → BUBBLE (qui monte et éclate).
 WATER : base; STEAM + COLD → WATER; ICE + HEAT → WATER.
 LAVA : MAGMA exposé (pas de ROCK au-dessus) → LAVA. ROCK + HEAT très fort → LAVA.
 BOLT : CLOUD dense + CHARGE (rng) → BOLT vers le sol.
 FIRE : GRASS/WOOD + frottement (déplacements rapides) ou BOLT → FIRE. LAVA adjacente enflamme.
-SMOKE : FIRE + matière organique (GRASS/ALIEN/WOOD/OIL) → SMOKE.
+DUST : FIRE + matière organique (GRASS/ALIEN/WOOD/OIL) → DUST.
 CLOUD : STEAM qui monte + COLD d’altitude → CLOUD.
 STEAM : WATER + HEAT → STEAM.
 ALIEN : GRASS + WATER + TIME → ALIEN (pousse). SAND humide près de GRASS → ALIEN.
@@ -129,4 +129,4 @@ Bio (ALIEN/WOOD/SHROOM/ANT/FISH).
 
 Chimie (CHEMX/ACID/BLOB).
 
-Effets spéciaux (RAINBOW/BOLT/BUBBLE/SMOKE).
+Effets spéciaux (RAINBOW/BOLT/BUBBLE/DUST).

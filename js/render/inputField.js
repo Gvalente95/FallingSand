@@ -105,10 +105,8 @@ function createRadialColorPicker(target, initial, onChange){
 	return {get rgba(){return hsvaToRgba(state.h,state.s,state.v,state.a)}};
 }
 
-let isInInputField = false;
 let defaultName = 0;
 function initInputParticleValuesContainer() {
-	isInInputField = true;
 	const overlay = document.createElement('div');
 	const mod = document.createElement('div');
 	const form = document.createElement('div');

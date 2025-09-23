@@ -14,15 +14,17 @@ function deleteParticules(x = MOUSEX, y = MOUSEY, radius = 10, type = null, isDi
 	}
 }
 
+var randomizeChance = 2;
 function launchParticules(type = 'SAND', x = MOUSEX, y = MOUSEY, radius = BRUSHSIZE, isDisc = BRUSHTYPE == BRUSHTYPES.DISC, useMouseDx = true)
 {
 	let color = null;
 
-	if (useMouseDx && hasTag(type, 'GAS')) useMouseDx = false;
+	if (useMouseDx && PARTICLE_PROPERTIES[type].physT === 'GAS') useMouseDx = false;
 	let addedX = !useMouseDx ? 0 : (MOUSEDX / PIXELSIZE) * (PARTICLE_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05);
 	let addedY = !useMouseDx ? 0 : (MOUSEDY / PIXELSIZE) * (PARTICLE_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05);
 
 	let isRandomized = PARTICLE_PROPERTIES[type].physT === 'SOLID' && type != 'Rainbow';
+	if (type === 'FISH' || type === 'SHROOM' || type === 'MUSHX') isRandomized = false;
 	if (type === 'RAINBOW') color = getRainbowColor(FRAME, .1);
 	else if (isRandomized) color = addColor(PARTICLE_PROPERTIES[type].color, getRainbowColor(FRAME, .1), .1);
 
@@ -39,7 +41,7 @@ function launchParticules(type = 'SAND', x = MOUSEX, y = MOUSEY, radius = BRUSHS
 				let clampedY = clamp(gridY, 1, GH - 1);
 				let newP = new Particle(clampedX, clampedY, type);
 				if (color) {
-					if (isRandomized) newP.setColor(randomizeColor(color, 5));
+					if (randomizeChance > 0 && (isRandomized && dice(randomizeChance))) newP.setColor(randomizeColor(color, 5));
 					else newP.setColor(color);
 				}
 				if (radius <= 1) return;
@@ -161,12 +163,12 @@ function explodeRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity =
 				let ddy = dy;
 				let ddx = rdir();
 				if (dy >= -radius / 2) {
-					ddy = -radius / 10;
+					ddy = -radius / 20;
 					ddx *= 2;
 				}
 				if (p.physT === 'STATIC') p.physT = 'DYNAMIC';
-				p.velX = ddx * f_range(xPushLimits[0], xPushLimits[1]) * dt;
-				p.velY = ddy * f_range(yPushLimits[0], yPushLimits[1]) * dt;
+				p.velX = clamp(ddx * f_range(xPushLimits[0], xPushLimits[1]) * dt, -10, 10);
+				p.velY = clamp(ddy * f_range(yPushLimits[0], yPushLimits[1]) * dt, -10, 10);
 				if (transformType === 'FIRE' && shouldBurnType('FIRE', p.type)) p.setToFire('FIRE', 10);
 				else if (transformType && dice(100)) p.setType(transformType);
             }
@@ -185,4 +187,10 @@ function resetParticles()
 
 function deleteOldestParticules(num) {
 	activeParticles.splice(0, num);
+}
+
+function flushDestroyedParticles()
+{
+	for (let i = 0; i < destroyedParticles.length; i++) destroyedParticles[i].onRemove();
+	destroyedParticles = [];
 }
