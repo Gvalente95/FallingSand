@@ -232,7 +232,7 @@ function initImageDiv(imgPath, x, y, color, parent = document.body) {
 	return (div);
 }
 
-function initButton(label, x, y, w, h, color, onChange, value = null, parent = document.body, isSwitch = null, keyToggle = null, imgPath = null, mouseFollowImg = null, clrText = false) {
+function initButton(label, x, y, w, h, color, onChange, value = null, parent = document.body, isSwitch = null, keyToggle = null, imgPath = null, mouseFollowImg = null, clrText = false, desc = null) {
 	function formatKeyLabel(k){
 		if(!k) return "";
 		const map={
@@ -281,9 +281,21 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 		if (!isMobile) {
 			div.badge = initLabelDiv(x + w - 10, canvas.height + 5, formatKeyLabel(keyToggle), 'rgba(203, 185, 211, 1)');
 			div.badge.style.fontSize = '12px';
+			div.badge.style.pointerEvents = "none";
 			div.style.paddingTop = '10px';
 			div.style.zIndex = "0";
 			uiContainer.appendChild(div.badge);
+
+			if (desc) {
+				let descDiv = initLabelDiv(x, canvas.height - 30, desc, "rgba(255, 255, 255, 1)", document.body);
+				div.addEventListener("mouseenter", () => {
+					descDiv.style.display = "block";
+				});
+				div.addEventListener("mouseleave", () => {
+					descDiv.style.display = "none";
+				});
+				descDiv.style.display = "none";
+			}
 		}
 	}
 

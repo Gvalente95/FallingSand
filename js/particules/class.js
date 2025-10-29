@@ -43,7 +43,7 @@ class Particle{
 		if (shouldBurnParticle(type, px)) px.setToFire(type);
 		else if (px.physT === 'LIQUID' && type === 'FIRE') {
 			px.setType('FIRE', 'STEAM');
-			px.velX = 0;		
+			px.velX = 0;
 		}
 		return (false);
 	}

@@ -34,7 +34,7 @@ p.setToFire = function(burnType = 'FIRE', duration = 1000 - this.brn)
 	this.dead = true;
 	if (this.frozen) { this.unFreeze(50); return; }
 	if (this.type === 'ROCK') {return (this.setType('MAGMA'));}
-	if (this.type === 'ICE') {return (this.setType('WATER'));}
+	if (this.type === 'ICE' || this.type === 'SNOW') {return (this.setType('WATER'));}
 	this.warm = 200;
 	if (this.wet > 50 && this.wetType != 'OIL') { this.wet -= 50; return; }
 	if (this.burning) return;

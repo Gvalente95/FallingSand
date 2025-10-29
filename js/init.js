@@ -49,20 +49,20 @@ function initActionHeader(yPos)
 	let hdr = addHeader(xm, yPos, null, actionBtnH, null, 1);
 	hdr.style.left = "0px";
 
-	pauseButton = initButton("Pause", xs * nn++, 0, w, h, clr, switchPause, -1, hdr, false, 'Space', p + "pause.png", null, false, clr);
-	brushActionButtons.push(initButton("Cut", xs * nn++, 0, w, h, clr, switchBrushAction, 'CUT', hdr, false, "c", p + "eraser.png", wp + "eraser.png", null, false, clr));
-	initButton("Fill", xs * nn++, 0, w, h, clr, fillScreen, null, hdr, null, 'f', p + "fill.png", null, false, clr);
-	initButton("Clear", xs * nn++, 0, w, h, clr, resetParticles, PIXELSIZE, hdr, null, 'r', p + "broom.png", null, false, clr);
-	brushActionButtons.push(initButton("Pick", xs * nn++, 0, w, h, clr, switchBrushAction, 'PICK', hdr, false, "i", p + "eyedropper.png", wp + "eyedropper.png", null, false, clr));
-	brushActionButtons.push(initButton("Vibrate", xs * nn++, 0, w, h, clr, switchBrushAction, 'VIBRATE', hdr, false, "v", p + "vibrate.png", wp + "vibrate.png", null, false, clr));
-	brushActionButtons.push(initButton("Grab", xs * nn++, 0, w, h, clr, switchBrushAction, 'GRAB', hdr, false, "p", p + "push.png", wp + "push.png", null, false, clr));
-	brushActionButtons.push(initButton("LIQUID", xs * nn++, 0, w, h, clr, switchBrushAction, 'LIQUEFY', hdr, false, "o", p + "melt2.png", wp + "melt2.png", null, false, clr));
-	brushActionButtons.push(initButton("Explode", xs * nn++, 0, w, h, clr, switchBrushAction, 'EXPLODE', hdr, false, "e", p + "explosion.png", wp + "explosion.png", null, false, clr));
-	initButton("Rain", xs * nn++, 0, w, h, clr, switchRain, null, hdr, false, 'Enter', p + "drop.png", null, false, clr);
-	initButton("Grid", xs * nn++, 0, w, h, clr, switchGridMode, null, hdr, false, "g", p + "grid.png", null, false, clr);
-	initButton("Brush", xs * nn++, 0, w, h, clr, setNewBrushType, null, hdr, true, 'b', p + "disk.png", null, false, clr);
-	initButton("Emitter", xs * nn++, 0, w, h, clr, spawnEmitterAtMouse, null, hdr, null, 'l', p + "emit.png", null, false, clr);
-	initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, 'Tab', p + "next.png", null, false, clr);
+	pauseButton = initButton("Pause", xs * nn++, 0, w, h, clr, switchPause, -1, hdr, false, 'Space', p + "pause.png", null, clr, "Pause Simulation");
+	brushActionButtons.push(initButton("Cut", xs * nn++, 0, w, h, clr, switchBrushAction, 'CUT', hdr, false, "c", p + "eraser.png", wp + "eraser.png", clr, "Cut tool"));
+	initButton("Fill", xs * nn++, 0, w, h, clr, fillScreen, null, hdr, null, 'f', p + "fill.png",  null, clr, "Fill tool");
+	initButton("Clear", xs * nn++, 0, w, h, clr, resetParticles, PIXELSIZE, hdr, null, 'r', p + "broom.png", null, clr, "Clear screen");
+	brushActionButtons.push(initButton("Pick", xs * nn++, 0, w, h, clr, switchBrushAction, 'PICK', hdr, false, "i", p + "eyedropper.png", wp + "eyedropper.png", clr, "Picker tool"));
+	brushActionButtons.push(initButton("Vibrate", xs * nn++, 0, w, h, clr, switchBrushAction, 'VIBRATE', hdr, false, "v", p + "vibrate.png", wp + "vibrate.png", clr, "Vibrate pixels on click"));
+	brushActionButtons.push(initButton("Grab", xs * nn++, 0, w, h, clr, switchBrushAction, 'GRAB', hdr, false, "p", p + "push.png", wp + "push.png", clr, "Grab pixels on click"));
+	brushActionButtons.push(initButton("LIQUID", xs * nn++, 0, w, h, clr, switchBrushAction, 'LIQUEFY', hdr, false, "o", p + "melt2.png", wp + "melt2.png", clr, "melt pixels on click"));
+	brushActionButtons.push(initButton("Explode", xs * nn++, 0, w, h, clr, switchBrushAction, 'EXPLODE', hdr, false, "e", p + "explosion.png", wp + "explosion.png", clr, "Explode pixels on click"));
+	initButton("Rain", xs * nn++, 0, w, h, clr, switchRain, null, hdr, false, 'Enter', p + "drop.png", null, clr, "Toggle rain");
+	initButton("Grid", xs * nn++, 0, w, h, clr, switchGridMode, null, hdr, false, "g", p + "grid.png", null, clr, "Toggle grid");
+	initButton("Brush", xs * nn++, 0, w, h, clr, setNewBrushType, null, hdr, true, 'b', p + "disk.png", null, clr, "Change brush shape");
+	initButton("Emitter", xs * nn++, 0, w, h, clr, spawnEmitterAtMouse, null, hdr, null, 'l', p + "emit.png", null, clr, "Create pixel emitter on click");
+	initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, 'Tab', p + "next.png", null, clr, "Next frame");
 	fitHeaderDragWidth(hdr);
 }
 
