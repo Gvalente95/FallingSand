@@ -176,7 +176,7 @@ function render() {
 }
 
 function captureScreenshot() {
-  const color = "rgba(0, 0, 0, 0.51)";
+  const color = "rgba(43, 39, 39, 0.85)";
   ctx.fillStyle = color;
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 

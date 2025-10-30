@@ -77,6 +77,12 @@ class Mouse{
 	}
 }
 
+window.addEventListener('mousedown', (e) => {
+	if (inLoadMenu && sSContainer.style.display == "none") {
+		exitLoadMenu();
+	}
+});
+
 canvas.addEventListener('mousedown', (e) => {
 	MOUSE.mousedown(e.clientX, e.clientY);
 	userInput();
@@ -99,6 +105,7 @@ window.addEventListener('mousemove', (e) => {
 });
 
 window.addEventListener('keydown', (e) => {
+	if (inPrompt) return;
 	userInput();
 	if (e.code === 'Tab') e.preventDefault();
 	else if (e.key === 't') { ISGAME = !ISGAME; updateUi(); }
@@ -113,6 +120,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('keyup', (e) => {
+	if (inPrompt) return;
 	INPUT.keys[e.key.toLowerCase()] = false;
   	if (e.key.toLowerCase() === "z") MOUSE.lockAxis = null;
 	if (isWheeling && e.key === 'Shift') isWheeling = false;

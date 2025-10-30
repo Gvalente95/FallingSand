@@ -248,6 +248,8 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 	}
 	let div = document.createElement("div");
 	div.className = "button";
+	div.x = x;
+	div.y = y;
 	div.style.left = x + "px";
 	div.style.top = y + "px";
 	div.style.width = w + 'px'; div.style.minWidth = w + 'px';
@@ -276,7 +278,8 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 
 	if (keyToggle) {
 		window.addEventListener("keydown", (e) => {
-			if (e.code === keyToggle || e.key == keyToggle || e.key.toLowerCase() == keyToggle) {activate();}
+			if (inPrompt && !div.isPrompt) return;
+ 			if (e.code === keyToggle || e.key == keyToggle || e.key.toLowerCase() == keyToggle) {activate();}
 		});
 		if (!isMobile) {
 			div.badge = initLabelDiv(x + w - 10, canvas.height + 5, formatKeyLabel(keyToggle), 'rgba(203, 185, 211, 1)');
@@ -289,10 +292,12 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 			if (desc) {
 				let descDiv = initLabelDiv(x, canvas.height - 30, desc, "rgba(255, 255, 255, 1)", document.body);
 				div.addEventListener("mouseenter", () => {
-					descDiv.style.display = "block";
+					if (!inPrompt || div.isPrompt)
+						descDiv.style.display = "block";
 				});
 				div.addEventListener("mouseleave", () => {
-					descDiv.style.display = "none";
+					if (!inPrompt || div.isPrompt)
+						descDiv.style.display = "none";
 				});
 				descDiv.style.display = "none";
 			}
@@ -300,11 +305,7 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 	}
 
 	if (imgPath) {
-		const img = new Image();
-		img.onload = () => { div.textContent = ''; 	div.style.background = `${color} url("${imgPath}") center/contain no-repeat`; };
-		img.onerror = ()=>{ div.style.setProperty('--btn-bg', color); div.style.backgroundColor = color; };
-		img.src = imgPath;
-		img.backgroundColor = "red";
+		setButtonImage(div, imgPath, color);
 		if (mouseFollowImg) {
 			div.cursorImg = initImageDiv(mouseFollowImg, CANVW / 2, CANVH / 2, "rgba(0,0,0,0)", document.body);
 			div.cursorImg.style.display = "none";
@@ -321,15 +322,20 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 				div.cursorImg.style.display = "block";
 				rafId = requestAnimationFrame(loop);
 			};
-			window.addEventListener("mousedown", () => { if (div.active && inside() && !rafId) loop(); });
+			window.addEventListener("mousedown", () => {
+				if (inPrompt && !div.isPrompt) return;
+				if (div.active && inside() && !rafId) loop();
+			});
 			if (keyToggle) {
 				window.addEventListener("keydown", (e) => {
+					if (inPrompt && !div.isPrompt) return;
 					if (e.code === keyToggle || e.key == keyToggle || e.key.toLowerCase() == keyToggle) { loop(); }
 				});
 			}
 		}
 	}
 	function activate() {
+		if (inPrompt && !div.isPrompt) return;
 		if (isDraggingheader) return;
 		if (isSwitch != null) {
 			div.active = !div.active;
@@ -345,6 +351,20 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 	}
 	if (parent) parent.appendChild(div);
 	return div;
+}
+
+function setButtonName(button, newName) {
+	button.textContent = newName.substring(0, 5);
+}
+
+function setButtonImage(button, imgPath, color = "transparent") {
+  button.style.background = "";
+  button.style.backgroundColor = color;
+  button.style.backgroundImage = `url("${imgPath}")`;
+  button.style.backgroundRepeat = "no-repeat";
+  button.style.backgroundPosition = "center";
+  button.style.backgroundSize = "contain";
+  button.textContent = "";
 }
 
 let isDraggingheader = false;
@@ -493,4 +513,102 @@ function initLabelDiv(x, y, text = '', color = 'white', parent = document.body) 
 	div.style.color = color;
 	if (parent) parent.appendChild(div);
 	return (div);
+}
+
+
+let inPrompt = false;
+let promptDiv = null;
+
+function promptUser(label, defaultValue = "") {
+  inPrompt = true;
+
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.style.position = "fixed";
+    overlay.style.top = 0;
+    overlay.style.left = 0;
+    overlay.style.width = "100vw";
+    overlay.style.height = "100vh";
+    overlay.style.background = "rgba(0,0,0,0.4)";
+    overlay.style.display = "flex";
+    overlay.style.justifyContent = "center";
+    overlay.style.alignItems = "center";
+    overlay.style.zIndex = "9999";
+
+    const box = document.createElement("div");
+    box.style.background = "white";
+    box.style.padding = "10px";
+    box.style.borderRadius = "8px";
+
+    const labelEl = document.createElement("div");
+    labelEl.className = "infoText";
+    labelEl.textContent = label;
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = defaultValue;
+
+    const okBtn = document.createElement("button");
+    okBtn.textContent = "OK";
+    okBtn.className = "infoText";
+    okBtn.onclick = () => cleanup(input.value.trim());
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.className = "infoText";
+    cancelBtn.onclick = () => cleanup(null);
+
+    const cleanup = (val) => {
+      inPrompt = false;
+      window.removeEventListener("keydown", onKey);
+      overlay.remove();
+      resolve(val);
+    };
+
+    const onKey = (e) => {
+      if (e.key === "Enter") cleanup(input.value.trim());
+      else if (e.key === "Escape") cleanup(null);
+    };
+
+    window.addEventListener("keydown", onKey);
+
+    box.append(labelEl, input, okBtn, cancelBtn);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    setTimeout(() => input.focus(), 0);
+  });
+}
+
+
+let confirmDiv = null;
+function confirmChoice(label, onEnd, color = "rgba(190, 104, 96, 1)") {
+	if (confirmDiv) return;
+	inPrompt = true;
+
+	const w = label.length * 10, h = btnH * 2;
+	const bw = 40, bh = 30;
+	const x = (CANVW - w) / 2;
+	const y = (CANVH - h) / 2;
+	confirmDiv = document.createElement("div");
+	confirmDiv.style.position = "absolute";
+	confirmDiv.style.left = x + "px";
+	confirmDiv.style.top = y + "px";
+	confirmDiv.style.width = w + "px";
+	confirmDiv.style.height = h + "px";
+	confirmDiv.style.backgroundColor = color;
+	confirmDiv.style.zIndex = "9999";
+	confirmDiv.style.border = "10px solid " + color;
+	document.body.appendChild(confirmDiv);
+
+	initLabelDiv(x + 20, y + 15, label, "rgba(250, 250, 250, 1)", confirmDiv);
+
+	const yesBtn = initButton("Yes", 0, h - bh, bw, bh, "rgba(0, 0, 0, 0.13)", () => {
+	confirmDiv.remove(); confirmDiv = null; inPrompt = false; if (onEnd) onEnd(true);
+	}, null, confirmDiv);
+	yesBtn.isPrompt = true;
+	const noBtn = initButton("No", w - bw, h - bh, bw, bh, "rgba(0, 0, 0, 0.18)", () => {
+	confirmDiv.remove(); confirmDiv = null; inPrompt = false;
+	}, null, confirmDiv);
+	noBtn.isPrompt = true;
 }

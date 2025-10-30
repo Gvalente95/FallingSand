@@ -63,7 +63,7 @@ function initActionHeader(yPos)
 	initButton("Emitter", xs * nn++, 0, w, h, clr, spawnEmitterAtMouse, null, hdr, null, 'l', p + "emit.png", null, clr, "Create pixel emitter on click");
 	initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, 'n', p + "next.png", null, clr, "Next frame");
 	initButton("Save", xs * nn++, 0, w, h, clr, saveMap, null, hdr, null, "1", p + "save.png", null, clr, "Save Environment");
-	initButton("Load", xs * nn++, 0, w, h, clr, selectMap, null, hdr, false, "2", p + "load.png", null, clr, "Load Environment");
+	initButton("Load", xs * nn++, 0, w, h, clr, loadMap, null, hdr, false, "2", p + "load.png", null, clr, "Load Environment");
 	fitHeaderDragWidth(hdr);
 }
 
@@ -137,7 +137,7 @@ function init()
 	au = new AudioManager();
 	initUi();
 	initGrid();
-	PLAYER = new Player(50, 50, 8, 14);
+	PLAYER = new Player(50, GH - 14, 8, 14);
 }
 
 window.onload = () => { init(); loop(); };

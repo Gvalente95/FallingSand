@@ -60,7 +60,9 @@ function update() {
 }
 
 function loop() {
-	update();
-	render();
+	if (!inLoadMenu && !inPrompt) {
+		update();
+		render();
+	}
 	requestAnimationFrame(loop);
-}
+}	
