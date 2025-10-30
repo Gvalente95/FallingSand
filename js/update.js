@@ -1,7 +1,7 @@
 function updateInput()
 {
 	MOUSE.cell = cellAtI(ROWOFF[MOUSE.gridY] + MOUSE.gridX);
-	if (MOUSE.pressed && !isTwoFingerTouch) {
+	if (MOUSE.pressed && !isTwoFingerTouch && (!isMobile || !MOUSE.clickedOnPlayer)) {
 		if ((BRUSHACTION === 'CUT') || (INPUT.keys['shift'] && !isWheeling)) deleteParticulesAtMouse();
 		else if (BRUSHACTION) {
 			switch (BRUSHACTION) {

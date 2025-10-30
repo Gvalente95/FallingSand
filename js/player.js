@@ -156,6 +156,9 @@ class Player{
 		if (this.isAttacking)
 			this.throwProjectiles();
 		let inputMovement = [INPUT.x, INPUT.y];
+		if (isMobile && MOUSE.clickedOnPlayer) {
+			inputMovement[0] = MOUSE.gridX < this.x ? -1 : 1;
+		}
 		if (INPUT.keys['shift']) {
 			inputMovement[0] *= 3;
 			inputMovement[1] *= 3;

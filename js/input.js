@@ -39,6 +39,7 @@ class Mouse{
 		this.stuckX = 0;
 		this.stuckY = 0;
 		this.cell = null;
+		this.clickedOnPlayer = false;
 		this.clickColor = getRandomColor();
 	}
 
@@ -65,6 +66,12 @@ class Mouse{
 	}
 
 	mousedown(x, y) {
+		for (const c of PLAYER.cells) {
+			if (c.x === Math.floor(x / PIXELSIZE) && c.y === Math.floor(y / PIXELSIZE)) {
+				this.clickedOnPlayer = true;
+				break;
+			}
+		}
 		this.clicked = true;
 		this.pressed = true;
 		this.clickColor = getRandomColor();
@@ -73,7 +80,8 @@ class Mouse{
 	}
 
 	mouseup(e) {
-		MOUSE.pressed = false;
+		this.clickedOnPlayer = false;
+		this.pressed = false;
 	}
 }
 
