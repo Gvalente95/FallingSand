@@ -1,4 +1,3 @@
-
 let paramheader = null;
 function initInfoText() {
 	infoText = initLabelDiv(10, 10);
@@ -49,10 +48,10 @@ function initActionHeader(yPos)
 	let hdr = addHeader(xm, yPos, null, actionBtnH, null, 1);
 	hdr.style.left = "0px";
 
-	pauseButton = initButton("Pause", xs * nn++, 0, w, h, clr, switchPause, -1, hdr, false, 'Space', p + "pause.png", null, clr, "Pause Simulation");
+	pauseButton = initButton("Pause", xs * nn++, 0, w, h, clr, switchPause, -1, hdr, false, 'Tab', p + "pause.png", null, clr, "Pause Simulation");
 	brushActionButtons.push(initButton("Cut", xs * nn++, 0, w, h, clr, switchBrushAction, 'CUT', hdr, false, "c", p + "eraser.png", wp + "eraser.png", clr, "Cut tool"));
 	initButton("Fill", xs * nn++, 0, w, h, clr, fillScreen, null, hdr, null, 'f', p + "fill.png",  null, clr, "Fill tool");
-	initButton("Clear", xs * nn++, 0, w, h, clr, resetParticles, PIXELSIZE, hdr, null, 'r', p + "broom.png", null, clr, "Clear screen");
+	initButton("Clear", xs * nn++, 0, w, h, clr, resetCells, PIXELSIZE, hdr, null, 'r', p + "broom.png", null, clr, "Clear screen");
 	brushActionButtons.push(initButton("Pick", xs * nn++, 0, w, h, clr, switchBrushAction, 'PICK', hdr, false, "i", p + "eyedropper.png", wp + "eyedropper.png", clr, "Picker tool"));
 	brushActionButtons.push(initButton("Vibrate", xs * nn++, 0, w, h, clr, switchBrushAction, 'VIBRATE', hdr, false, "v", p + "vibrate.png", wp + "vibrate.png", clr, "Vibrate pixels on click"));
 	brushActionButtons.push(initButton("Grab", xs * nn++, 0, w, h, clr, switchBrushAction, 'GRAB', hdr, false, "p", p + "push.png", wp + "push.png", clr, "Grab pixels on click"));
@@ -62,21 +61,23 @@ function initActionHeader(yPos)
 	initButton("Grid", xs * nn++, 0, w, h, clr, switchGridMode, null, hdr, false, "g", p + "grid.png", null, clr, "Toggle grid");
 	initButton("Brush", xs * nn++, 0, w, h, clr, setNewBrushType, null, hdr, true, 'b', p + "disk.png", null, clr, "Change brush shape");
 	initButton("Emitter", xs * nn++, 0, w, h, clr, spawnEmitterAtMouse, null, hdr, null, 'l', p + "emit.png", null, clr, "Create pixel emitter on click");
-	initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, 'Tab', p + "next.png", null, clr, "Next frame");
+	initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, 'n', p + "next.png", null, clr, "Next frame");
+	initButton("Save", xs * nn++, 0, w, h, clr, saveMap, null, hdr, null, "1", p + "save.png", null, clr, "Save Environment");
+	initButton("Load", xs * nn++, 0, w, h, clr, selectMap, null, hdr, false, "2", p + "load.png", null, clr, "Load Environment");
 	fitHeaderDragWidth(hdr);
 }
 
-function initParticlePagesHeader(y) {
+function initCellPagesHeader(y) {
 	const w = btnW, h = btnH;
     const buttonSpread = btnW + uiXmargin;
-    const particleTypes = TAGS.map(tag => tag.type);
-    const tabsCount = particleTypes.length;
+    const cellTypes = TAGS.map(tag => tag.type);
+    const tabsCount = cellTypes.length;
     const tabsContentW = tabsCount * buttonSpread + 10;
     const tabsDragW = Math.max(0, tabsContentW - CANVW);
 	const pageHeader = addHeader(10, y, null, btnH, null, tabsDragW);
 	const background = 'rgba(73, 86, 94, 0.16)';
-    for (let i = 0; i < particleTypes.length; i++) {
-        const name = particleTypes[i];
+    for (let i = 0; i < cellTypes.length; i++) {
+        const name = cellTypes[i];
         const color = TAGS[i].color;
         const famButton = initButton(name, i * buttonSpread, 0, w, h, color, switchUiPage, i, pageHeader, null, null, null, null, color);
         famButton.sliders = [];
@@ -85,9 +86,9 @@ function initParticlePagesHeader(y) {
         const elementsY = y + btnH + 5;
         const elementsHeader = addHeader(10, elementsY, null, btnH, null, 1);
         let xp = 0;
-		for (let v = 0; v < particleKeys.length; v++) {
-			const key = particleKeys[v];
-			const prop = PARTICLE_PROPERTIES[key];
+		for (let v = 0; v < cellKeys.length; v++) {
+			const key = cellKeys[v];
+			const prop = CELL_PROPERTIES[key];
 			if (!hasTag(key, name)) continue;
 			let x = xp++ * buttonSpread;
 			const btn = initButton(key, x, 0, w, h, background, setNewType, v, elementsHeader, null, null, null, null, prop.color);
@@ -115,7 +116,7 @@ function initUi()
 {
 	initActionHeader(0);
 	initParamHeader(actionBtnH + uiYmargin);
-	initParticlePagesHeader(actionBtnH + paramH + uiYmargin * 3, 'rgb(23, 14, 23)');
+	initCellPagesHeader(actionBtnH + paramH + uiYmargin * 3, 'rgb(23, 14, 23)');
 	initInfoText();
 	setNewType(0);
 	setNewBrushType('DISC');
@@ -127,12 +128,16 @@ function initUi()
 }
 
 let au = null;
+let levels = [];
 function init()
 {
+	INPUT = new InputManager();
+	MOUSE = new Mouse();
 	initCreationRules();
 	au = new AudioManager();
 	initUi();
 	initGrid();
+	PLAYER = new Player(50, 50, 8, 14);
 }
 
-window.onload = () => {init();	update();};
+window.onload = () => { init(); loop(); };

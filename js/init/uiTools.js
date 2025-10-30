@@ -393,18 +393,18 @@ function updateUi()
 }
 
 function switchUiPage(newPageIndex) {uiPageIndex = newPageIndex;}
-function setNewType(newIndex) { switchCut(false); TYPEINDEX = newIndex; for (const b of uiPagesButtons[uiPageIndex].buttons) if (b.label == particleKeys[newIndex]) typeButton = b; }
+function setNewType(newIndex) { switchCut(false); TYPEINDEX = newIndex; for (const b of uiPagesButtons[uiPageIndex].buttons) if (b.label == cellKeys[newIndex]) typeButton = b; }
 function getCurButtonTypeIndex()
 {
 	for (let i = 0; i < uiPagesButtons[uiPageIndex].buttons.length; i++)
 	{
 		let b = uiPagesButtons[uiPageIndex].buttons[i];
-		if (b.label == particleKeys[TYPEINDEX]) return (i);
+		if (b.label == cellKeys[TYPEINDEX]) return (i);
 	}
 	return (0);
 }
 
-function getCurTypeIndex(typeString) { return (particleKeys.indexOf(typeString)); }
+function getCurTypeIndex(typeString) { return (cellKeys.indexOf(typeString)); }
 
 let settingBrushSize = false;
 function setNewBrushSize(newPercentile) { BRUSHSIZE = ((Math.min(GRIDW, GRIDH) / 3) / 100) * newPercentile; settingBrushSize = true; }
@@ -419,14 +419,14 @@ function goToPrevFrame() {
 	if (!ISREWINDING) switchPause(true);
 	initGrid();
 	let hasReachedEnd = false;
-	for (const p of activeParticles) {
+	for (const p of activeCells) {
 		if (!p.prvP.length) { hasReachedEnd++; continue; }
 		let prvP = p.prvP.pop();
 		p.updatePosition(prvP[0], prvP[1], false);
 		p.velX = prvP[2];
 		p.velY = prvP[3];
 	}
-	if (hasReachedEnd >= activeParticles.length) { switchRewinding(); switchPause(true); }
+	if (hasReachedEnd >= activeCells.length) { switchRewinding(); switchPause(true); }
 };
 
 function deactivateSwitchButton(button) {
@@ -454,7 +454,7 @@ function setNewPixelSize(newPixelSize)
 	PIXELSIZE = newPixelSize;
 	GRIDW = Math.floor(CANVW / PIXELSIZE);
 	GRIDH = Math.floor(CANVH / PIXELSIZE);
-	resetParticles();
+	resetCells();
 }
 
 function switchPause(newPause = !inPause) {

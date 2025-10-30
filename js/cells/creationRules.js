@@ -69,21 +69,21 @@ function heatLevel(self){
 function pressureAt(x,y){
 	let n=0;
 	for (let yy=y-1; yy>=0; yy--){
-		const q=pxAtI(ROWOFF[yy] + x);
+		const q=cellAtI(ROWOFF[yy] + x);
 		if (q && (q.physT==='SOLID')) n++; else break;
 	}
 	return n;
 }
 
 function applyCreationAt(x,y,target){
-	const p=pxAtI(ROWOFF[y] + x);
+	const p=cellAtI(ROWOFF[y] + x);
 	if (p){ if (p.type===target) return false; p.replace(target); return true; }
-	new Particle(x, y, target);
+	new Cell(x, y, target);
 	return true;
 }
 
-let CREATE_RULES = buildCreationRules(PARTICLE_PROPERTIES);
-function rebuildCreationRules(){ CREATE_RULES = buildCreationRules(PARTICLE_PROPERTIES); }
+let CREATE_RULES = buildCreationRules(CELL_PROPERTIES);
+function rebuildCreationRules(){ CREATE_RULES = buildCreationRules(CELL_PROPERTIES); }
 
 function runCreationAt(x,y,self){
 	for (const rules of Object.values(CREATE_RULES)){
@@ -101,7 +101,7 @@ function runCreationAt(x,y,self){
 }
 
 function addCreationRule(type, rule){
-	const p = PARTICLE_PROPERTIES[type]; if(!p) return;
+	const p = CELL_PROPERTIES[type]; if(!p) return;
 	if (!p.cr) p.cr = [];
 	else if (!Array.isArray(p.cr)) p.cr = [p.cr];
 	p.cr.push(rule);

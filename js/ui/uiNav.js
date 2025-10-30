@@ -13,7 +13,7 @@ function updateUi()
 		let b = uiButtons[i];
 		let isOpen = typeButton && b.label == typeButton.label;
 		if (ISGAME) {
-			let isKnown = PARTICLE_PROPERTIES[b.label].kn;
+			let isKnown = CELL_PROPERTIES[b.label].kn;
 			if (!isKnown) {
 				b.style.backgroundColor = notKnColor;
 				b.textContent = '';
@@ -35,9 +35,9 @@ function getCurButtonTypeIndex()
 	{
 		let b = uiPagesButtons[uiPageIndex].buttons[i];
 		if (b.label == 'MAKE') { return (i);}
-		if (ISGAME && !PARTICLE_PROPERTIES[b.label].kn) continue;
+		if (ISGAME && !CELL_PROPERTIES[b.label].kn) continue;
 		if (found == -1) found = i;
-		if (b.label == particleKeys[TYPEINDEX]) return (i);
+		if (b.label == cellKeys[TYPEINDEX]) return (i);
 	}
 	return (found);
 }
@@ -50,7 +50,7 @@ function getScrollTypeIndex(curI, scrollDir) {
 	for (let i = 0; i < uiPagesButtons[uiPageIndex].buttons.length; i++)
 	{
 		let b = uiPagesButtons[uiPageIndex].buttons[i];
-		if (ISGAME && !PARTICLE_PROPERTIES[b.label].kn) continue;
+		if (ISGAME && !CELL_PROPERTIES[b.label].kn) continue;
 		if (b.label == 'MAKE' || (i > curI && scrollDir > 0)) { return (i); }
 		if (i == curI && scrollDir < 0 && lastFound != -1) return (lastFound);
 		if (i != curI) lastFound = i;

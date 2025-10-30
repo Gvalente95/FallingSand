@@ -1,6 +1,6 @@
 let id = 0;
-class Particle{
-	constructor(x, y, type, velX = f_range(-.3, .3), velY = (PARTICLE_PROPERTIES[type].physT == 'GAS' ? -1 : f_range(0, 3)), lt = PARTICLE_PROPERTIES[type].lt * f_range(.5, 1.5))
+class Cell{
+	constructor(x, y, type, velX = f_range(-.3, .3), velY = (CELL_PROPERTIES[type].physT == 'GAS' ? -1 : f_range(0, 3)), lt = CELL_PROPERTIES[type].lt * f_range(.5, 1.5))
 	{
 		if (!this.spawn(x, y, type)) { this.toRemove(); return;}
 		this.childrens = [];
@@ -23,27 +23,28 @@ class Particle{
 		this.frozen = 0;
 		this.velX = velX;
 		this.velY = velY;
-		this.setType(type);
 		this.x = x;
 		this.y = y;
 		this.startX = x, this.startY = y;
 		this.i = ROWOFF[this.y] + this.x;
 		grid1[this.i] = this;
-		activeParticles.push(this);
+		activeCells.push(this);
 		this.active = true;
+		this.setType(type);
 	}
 
 	spawn(x, y, type) {
 		if (isOutOfBorder(x, y)) return (false);
-		let px = pxAtI(x + y * GW, this);
-		if (!px) return (true);
-		if (type === px.type) return (false);
-		if (PARTICLE_PROPERTIES[type].physT !== 'GAS') { px.toRemove(); return (true); }
-		if (PARTICLE_PROPERTIES[type].freeze) { this.x = x, this.y = y; this.applyFrost(type, 50, true); }
-		if (shouldBurnParticle(type, px)) px.setToFire(type);
-		else if (px.physT === 'LIQUID' && type === 'FIRE') {
-			px.setType('FIRE', 'STEAM');
-			px.velX = 0;
+		let cell = cellAtI(x + y * GW, this);
+		if (!cell) return (true);
+		if (cell.type === 'PLAYER') return (false);
+		if (type === cell.type) return (false);
+		if (CELL_PROPERTIES[type].physT !== 'GAS') { cell.toRemove(); return (true); }
+		if (CELL_PROPERTIES[type].freeze) { this.x = x, this.y = y; this.applyFrost(type, 50, true); }
+		if (shouldBurnCell(type, cell)) cell.setToFire(type);
+		else if (cell.physT === 'LIQUID' && type === 'FIRE') {
+			cell.setType('FIRE', 'STEAM');
+			cell.velX = 0;
 		}
 		return (false);
 	}
@@ -52,7 +53,7 @@ class Particle{
 		if (!this.active) return 0;
 		if (di === this.i) return 0;
 		const hit = grid1[di];
-		if (hit && hit !== this && hit.active) {
+		if (hit && hit !== this && hit.active && !(this.type === "PLAYER" && hit.type === "PLAYER")) {
 			if (this.physT === 'GAS') { this.toRemove(); return 0; }
 			return this.swap(hit);
 		}
@@ -62,9 +63,9 @@ class Particle{
 		this.y = (di / GW) | 0;
 		grid1[di] = this;
 		if (this.isShroom && this.parent) {
-			let px = this.parent.x;
-			if (Math.abs(this.x - px) > 1) px = Math.sign(this.x - px);
-			let newPi = ROWOFF[this.y - 1] + px;
+			let cell = this.parent.x;
+			if (Math.abs(this.x - cell) > 1) cell = Math.sign(this.x - cell);
+			let newPi = ROWOFF[this.y - 1] + cell;
 			this.parent.updatePosition(newPi);
 		}
 		return 1;
@@ -76,12 +77,12 @@ class Particle{
 		{
 			if (this.type === 'HESTIA' && this.id != -1) {
 				let spawnX = this.startX, spawnY = this.startY;
-				let i = pxAtI(ROWOFF[spawnY] + spawnX);
+				let i = cellAtI(ROWOFF[spawnY] + spawnX);
 				if (i) {
 					if (i.type != this.type) i.toRemove();
 					return;
 				}
-				new Particle(spawnX, spawnY, this.type);
+				new Cell(spawnX, spawnY, this.type);
 				if (dice(10)) { this.replace('DUST'); return; }
 			}
 			if (this.transformType && (this.type !== 'STEAM' || this.y < 50)) return (this.replace(this.transformType));
@@ -112,15 +113,15 @@ class Particle{
 	update() {
 		if (!this.active) return;
 		if (this.selType === 'GRAB') {
-			this.x = clamp(MOUSEGRIDX + this.sx, 0, GW - 1);
-			this.y = clamp(MOUSEGRIDY + this.sy, 0, GH - 1);
+			this.x = clamp(MOUSE.gridX + this.sx, 0, GW - 1);
+			this.y = clamp(MOUSE.gridY + this.sy, 0, GH - 1);
 			return;
 		}
 		this.updateState();
 		if (this.frozen) {
 			if (this.y > GH - 1 || !dice(500)) return;
 			let gi = ROWOFF[this.y + 1] + this.x;
-			const g = pxAtI(gi, this);
+			const g = cellAtI(gi, this);
 			if (!g) {
 				if (this.type != 'WATER') this.updatePosition(gi);
 			this.unFreeze(0);}
@@ -131,8 +132,8 @@ class Particle{
 	}
 
 	killFamily() {
-		for (let i = 0; i < activeParticles.length; i++){
-			let p = activeParticles[i];
+		for (let i = 0; i < activeCells.length; i++){
+			let p = activeCells[i];
 			if (p === this) continue;
 			if (p.familyId === this.familyId) {
 				p.familyId = -1;
@@ -150,18 +151,18 @@ class Particle{
 		if (killFam && this.familyId != -1) {
 			this.killFamily();
 		}
-		destroyedParticles.push(this);
+		destroyedCells.push(this);
 	}
 	onRemove() {
-		const i = activeParticles.indexOf(this);
-		if (i !== -1) activeParticles.splice(i, 1);
+		const i = activeCells.indexOf(this);
+		if (i !== -1) activeCells.splice(i, 1);
 		const si = this.i;
 		if ((si >>> 0) < grid1.length && grid1[si] === this) grid1[si] = null;
 		this.i = -1;
 	}
-}; const p = Particle.prototype;
+}; const p = Cell.prototype;
 
-class ParticleEmitter{
+class CellEmitter{
 	constructor(x, y, type)
 	{
 		this.x = x;
@@ -172,19 +173,19 @@ class ParticleEmitter{
 
 	update()
 	{
-		if ((KEYS['x'] || KEYS['Backspace']) && (Math.abs(MOUSEX - this.x) < PIXELSIZE * 20 && Math.abs(MOUSEY - this.y) < PIXELSIZE * 20))
+		if ((INPUT.keys['x'] || INPUT.keys['Backspace']) && (Math.abs(MOUSE.x - this.x) < PIXELSIZE * 20 && Math.abs(MOUSE.y - this.y) < PIXELSIZE * 20))
 			this.onRemove();
 		else launchParticules(this.type, this.x, this.y, this.radius, true, false);
 	}
 
 	onRemove()
 	{
-		let index = particleEmitters.indexOf(this);
-		if (index != -1) particleEmitters.splice(index, 1);
+		let index = cellEmitters.indexOf(this);
+		if (index != -1) cellEmitters.splice(index, 1);
 		// for (const key in this) this[key] = null;
 	}
 }
 
 function spawnEmitterAtMouse() {
-	particleEmitters.push(new ParticleEmitter(MOUSEX, MOUSEY, particleKeys[TYPEINDEX]));	
+	cellEmitters.push(new CellEmitter(MOUSE.x, MOUSE.y, cellKeys[TYPEINDEX]));	
 }

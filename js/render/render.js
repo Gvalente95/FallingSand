@@ -15,10 +15,10 @@ function buildWaterShades() {
     }
 }
 
-function showShroomHead(prt, x, y) {
-	let h = clamp(prt.heigth / 10, 1, 3);
+function showShroomHead(cell, x, y) {
+	let h = clamp(cell.heigth / 10, 1, 3);
 	let w = Math.round(h * 2.5);
-	let baseColor = prt.headColor;
+	let baseColor = cell.headColor;
 	let startY = y - h + 1;
 	let startX = x - w / 2;
 	let curW = w;
@@ -35,11 +35,11 @@ function showShroomHead(prt, x, y) {
 
 function renderBrush() {
 	if (!settingBrushSize) {
-		if (isMobile) { if (!MOUSEPRESSED && !BRUSHACTION) return;}
-		else if (MOUSEPRESSED || !SHOWBRUSH) { return; }
-		if (MOUSEX < 0 || MOUSEX > canvas.width || MOUSEY < 0 || MOUSEY > canvas.height) return;
+		if (isMobile) { if (!MOUSE.pressed && !BRUSHACTION) return;}
+		else if (MOUSE.pressed || !SHOWBRUSH) { return; }
+		if (MOUSE.x < 0 || MOUSE.x > canvas.width || MOUSE.y < 0 || MOUSE.y > canvas.height) return;
 	}
-	let px = settingBrushSize ? CANVW / 2 : MOUSEGRIDX * PIXELSIZE; py = settingBrushSize ? CANVH / 2 : MOUSEGRIDY * PIXELSIZE;
+	let px = settingBrushSize ? CANVW / 2 : MOUSE.gridX * PIXELSIZE; py = settingBrushSize ? CANVH / 2 : MOUSE.gridY * PIXELSIZE;
 	let rad = BRUSHSIZE * PIXELSIZE;
 	let color = BRUSHACTION ? "#ffffff39" : setBrightness(BRUSHCOLOR);
 	let fillColor = BRUSHACTION ? 'rgba(71, 67, 67, 0.31)' : 'rgba(0, 0, 0, 0.1)';
@@ -65,7 +65,7 @@ function drawRect(x, y, width, height, color, strokeColor, lineWidth) {
     }
 }
 
-function drawParticleCircle(x, y, radius, color = 'rgba(255,255,255,1)') {
+function drawCellCircle(x, y, radius, color = 'rgba(255,255,255,1)') {
 	const grad = ctx.createRadialGradient(x, y, radius * 0.6, x, y, radius);
 	grad.addColorStop(0, color);
 	grad.addColorStop(1, 'rgba(255,255,255,0)');
@@ -85,11 +85,11 @@ function drawCircle(x, y, radius, color, strokeColor, lineWidth) {
 	ctx.closePath();
 }
 
-function drawSnowflake(prt, x, y, color, size) {
+function drawSnowflake(cell, x, y, color, size) {
 	ctx.fillStyle = color;
 	let rx = x * PIXELSIZE;
 	let ry = y * PIXELSIZE;
-	switch (prt.variant) {
+	switch (cell.variant) {
 		case 1:
 			ctx.fillRect(rx - size, ry, size * 3, size);
 			ctx.fillRect(rx, ry - size, size, size * 3);
@@ -113,40 +113,40 @@ function drawSnowflake(prt, x, y, color, size) {
 }
 
 var prevCtx = null;
-function showParticle(prt, x, y, alpha, size) {
-	let color = prt.color;
-	if (prt.type === 'SNOW') {
-		drawSnowflake(prt, x, y, color, size);
+function showCell(cell, x, y, alpha, size) {
+	let color = cell.color;
+	if (cell.type === 'SNOW') {
+		drawSnowflake(cell, x, y, color, size);
 		return;
 	}
-	if (prt.expl && !prt.frozen && prt.lt != Infinity) {
-		let timeLeft = prt.lt - prt.timeAlive;
-		color = addColor(PARTICLE_PROPERTIES[prt.type].color, 'rgb(255, 0, 0)', 1 - (timeLeft / prt.lt));
+	if (cell.expl && !cell.frozen && cell.lt != Infinity) {
+		let timeLeft = cell.lt - cell.timeAlive;
+		color = addColor(CELL_PROPERTIES[cell.type].color, 'rgb(255, 0, 0)', 1 - (timeLeft / cell.lt));
 	}
-	if (prt.isShroom && !prt.isLoop && prt.isHead) {
-		let px = atI(ROWOFF[y - 1] + x, prt);
-		if (px && px.type == prt.type) {
-			ctx.fillStyle = prt.baseColor;
+	if (cell.isShroom && !cell.isLoop && cell.isHead) {
+		let px = atI(ROWOFF[y - 1] + x, cell);
+		if (px && px.type == cell.type) {
+			ctx.fillStyle = cell.baseColor;
 			ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, size, size);
 			return;
 		}
-		showShroomHead(prt, x, y);
+		showShroomHead(cell, x, y);
 		return;
 	}
-	if ((prt.type === 'GLASS' || prt.type === 'ICE') && dice(50000)) color = 'rgba(255, 255, 255, 1)';
-	if (prt.fin || prt.fout && Number.isFinite(prt.lt)) {
-		const aIn  = prt.fin  ? Math.min(1, prt.timeAlive / prt.fin) : 1;
-		const aOut = prt.fout && Number.isFinite(prt.lt) ? Math.max(0, Math.min(1, (prt.lt - prt.timeAlive) / prt.fout)) : 1;
+	if ((cell.type === 'GLASS' || cell.type === 'ICE') && dice(50000)) color = 'rgba(255, 255, 255, 1)';
+	if (cell.fin || cell.fout && Number.isFinite(cell.lt)) {
+		const aIn  = cell.fin  ? Math.min(1, cell.timeAlive / cell.fin) : 1;
+		const aOut = cell.fout && Number.isFinite(cell.lt) ? Math.max(0, Math.min(1, (cell.lt - cell.timeAlive) / cell.fout)) : 1;
 		alpha = Math.min(aIn, aOut);
 	}
-	if (prt.type === 'CLOUD' || prt.type === 'SMOKE') {
-		let fAlpha = Math.min(alpha, prt.alpha);
-		let clr = setAlpha(prt.baseColor, fAlpha);
-		drawParticleCircle(x * PIXELSIZE - prt.size, y * PIXELSIZE - prt.size, prt.size * 2, clr);
+	if (cell.type === 'CLOUD' || cell.type === 'SMOKE') {
+		let fAlpha = Math.min(alpha, cell.alpha);
+		let clr = setAlpha(cell.baseColor, fAlpha);
+		drawCellCircle(x * PIXELSIZE - cell.size, y * PIXELSIZE - cell.size, cell.size * 2, clr);
 		return;
 	}
-	if (alpha != 1) color = `rgba(${prt.rgb}, ${alpha})`;
-	else if (prt.isWater && !prt.frozen) color = waterShades[prt.y].color;
+	if (alpha != 1) color = `rgba(${cell.rgb}, ${alpha})`;
+	else if (cell.isWater && !cell.frozen) color = waterShades[cell.y].color;
 	if (prevCtx != color) {
 		ctx.fillStyle = color;
 		prevCtx = color;
@@ -163,8 +163,29 @@ function render() {
 		showSize--;
 		ctx.drawImage(gridLayer, 0, 0);
 	}
-	for (let i = 0; i < activeParticles.length; i++) showParticle(activeParticles[i], activeParticles[i].x, activeParticles[i].y, 1, showSize);
+	for (let i = 0; i < activeCells.length; i++) {
+		let px = activeCells[i];
+		if (px.type !== "PLAYER")
+			showCell(px, px.x, px.y, 1, showSize);
+	}
+	if (PLAYER)
+		PLAYER.render(showSize);
 	renderBrush();
 	FRAME++;
 	if (SHOWHUD) updateHUD();
+}
+
+function captureScreenshot() {
+  const color = "rgba(0, 0, 0, 0.51)";
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  const showSize = PIXELSIZE;
+  for (let i = 0; i < activeCells.length; i++) {
+    const px = activeCells[i];
+    if (px.type !== "PLAYER")
+      showCell(px, px.x, px.y, 1, showSize);
+  }
+  if (PLAYER)
+    PLAYER.render(showSize);
 }

@@ -23,7 +23,7 @@ class AudioManager {
 	{
 		this.elementSounds = [];
 		let i = 0;
-		for (const str of particleKeys)
+		for (const str of cellKeys)
 		{
 			const fpath = basePath + "/" + str + "/" + "0.wav";
 			this.elementSounds[i++] = new Audio(fpath);

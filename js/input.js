@@ -1,58 +1,120 @@
+class InputManager
+{
+	constructor(){
+		this.keys = {};
+		this.x = 0;
+		this.y = 0;
+		this.lastKey = null;
+		this.shift = false;
+	}
+
+	update() {
+		this.shift = this.keys["shift"];
+		let keyX = (this.keys['a'] ? -1 : 0) + (this.keys['d'] ? 1 : 0);
+		let keyY = (this.keys['w'] ? -1 : 0) + (this.keys['s'] ? 1 : 0);
+		this.x = keyX;
+		this.y = keyY;
+		setTimeout(() => { this.x = this.y = 0; }, 200);
+		if (ticks % 3 !== 0)
+			return;
+		let arrowX = (INPUT.lastKey == 'ArrowLeft' ? -1 : 0) + (INPUT.lastKey == 'ArrowRight' ? 1 : 0);
+		let arrowY = (INPUT.lastKey == 'ArrowUp' ? -1 : 0) + (INPUT.lastKey == 'ArrowDown' ? 1 : 0);
+		if ((PLAYER && !arrowX && !arrowY) || (!arrowX && !arrowY && !keyX && !keyY))
+			return;
+		navigateUi(arrowX || (PLAYER ? 0 : keyX), arrowY || (PLAYER ? 0 : keyY));
+		au.playSound(au.clock, .1);
+	}
+}
+
+class Mouse{
+	constructor() {
+		this.x = 0;
+		this.y = 0;
+		this.dx = 0;
+		this.dy = 0;
+		this.gridX = 0;
+		this.gridY = 0;
+		this.clicked = false;
+		this.pressed = false;
+		this.stuckX = 0;
+		this.stuckY = 0;
+		this.cell = null;
+		this.clickColor = getRandomColor();
+	}
+
+	setPos(x, y) {
+		this.x = x;
+		this.y = y;
+		let gridX = Math.floor(x / PIXELSIZE);
+		let gridY = Math.floor(y / PIXELSIZE);
+		this.gridX = clamp(gridX, 0, GW - 1);
+		this.gridY = clamp(gridY, 0, GH - 1);
+	}
+
+	mousemove(x, y) {
+		const dx = x - this.x;
+		const dy = y - this.y;
+		if (this.lockAxis) {
+			this.lockAxis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+			if (this.lockAxis === "x") x = this.stuckX;
+			else y = this.stuckY;
+		}
+		this.dx = dx;
+		this.dy = dy;
+		this.setPos(x, y);
+	}
+
+	mousedown(x, y) {
+		this.clicked = true;
+		this.pressed = true;
+		this.clickColor = getRandomColor();
+		this.setPos(x, y);
+		setTimeout(() => { this.clicked = false }, 50);
+	}
+
+	mouseup(e) {
+		MOUSE.pressed = false;
+	}
+}
+
 canvas.addEventListener('mousedown', (e) => {
-	MOUSEPRESSED = true;
-	MOUSECLICKED = true;
-	CLICKCOLOR = getRandomColor();
-	setMousePos(e.clientX, e.clientY);
-	setTimeout(() => { MOUSECLICKED = false }, 50);
+	MOUSE.mousedown(e.clientX, e.clientY);
 	userInput();
 	if (BRUSHACTION === 'GRAB') selectRadius('GRAB');
 	if (BRUSHACTION === 'CONTROL') selectRadius('CONTROL');
 });
 
 window.addEventListener('mouseup', () => {
-	MOUSEPRESSED = false;
+	MOUSE.mouseup();
 	if (BRUSHACTION === 'GRAB') {
 		resetSelectedType('GRAB');
-		selParticles = [];
+		selCells = [];
 	}
-	if (BRUSHACTION == 'PICK' && PXATMOUSE) setNewType(particleKeys.indexOf(PXATMOUSE.type));
+	if (BRUSHACTION == 'PICK' && MOUSE.cell) setNewType(cellKeys.indexOf(MOUSE.cell.type));
 	userInput();
 });
 
-function setMousePos(x, y) {
-	MOUSEX = x;
-	MOUSEY = y;
-	let gridX = Math.floor(MOUSEX / PIXELSIZE);
-	let gridY = Math.floor(MOUSEY / PIXELSIZE);
-	MOUSEGRIDX = clamp(gridX, 0, GW - 1);
-	MOUSEGRIDY = clamp(gridY, 0, GH - 1);
-}
-
 window.addEventListener('mousemove', (e) => {
-	MOUSEDX = e.clientX - MOUSEX;
-	MOUSEDY = e.clientY - MOUSEY;
-	setTimeout(() => { MOUSEDX = 0; MOUSEDY = 0; }, 200);
-	setMousePos(e.clientX, e.clientY);
+	MOUSE.mousemove(e.clientX, e.clientY);
 });
-
 
 window.addEventListener('keydown', (e) => {
 	userInput();
-	if (e.code == 'Tab') e.preventDefault();
-	if (e.key == 't') { ISGAME = !ISGAME; updateUi(); }
-	if (e.key == 'k') switchUiDisplay();
-	KEYS[e.key] = true;
-	INPXSCROLL = ((KEYS['a'] || KEYS['ArrowLeft']) ? -1 : 0) + ((KEYS['d'] || KEYS['ArrowRight']) ? 1 : 0);
-	INPYSCROLL = ((KEYS['w'] || KEYS['ArrowUp']) ? -1 : 0) + ((KEYS['s'] || KEYS['ArrowDown']) ? 1 : 0);
-	if (!INPYSCROLL && !INPXSCROLL) return;
-	e.preventDefault();
-	navigateUi(INPXSCROLL, INPYSCROLL);
-	au.playSound(au.clock, .1);
-	setTimeout(() => { INPXSCROLL = INPYSCROLL = 0; }, 50);
+	if (e.code === 'Tab') e.preventDefault();
+	else if (e.key === 't') { ISGAME = !ISGAME; updateUi(); }
+	else if (e.key === 'k') switchUiDisplay();
+	else if (e.key === 'h') PLAYER.death();
+	else if (e.key === 'z') {
+		MOUSE.stuckX = MOUSE.x;
+		MOUSE.stuckY = MOUSE.y;
+	}
+	INPUT.lastKey = e.key.toLowerCase();
+	INPUT.keys[INPUT.lastKey] = true;
 });
 
 window.addEventListener('keyup', (e) => {
-	KEYS[e.key] = false;
+	INPUT.keys[e.key.toLowerCase()] = false;
+  	if (e.key.toLowerCase() === "z") MOUSE.lockAxis = null;
 	if (isWheeling && e.key === 'Shift') isWheeling = false;
 });
 
@@ -77,7 +139,7 @@ canvas.addEventListener('wheel', (e) => {
 	steps += Math.sign(wheelAcc);
 	wheelAcc -= Math.sign(wheelAcc);}
 	if (!steps) return;
-	if (!KEYS['Shift']) BRUSHSIZE = clamp(BRUSHSIZE - steps, 1, MAXBRUSHSIZE);
+	if (!INPUT.keys['shift']) BRUSHSIZE = clamp(BRUSHSIZE - steps, 1, MAXBRUSHSIZE);
 	else {
 		setNewPixelSize(clamp(PIXELSIZE + steps, 2, 19));
 		setMousePos(e.clientX, e.clientY);
@@ -85,7 +147,6 @@ canvas.addEventListener('wheel', (e) => {
 		isWheeling = true;
 	}
 });
-
 
 function simulateMouseEvent(touchEvent, mouseEventType) {
     const touch = touchEvent.changedTouches[0];

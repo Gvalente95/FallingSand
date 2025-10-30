@@ -1,12 +1,7 @@
 //	INPUT
-KEYS = {};
-MOUSECLICKED = MOUSEPRESSED = false;
-MOUSEX = MOUSEY = 0;
-MOUSEDX = MOUSEDY = 0;
-MOUSEGRIDX = MOUSEGRIDY = 0;
-CLICKCOLOR = getRandomColor();
-PXATMOUSE = null;
 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+INPUT = null;
+MOUSE = null;
 
 // PARAMS
 SWIMSPEED = 2;
@@ -15,7 +10,7 @@ PIXELSIZE = 3;
 BRUSHSIZE = 8;
 SHOWBRUSH = !isMobile;
 BRUSHCOLOR = null;
-MAXPARTICLES = 200000;
+MAXCells = 200000;
 MAXBRUSHSIZE = 40;
 XDRAG = .1;
 GRAVITY = .5;
@@ -24,6 +19,7 @@ TYPEINDEX = 0;
 MAXREWIND = 30;
 RAINPOW = 50;
 GRIDPX = true;
+PLAYER = null;
 
 //	UI
 let btnClr = 'rgba(174, 108, 108, 1)';
@@ -81,17 +77,17 @@ uiContainer.style.border = '5px solid rgba(123, 123, 123, 0.09)';
 uiContainer.style.height = parseFloat(window.innerHeight) - (CANVH + 10) + "px";
 uiContainer.style.width = (parseFloat(window.innerWidth) - 10) + "px";
 
-//	PARTICLES
-let destroyedParticles = [];
-let activeParticles = [];
-let particleEmitters = [];
-let selParticles = [];
+//	Cells
+let destroyedCells = [];
+let activeCells = [];
+let cellEmitters = [];
+let selCells = [];
 
 const PHYSTYPES = Object.freeze({ SOLID: 'SOLID', LIQUID: 'LIQUID', GAS: 'GAS', STATIC: 'STATIC' });
 const physKeys = Object.keys(PHYSTYPES);
 const UPDATE_TYPES = Object.freeze({ STATIC: 'STATIC', DYNAMIC: 'DYNAMIC', ALIVE: 'ALIVE', GEL: 'GEL'});
 
-let PARTICLE_PROPERTIES = {
+let CELL_PROPERTIES = {
 ['GRASS']:	{ color: 'rgb(86, 223, 36)',	lt: Infinity,	brn: 970,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 15,	spread: 0,	expl: 0, kn: 1, rclr: 5, fin: 0, fout: 0},
 ['SAND']:	{ color: 'rgb(255, 221, 0)',	lt: Infinity,	brn: 10,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 50,	spread: 0,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
 ['GLASS']:	{ color: 'rgb(208, 226, 239)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 90,	spread: 0,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
@@ -100,6 +96,7 @@ let PARTICLE_PROPERTIES = {
 ['TNT']: 	{ color: 'rgb(74,104,115)', 	lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'DYNAMIC', dns: 50, 	spread: 0, 	expl: 5, kn: 0, rclr: 5, fin: 0, fout: 0},
 ['DYNAMITE']:{color: 'rgb(115, 99, 74)',	lt: 5,			brn: 999,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 50,	spread: 0,	expl: 5, kn: 0, rclr: 5, fin: 0, fout: 0},
 ['COAL']:	{ color: 'rgb(68, 68, 68)',	lt: 10,			brn: 1,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 45,	spread: 2,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
+['GBLADE']:	{ color: 'rgba(61, 128, 37, 1)',	lt: Infinity,	brn: 990,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 15,	spread: 0,	expl: 0, kn: 1, rclr: 0, fin: 0, fout: 0},
 ['RAINBOW']:{ color: 'rgb(255, 0, 234)',	lt: Infinity,	brn: 950,	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 10,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
 ['MAGMA']:	{ color: 'rgb(198, 64, 2)',	lt: 12,			brn: 0,		brnpwr: 1000,	douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 100,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
 ['SNOW']:	{ color: 'rgba(255, 255, 255, 1)',	lt: Infinity,			brn: 1000,		brnpwr: 0,	douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 2,	spread: 0,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
@@ -125,23 +122,24 @@ let PARTICLE_PROPERTIES = {
 ['LEAF']: 	{ color: 'rgba(74, 207, 94, 1)', 	lt: Infinity, 	brn: 990, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE',  dns: 4, 	spread: 0, 	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
 ['BEE']:	{ color: 'rgb(87, 76, 56)',	lt: Infinity,	brn: 970,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'ALIVE', 	 dns: 2,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
 ['ANT']: 	{ color: 'rgba(92, 42, 34, 1)', lt: Infinity,	brn: 970, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 25, 	spread: 0, 	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
-['FIREANT']: { color: 'rgba(223, 33, 33, 1)', lt: Infinity,	brn: 0, 	brnpwr: 1000,	douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 25, 	spread: 0, 	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['FIREANT']: { color: 'rgba(78, 36, 108, 1)', lt: Infinity,	brn: 0, 	brnpwr: 1000,	douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 25, 	spread: 0, 	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
 ['ANTEGG']: { color: 'rgb(226, 224, 206)', lt: 5, 			brn: 970, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'ALIVE', 	 dns: 25, 	spread: 0, 	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
 ['FISH']:	{ color: 'rgb(27, 80,33)',	lt: Infinity,	brn: 970,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'ALIVE', 	 dns: 25,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
 ['ALIEN']:	{ color: 'rgb(45,19, 83)', 	lt: Infinity, 	brn: 980, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'STATIC', 	updT: 'ALIVE', 	 dns: 4, 	spread: 0, 	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
-['HONEY']:	{ color: 'rgb(199,60, 33)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'FOOD',  	 dns: 2,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
+['HONEY']:	{ color: 'rgb(199,60, 33)',	lt: Infinity,	brn: 800,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'FOOD',  	 dns: 2,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
 ['TORCH']:	{ color: 'rgb(214, 113, 40)',	lt: Infinity,	brn: 0,		brnpwr: 1000,	douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'STATIC',  dns: 30,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: .5, fout: .5},
 ['WOOD']: 	{ color: 'rgb(61, 41, 37)',	lt: Infinity, 	brn: 950, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'STATIC',  dns: 40, 	spread: 0,  expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0},
+['PLAYER']: { color: 'rgba(177, 136, 136, 1)',	lt: Infinity, 	brn: 950, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'STATIC',  dns: 40, 	spread: 0,  expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0},
 ['METAL']: 	{ color: 'rgb(72, 79, 94)',	lt: Infinity,	brn: 0, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'STATIC',  dns: 800, 	spread: 0, 	expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0},
 ['XPLOSIVE']: { color: 'rgba(60, 83, 36, 1)', lt: Infinity, brn: 999, brnpwr: 0, douse: 0, freeze: 0, cor: 0, physT: 'SOLID', updT: 'STATIC', dns: 800, spread: 0, expl: 5, kn: 0, rclr: 0, fin: 0, fout: 0 },
 ['SOLIDWATER']: { color: 'rgba(47, 93, 134, 1)', lt: Infinity, brn: 0, brnpwr: 0, douse: 1, freeze: 0, cor: 0, physT: 'LIQUID', updT: 'STATIC', dns: 2, spread: 20, expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0 },
 ['???']:	{ color: 'rgba(109, 42, 96, 1)',	lt: 10,	brn: 10, 	brnpwr: 10, 		douse: 1, freeze: 1, cor: 1, physT: 'SOLID', 	updT: 'DYNAMIC',  dns: 2, 	spread: 20, expl: 2, kn: 0, rclr: 5, fin: 1, fout: 1},
-}; let particleKeys = Object.keys(PARTICLE_PROPERTIES);
+}; let cellKeys = Object.keys(CELL_PROPERTIES);
 
 
 const CREATIONMODE = Object.freeze({ HEAT: 'HEAT', COLD: 'COLD', PRESSURE: 'PRESSURE', TIME: 'TIME', CHARGE: 'CHARGE'})
 function initCreationRules() {
-	for (let i = 0; i < particleKeys.length; i++) PARTICLE_PROPERTIES[particleKeys[i]].cr = null;
+	for (let i = 0; i < cellKeys.length; i++) CELL_PROPERTIES[cellKeys[i]].cr = null;
 	// addCreationRule('SAND', { mode: 'TIME', need: 'ROCK, WATER', value: 1, chance: .1, result: 'GRASS' });
 	// addCreationRule('SAND', { mode: 'TIME', need: 'WATER', chance: .1, result: 'GRASS' });
 	// addCreationRule('SAND', {mode:'HEAT', need:'LAVA', chance:.1, result:'GLASS'});
@@ -172,16 +170,16 @@ const TAGS = [
 ];
 const TAG_INDEX = TAGS.reduce((acc, tag, i) => ({ ...acc, [tag.type]: i }), {});
 function tagMaskOf(tags) {return tags.reduce((mask, tag) => {const index = TAG_INDEX[tag];return index !== undefined ? mask | (1 << index) : mask;}, 0);}
-function addTag(type, color = setBrightness[PARTICLE_PROPERTIES[particleKeys[type]].color]) {const brightColor = setBrightness(color, 150);TAGS.push({ type, color: brightColor });TAG_INDEX[type] = TAGS.length - 1;}
-function hasTag(type, tag) {const p = PARTICLE_PROPERTIES[type];return !!(p.tagMask & (1 << TAG_INDEX[tag]));}
-function anyTag(type, tags) {const m = tagMaskOf(tags);return (PARTICLE_PROPERTIES[type].tagMask & m) !== 0;}
-function allTags(type, tags) {const m = tagMaskOf(tags);return (PARTICLE_PROPERTIES[type].tagMask & m) === m;}
-function setTags(type, tags) {const p = PARTICLE_PROPERTIES[type];p.tags = [...new Set(tags)];p.tagMask = tagMaskOf(p.tags);}
-function typesWithAny(tags) {const m = tagMaskOf(tags);return Object.keys(PARTICLE_PROPERTIES).filter(k => (PARTICLE_PROPERTIES[k].tagMask & m) !== 0);}
-function typesWithAll(tags) {const m = tagMaskOf(tags);return Object.keys(PARTICLE_PROPERTIES).filter(k => (PARTICLE_PROPERTIES[k].tagMask & m) === m);}
+function addTag(type, color = setBrightness[CELL_PROPERTIES[cellKeys[type]].color]) {const brightColor = setBrightness(color, 150);TAGS.push({ type, color: brightColor });TAG_INDEX[type] = TAGS.length - 1;}
+function hasTag(type, tag) {const p = CELL_PROPERTIES[type];return !!(p.tagMask & (1 << TAG_INDEX[tag]));}
+function anyTag(type, tags) {const m = tagMaskOf(tags);return (CELL_PROPERTIES[type].tagMask & m) !== 0;}
+function allTags(type, tags) {const m = tagMaskOf(tags);return (CELL_PROPERTIES[type].tagMask & m) === m;}
+function setTags(type, tags) {const p = CELL_PROPERTIES[type];p.tags = [...new Set(tags)];p.tagMask = tagMaskOf(p.tags);}
+function typesWithAny(tags) {const m = tagMaskOf(tags);return Object.keys(CELL_PROPERTIES).filter(k => (CELL_PROPERTIES[k].tagMask & m) !== 0);}
+function typesWithAll(tags) {const m = tagMaskOf(tags);return Object.keys(CELL_PROPERTIES).filter(k => (CELL_PROPERTIES[k].tagMask & m) === m);}
 
-for (const k in PARTICLE_PROPERTIES) {
-	const p = PARTICLE_PROPERTIES[k];
+for (const k in CELL_PROPERTIES) {
+	const p = CELL_PROPERTIES[k];
 	const s = new Set(p.tags || []);
 	s.add('ALL');
 	if (p.brn > 100) s.add('COMB');
@@ -200,7 +198,7 @@ ISGAME = false;
 if (!ISGAME) discoverAll();
 
 function discoverAll() {
-	for (let i = 0; i < particleKeys.length; i++){
-		PARTICLE_PROPERTIES[particleKeys[i]].kn = 1;
+	for (let i = 0; i < cellKeys.length; i++){
+		CELL_PROPERTIES[cellKeys[i]].kn = 1;
 	}
 }

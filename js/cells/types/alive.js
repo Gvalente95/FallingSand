@@ -4,10 +4,10 @@ p.updateAlien = function (curX, curY) {
 	if (curX >= GW) curX = GW - 1;
 	if (curX < 0) curX = 0;
 	let inWater = false;
-	const px = pxAtI(ROWOFF[curY] + curX, this);
-	if (px) {
-		if (px.type === 'WATER') { inWater = true; px.toRemove(); }
-		else if (px.type == this.type && px.parent) { px.toRemove(); }
+	const cell = cellAtI(ROWOFF[curY] + curX, this);
+	if (cell) {
+		if (cell.type === 'WATER') { inWater = true; cell.toRemove(); }
+		else if (cell.type == this.type && cell.parent) { cell.toRemove(); }
 		else { this.setColor(); return; }
 	}
 	if (dice(30)) this.dirAng += f_range(-0.2, 0.2);
@@ -18,105 +18,27 @@ p.updateAlien = function (curX, curY) {
 	this.velY = Math.sin(ang) * speed;
 	const ox = this.x, oy = this.y;
 	this.updatePosition(ROWOFF[curY] + curX);
-	const clone = new Particle(ox, oy, this.type);
+	const clone = new Cell(ox, oy, this.type);
 	clone.parent = this;
 	if (dice(10))this.dirAng += f_range(-0.3, 0.3);
-	if (this.timeAlive < 2) {
-		let rpx = getPxlsInRect(this.x, this.y, 3, 3, this.type);
-		let isStuck = (rpx.length > 4);
-		if (isStuck) {return (this.setColor());}
-		else if (this.color != "rgba(133, 190, 154, 1)") {
-			this.setColor("rgba(133, 190, 154, 1)");
-			if (this.timeAlive > 6) this.toRemove();
-		}
-	}
-}
-
-p.updateAnt2 = function (curX, curY) {
-	if (this.burning) {
-		this.updatePosition(ROWOFF[curY] + curX);
-		return;
-	}
-
-	function isDirOk(prt, dir) {
-		let newGround = null;
-		switch (dir) {
-			case 'UP':
-				if (prt.u) return (false);
-				if (prt.y <= 0) return (false);
-				newGround = prt.lu ? prt.lu : prt.ru;
-				if (!newGround && prt.y > 0) return (false);
-				return (true);
-			case 'DOWN':
-				if (prt.d) return (false);
-				if (prt.y > GH - 1) return (false);
-				newGround = prt.ld ? prt.ld : prt.rd;
-				if (!newGround && prt.y > 0) return (false);
-				return (true);
-			case 'LEFT':
-				if (prt.l) return (false);
-				if (prt.x <= 0) return (false);
-				newGround = prt.lu ? prt.lu : prt.ld;
-				if (!newGround && prt.x > 0) return (false);
-				return (true);
-			case 'RIGHT':
-				if (prt.r) return (false);
-				if (prt.x > GW - 1) return (false);
-				newGround = prt.ru ? prt.ru : prt.rd;
-				if (!newGround && prt.x < GW - 1) return (false);
-				return (true);
-			case 'LEFTUP':
-				if (prt.lu) return (false);
-				if (prt.x - 1 < 0 || prt.y - 1 < 0) return (false);
-				if ((!prt.l && prt.x < GW - 1) && (!prt.u && prt.y < GH - 1)) return (false);
-				return (true);
-			case 'RIGHTUP':
-				if (prt.ru) return (false);
-				if (prt.x + 1 > GW - 1 || prt.y - 1 < 0) return (false);
-				if ((!prt.r && prt.x > 0) && (!prt.u && prt.y < GH - 1)) return (false);
-				return true;
-			case 'LEFTDOWN':
-				if (prt.ld) return (false);
-				if (prt.x - 1 < 0 || prt.y + 1 > GH - 1) return (false);
-				if (!prt.d) return (false);
-				return true;
-			case 'RIGHTDOWN':
-				if (prt.rd) return (false);
-				if (prt.x + 1 > GW - 1 || prt.y + 1 > GH - 1) return (false);
-				if (!prt.d) return (false);
-				return true;
-			default: break;
-		}
-	}
-	if (this.dir != undefined && this.dir && isDirOk(this, this.dir)) {
-		let xDir = (this.dir === 'LEFT' ? -1 : this.dir === 'RIGHT' ? 1 : 0);
-		let yDir = (this.dir === 'UP' ? -1 : this.dir === 'DOWN' ? 1 : 0);
-		this.updatePosition(ROWOFF[this.y + yDir] + this.x + xDir);
-	}
-	else {
-		if (this.y < GH - 1 && !pxAtI(ROWOFF[this.y + 1] + this.x)) this.updatePosition(ROWOFF[this.y + 1] + this.x);
-		// if (!isOutOfBorder(curX, curY))
-		// 	this.updatePosition(ROWOFF[curY] + curX);
-		const dirs = ['LEFT', 'RIGHT', 'UP', 'DOWN'];
-		for (let i = dirs.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[dirs[i], dirs[j]] = [dirs[j], dirs[i]];
-		}
-		for (let i = 0; i < dirs.length; i++){
-			if (isDirOk(this, dirs[i])) {this.dir = dirs[i]; break;}
-		}
-	}
+	// if (this.timeAlive < 2) {
+	// 	let rcell = getcelllsInRect(this.x, this.y, 3, 3, this.type);
+	// 	let isStuck = (rcell.length > 4);
+	// 	if (isStuck) {return (this.setColor());}
+	// 	else if (this.color != "rgba(133, 190, 154, 1)") {
+	// 		this.setColor("rgba(133, 190, 154, 1)");
+	// 		if (this.timeAlive > 6) this.toRemove();
+	// 	}
+	// }
 }
 
 p.updateAnt = function (curX, curY) {
-	// this.updateAnt2(curX, curY);
-	// return;
 	if (this.type === 'FIREANT' && dice(5)) {
 		var xx = this.x + this.xDir;
 		var yy = this.y + this.yDir;
 		let flameX = (xx === 0 ? 1 : xx >= GW - 1 ? GW - 2 : xx);
 		let flameY = (yy === 0 ? 1 : yy >= GH - 1 ? GH - 2 : yy);
-		newP = new Particle(flameX, flameY, 'FIRE');
+		newP = new Cell(flameX, flameY, 'FIRE');
 		if (this.xDir) {newP.velX = 0; newP.velY = this.y < 50 ? 1 : -1}
 		if (this.yDir) { newP.velY = 0; newP.velX = this.x < 50 ? 1 : -1 };
 	}
@@ -124,16 +46,16 @@ p.updateAnt = function (curX, curY) {
 	if (this.inWater) {
 		if (this.timeInWater === 100) { this.xDir = rdir();}
 		else if (this.timeInWater > 100) {
-			if (!pxAtI(ROWOFF[this.y + 1] + this.x, this)) { this.inWater = false; return (this.updatePosition(ROWOFF[this.y + 1] + this.x)); }
+			if (!cellAtI(ROWOFF[this.y + 1] + this.x, this)) { this.inWater = false; return (this.updatePosition(ROWOFF[this.y + 1] + this.x)); }
 			this.velY = -1;
 			if (!this.xDir) this.xDir = rdir();
-			let px = pxAtI(ROWOFF[this.y - 1] + this.x, this);
-			if (px && px.physT === 'LIQUID') return (this.swap(px));
-			px = pxAtI(ROWOFF[this.y] + this.x + this.xDir, this);
-			if (px) { this.swap(px); return; }
+			let cell = cellAtI(ROWOFF[this.y - 1] + this.x, this);
+			if (cell && cell.physT === 'LIQUID') return (this.swap(cell));
+			cell = cellAtI(ROWOFF[this.y] + this.x + this.xDir, this);
+			if (cell) { this.swap(cell); return; }
 			this.xDir *= -1;
-			px = pxAtI(ROWOFF[this.y] + this.x + this.xDir, this);
-			if (px && px.physT === 'LIQUID') return (this.swap(px));
+			cell = cellAtI(ROWOFF[this.y] + this.x + this.xDir, this);
+			if (cell && cell.physT === 'LIQUID') return (this.swap(cell));
 			return;
 		}
 		else this.velX = 0, this.xDir = 0;
@@ -147,9 +69,9 @@ p.updateAnt = function (curX, curY) {
 		let gr = this.d;
 		this.hasTouchedSurface = (this.y >= GH - 1) || (gr && ((gr.type === this.type && gr.hasTouchedSurface) || gr.hasTouchedBorder));
 		if (!this.hasTouchedSurface) {
-			let px = pxAtI(ROWOFF[curY] + curX, this);
-			if (px) { px = pxAtI(ROWOFF[curY] + curX + this.xDir, this); if (!px) curX++; else this.xDir *= -1; }
-			if (!px) this.updatePosition(ROWOFF[curY] + curX);
+			let cell = cellAtI(ROWOFF[curY] + curX, this);
+			if (cell) { cell = cellAtI(ROWOFF[curY] + curX + this.xDir, this); if (!cell) curX++; else this.xDir *= -1; }
+			if (!cell) this.updatePosition(ROWOFF[curY] + curX);
 			return;
 		}
 		this.isBurrower = dice(30);
@@ -160,13 +82,13 @@ p.updateAnt = function (curX, curY) {
 	if (rChance > 11500) return;
 	curX = this.x; curY = this.y;
 	if (this.timeAlive > 10 && rChance == 0) {
-		new Particle(curX - this.xDir, curY - this.yDir, 'ANTEGG');
+		new Cell(curX - this.xDir, curY - this.yDir, 'ANTEGG');
 		this.xDir = this.yDir = 0;
 	}
 	if (!this.xDir && !this.yDir) {this.xDir = rdir(); this.yDir = rdir();}
 
 	function isValid(x, y, xd, yd) {
-		return (!pxAtI(ROWOFF[y + yd] + x + xd, this) && !isOutOfBorder(x + xd, y + yd));
+		return (!cellAtI(ROWOFF[y + yd] + x + xd, this) && !isOutOfBorder(x + xd, y + yd));
 	}
 
 	if (atBorder(curX, curY)) {
@@ -189,8 +111,8 @@ p.updateAnt = function (curX, curY) {
 	}
 	else {
 		let d = this.ground;
-		let l = pxAtI(ROWOFF[curY] + curX - 1, this);
-		let r = pxAtI(ROWOFF[curY] + curX + 1, this);
+		let l = cellAtI(ROWOFF[curY] + curX - 1, this);
+		let r = cellAtI(ROWOFF[curY] + curX + 1, this);
 		if (!d && !l && !r) {
 			this.hasTouchedSurface = false;
 			curY++;
@@ -201,29 +123,29 @@ p.updateAnt = function (curX, curY) {
 		if (d) this.ground = d;
 	}
 	
-	let px = pxAtI(ROWOFF[curY + this.yDir] + curX + this.xDir);
-	if (px && px.type === this.type) px = null;
-	if (!px && dice(10) && this.neighborCount) {
-		px = this.neighbors[r_range(0, this.neighbors.length)];
+	let cell = cellAtI(ROWOFF[curY + this.yDir] + curX + this.xDir);
+	if (cell && cell.type === this.type) cell = null;
+	if (!cell && dice(10) && this.neighborCount) {
+		cell = this.neighbors[r_range(0, this.neighbors.length)];
 	}
-	if (px) {
-		if (px.physT === 'LIQUID' || px.wet) { this.inWater = true; this.timeInWater++;  }
-		if (px.updT == 'ALIVE') {
-			this.swap(px);
+	if (cell) {
+		if (cell.physT === 'LIQUID' || cell.wet) { this.inWater = true; this.timeInWater++;  }
+		if (cell.updT == 'ALIVE') {
+			this.swap(cell);
 			return;
 		}
-		if (px.physT === 'SOLID')
+		if (cell.physT === 'SOLID')
 		{
-			if (this.isBurrower && dice(px.dns / 10))
-				return (this.makeHole(px));
+			if (this.isBurrower && dice(cell.dns / 10))
+				return (this.makeHole(cell));
 			if (this.xDir === 1) {
-				if (!this.ru || this.ru.type === this.type) this.updatePosition(ROWOFF[px.y - 1] + px.x);
-				else if (!this.rd || this.rd.type === this.type) this.updatePosition(ROWOFF[px.y + 1] + px.x);
+				if (!this.ru || this.ru.type === this.type) this.updatePosition(ROWOFF[cell.y - 1] + cell.x);
+				else if (!this.rd || this.rd.type === this.type) this.updatePosition(ROWOFF[cell.y + 1] + cell.x);
 				else this.xDir *= -1;
 			}
 			else {
-				if (!this.lu || this.lu.type === this.type) this.updatePosition(ROWOFF[px.y - 1] + px.x);
-				else if (!this.ld || this.ld.type === this.type) this.updatePosition(ROWOFF[px.y + 1] + px.x);
+				if (!this.lu || this.lu.type === this.type) this.updatePosition(ROWOFF[cell.y - 1] + cell.x);
+				else if (!this.ld || this.ld.type === this.type) this.updatePosition(ROWOFF[cell.y + 1] + cell.x);
 				else this.xDir *= -1;
 			}
 			return;
@@ -232,9 +154,9 @@ p.updateAnt = function (curX, curY) {
 	if (isValid(curX, curY, this.xDir, this.yDir))
 		this.updatePosition(ROWOFF[curY + this.yDir] + curX + this.xDir);
 	else {
-		if (px && isValid(curX, curY, this.xDir, this.yDir))
+		if (cell && isValid(curX, curY, this.xDir, this.yDir))
 			this.updatePosition(ROWOFF[curY + this.yDir] + curX + this.xDir);
-		else if (px && isValid(curX, curY, this.xDir, 1)) {
+		else if (cell && isValid(curX, curY, this.xDir, 1)) {
 			this.hasTouchedSurface = false;
 			this.velY = 0;
 			this.updatePosition(ROWOFF[curY + 1] + curX + this.xDir);}
@@ -249,8 +171,8 @@ SWIMSPEED = 10;
 p.updateFish = function () {
 	let i;
 	for (i = 0; i < this.neighborCount; i++){
-		let px = this.neighbors[i];
-		if (px.physT === 'LIQUID') break;
+		let cell = this.neighbors[i];
+		if (cell.physT === 'LIQUID') break;
 	}
 	this.inWater = i < this.neighborCount;
 	if (!this.inWater) {
@@ -259,10 +181,10 @@ p.updateFish = function () {
 		this.timeInWater = 0;
 		return;
 	}
-	// let l = pxAtI(ROWOFF[this.y + 1] + this.x, this);
-	// if (!l || l.physT != 'LIQUID') l = pxAtI(ROWOFF[this.y] + this.x - 1, this);
-	// if (!l || l.physT != 'LIQUID') l = pxAtI(ROWOFF[this.y] + this.x + 1, this);
-	// if (!l || l.physT != 'LIQUID') l = pxAtI(ROWOFF[this.y - 1] + this.x);
+	// let l = cellAtI(ROWOFF[this.y + 1] + this.x, this);
+	// if (!l || l.physT != 'LIQUID') l = cellAtI(ROWOFF[this.y] + this.x - 1, this);
+	// if (!l || l.physT != 'LIQUID') l = cellAtI(ROWOFF[this.y] + this.x + 1, this);
+	// if (!l || l.physT != 'LIQUID') l = cellAtI(ROWOFF[this.y - 1] + this.x);
 	// if (!l || l.physT != 'LIQUID') {
 	// 	this.updatePosition(ROWOFF[this.newY] + this.newX);
 	// 	this.inWater = false;
@@ -273,17 +195,17 @@ p.updateFish = function () {
 	// this.inWater = true;
 
 	if (dice(1000)) {
-		let px = this.u;
-		if (px && px.physT === 'LIQUID') {
-			let type = px.type;
-			px = px.replace('BUBBLE', type);
+		let cell = this.u;
+		if (cell && cell.physT === 'LIQUID') {
+			let type = cell.type;
+			cell = cell.replace('BUBBLE', type);
 		}
 	}
 	if (++this.timeInWater < 30) {
 		this.velY *= .8;
 		if (dice(10)) this.velX = rdir() * SWIMSPEED;
-		let px = pxAtI(ROWOFF[this.newY] + this.newX, this);
-		if (px && px.physT === 'LIQUID') this.swap(px);
+		let cell = cellAtI(ROWOFF[this.newY] + this.newX, this);
+		if (cell && cell.physT === 'LIQUID') this.swap(cell);
 		return;
 	}
 	function getNeighbors(x,y,type,r, clr){
@@ -293,7 +215,7 @@ p.updateFish = function () {
 			for(let ox=-rr; ox<=rr; ox++){
 				const xx=x+ox; if(xx<0||xx>=GW) continue;
 				if(ox===0&&oy===0) continue;
-				const q = pxAtI(ROWOFF[yy] + xx);
+				const q = cellAtI(ROWOFF[yy] + xx);
 			if (!q) continue;
 			if (q.type !== type) continue;
 			if (q.color != clr) continue;
@@ -323,8 +245,8 @@ p.updateFish = function () {
 		this.velX = this.xDir * SWIMSPEED;
 		const nx = this.x + Math.round(this.velX * SIMSPEED * dt);
 		const ny = this.y + Math.round(this.velY * SIMSPEED * dt);
-		let px = pxAtI(ROWOFF[ny] + nx, this);
-		if (!px) return (this.updatePosition(ROWOFF[ny] + nx));
+		let cell = cellAtI(ROWOFF[ny] + nx, this);
+		if (!cell) return (this.updatePosition(ROWOFF[ny] + nx));
 	}
 	let sx=0, sy=0, ax=0, ay=0, cx=0, cy=0, n=0;
 	for(const q of nn){
@@ -358,7 +280,7 @@ p.updateFish = function () {
 	const nx = clamp(this.x + Math.round(this.velX*k), 0, GW - 1);
 	const ny = clamp(this.y + Math.round(this.velY*k), 0, GH - 1);
 
-	const tgt = pxAtI(ROWOFF[ny] + nx, this);
+	const tgt = cellAtI(ROWOFF[ny] + nx, this);
 	if (tgt && tgt.physT != 'LIQUID') {
 		const alt = [
 			[nx, this.y],[this.x, ny],
@@ -366,15 +288,15 @@ p.updateFish = function () {
 			[this.x, this.y+Math.sign(this.velY)]
 		];
 		for(const [axn,ayn] of alt){
-			const a=pxAtI(ROWOFF[ayn] + axn,this);
+			const a=cellAtI(ROWOFF[ayn] + axn,this);
 			if(a && (a.physT==='LIQUID' || a.type === this.type)){ this.swap(a); return; }
 			if(!a){ this.updatePosition(ROWOFF[ayn] + axn); return; }
 		}
 		this.velX *= 0.5; this.velY *= 0.5;
 		return;
 	}
-	let npx = pxAtI(ROWOFF[ny] + nx, this);
-	if (npx) this.swap(npx);
+	let ncell = cellAtI(ROWOFF[ny] + nx, this);
+	if (ncell) this.swap(ncell);
 	else this.updatePosition(ROWOFF[ny] + nx);
 };
 
@@ -384,7 +306,7 @@ p.updateShroom = function (curX, curY) {
 	if (!this.hasTouchedBorder) {
 		if (atBorder(curX, curY)) this.hasTouchedBorder = true;
 		else {
-			let down = pxAtI(ROWOFF[this.y + 1] + this.x, this);
+			let down = cellAtI(ROWOFF[this.y + 1] + this.x, this);
 			if ((down) && (down.hasTouchedBorder || (down.physT === 'SOLID' && down.type != this.type))) this.hasTouchedBorder = true;
 		}
 		if (!this.hasTouchedBorder) return (this.updatePosition(ROWOFF[curY] + curX));
@@ -397,9 +319,9 @@ p.updateShroom = function (curX, curY) {
 	if (!this.isGrower || this.parent) return;
 	if (this.y < 10) return;
 	if (!dice(this.growSpeed)) return;
-	let px = this.x; let py = this.y - 1;
-	if (dice(10)) px += rdir();
-	let up = pxAtI(ROWOFF[py] + px, this);
+	let cell = this.x; let py = this.y - 1;
+	if (dice(10)) cell += rdir();
+	let up = cellAtI(ROWOFF[py] + cell, this);
 	if (up && (up.physT === 'SOLID' && up.updT != 'ALIVE')) {
 		this.swap(up);
 		return;
@@ -418,7 +340,7 @@ p.updateShroom = function (curX, curY) {
 			up.toRemove();
 			up = null;
 		}
-		let newHead = new Particle(px, py, this.type);
+		let newHead = new Cell(cell, py, this.type);
 		newHead.hasTouchedBorder = true;
 		newHead.isGrower = this.isGrower;
 		newHead.growSpeed = this.growSpeed;
@@ -452,8 +374,8 @@ p.updateTree = function (newX, newY) {
 		return;
 	}
 	if (!this.growerSet) {
-		let l = pxAtI(this.i - 1);
-		let r = pxAtI(this.i + 1);
+		let l = cellAtI(this.i - 1);
+		let r = cellAtI(this.i + 1);
 		if ((l && l.type === this.type) || (r && r.type === this.type)) {
 			this.isGrower = false;
 			this.dead = true;
@@ -477,7 +399,7 @@ p.updateTree = function (newX, newY) {
 	if (this.branch) this.yDir = r_range(-1, this.isBaobab ? 0 : 1);
 	newX = clamp(this.x + this.xDir, 3, GW - 4), newY = clamp(this.y + this.yDir, 0, GH - 1);
 	if (this.heigth > this.maxHeight / 3 && dice(10)) makeBranch(this);
-	let spot = pxAtI([ROWOFF[newY] + newX], this);
+	let spot = cellAtI([ROWOFF[newY] + newX], this);
 	if (spot) {
 		this.inWater = spot.physT === 'LIQUID';
 		if (spot.type === 'LEAF' || this.inWater) {
@@ -487,7 +409,7 @@ p.updateTree = function (newX, newY) {
 		else return (stopHead(this, spot.type !== 'TREE'));
 	}
 	if (!spot) growNewHead(newX, newY, this);
-	else if (!pxAtI[ROWOFF[newY] + this.x - this.xDir, this]) this.xDir *= -1;
+	else if (!cellAtI[ROWOFF[newY] + this.x - this.xDir, this]) this.xDir *= -1;
 	else this.xDir = 0;
 	if (!this.xDir && !this.yDir) this.yDir = -1;
 
@@ -500,14 +422,14 @@ p.updateTree = function (newX, newY) {
 		let xDir = rdir();
 		let nx = xDir + head.x;
 		let ny = head.y;
-		let px = pxAtI(ROWOFF[ny] + nx);
-		if (px && px.type !== 'LEAF' && px.physT != 'LIQUID') {
+		let cell = cellAtI(ROWOFF[ny] + nx);
+		if (cell && cell.type !== 'LEAF' && cell.physT != 'LIQUID') {
 			xDir *= -1;
 			nx = xDir + head.x;
-			px = pxAtI(ROWOFF[ny] + nx);
+			cell = cellAtI(ROWOFF[ny] + nx);
 		}
-		if (px && (px.type === 'LEAF')) px.toRemove();
-		else if (px) { return;}
+		if (cell && (cell.type === 'LEAF')) cell.toRemove();
+		else if (cell) { return;}
 		let newHead = growNewHead(nx, ny, head);
 		newHead.xDir = xDir;
 		newHead.branch = head.branch + 1;
@@ -515,7 +437,7 @@ p.updateTree = function (newX, newY) {
 	}
 
 	function growNewHead(x, y, headChild, leavesBehind = !dice(10)) {
-		let head = new Particle(x, y, headChild.type);
+		let head = new Cell(x, y, headChild.type);
 		head.familyId = headChild.familyId;
 		head.child = headChild;
 		head.xDir = headChild.xDir;
@@ -563,24 +485,24 @@ p.updateTree = function (newX, newY) {
 				let sy = startY + y;
 				if (isOutOfBorder(sx, sy)) continue;
 				let i = ROWOFF[sy] + sx;
-				let px = pxAtI(i);
-				if (px && px.physT === 'LIQUID') {
-					px.toRemove();
-					px = null;
+				let cell = cellAtI(i);
+				if (cell && cell.physT === 'LIQUID') {
+					cell.toRemove();
+					cell = null;
 				}
 				if (isBehind) {
-					if (px) continue;
+					if (cell) continue;
 					newLeaf(head, sx, sy, color, true);
 					continue;
 				}
-				if (!px) {
+				if (!cell) {
 					newLeaf(head, sx, sy, color, false);
 					continue;
 				}
-				if (px.type === 'TREE' || px.type === 'LEAF') {
-					px.setColor(color);
-					px.isBehind = false;
-					px.familyId = head.familyId;
+				if (cell.type === 'TREE' || cell.type === 'LEAF') {
+					cell.setColor(color);
+					cell.isBehind = false;
+					cell.familyId = head.familyId;
 				}
 			}
 		}
@@ -588,7 +510,7 @@ p.updateTree = function (newX, newY) {
 
 	function newLeaf(head, x, y, color, isBehind) {
 		let isBee = dice(200);
-		let leaf = new Particle(x, y, isBee ? 'BEE' : 'LEAF');
+		let leaf = new Cell(x, y, isBee ? 'BEE' : 'LEAF');
 		if (!leaf.active) return;
 		leaf.familyId = head.familyId;
 		if (isBee) return;
@@ -599,11 +521,11 @@ p.updateTree = function (newX, newY) {
 }
 
 p.updateLeaf = function () {
-	if (FRAME % 4 !== 0) return;
+	if (FRAME % 2 !== 0) return;
 	if (this.y >= GH) return;
 
 	if (this.updT === 'STATIC') {
-		let down = pxAtI(this.i + GH - 1);
+		let down = cellAtI(this.i + GH - 1);
 		if (down) return;
 		if (dice(3000)) this.updT = 'ALIVE';
 		else return;
@@ -617,12 +539,9 @@ p.updateLeaf = function () {
 	let newX = clamp(this.x + drift, 0, GW - 1);
 	let newY = this.y + 1;
 	let newI = ROWOFF[newY] + newX;
-	let down = pxAtI(newI);
-
-	if (down && down.type === this.type) { return; }
-	else if (down) { return; }
-
-	this.updatePosition(newI);
+	let atPos = cellAtI(newI);
+	if (!atPos)
+		this.updatePosition(newI);
 };
 
 p.updateBee = function () {
@@ -639,8 +558,8 @@ p.updateBee = function () {
 		const ix = clamp(this.fx | 0, 0, GW - 1);
 		const iy = clamp(this.fy | 0, 0, GH - 1);
 		const newI = ROWOFF[iy] + ix;
-		const px = pxAtI(newI);
-		if (!px) this.updatePosition(newI);
+		const cell = cellAtI(newI);
+		if (!cell) this.updatePosition(newI);
 	}
 
 
@@ -656,7 +575,7 @@ p.updateBee = function () {
 
 		let newY = clamp(this.y + drift, 0, GH - 1);
 		let newI = ROWOFF[newY] + newX;
-		let down = pxAtI(newI);
+		let down = cellAtI(newI);
 
 		var isTooFar = Math.abs(newX - this.startX) > 20;
 		if (down || isTooFar) {
@@ -681,11 +600,38 @@ p.updateBee = function () {
 		let newX = clamp(this.x + this.xDir, 0, GW - 1);
 		let newY = clamp(this.y + this.yDir, 0, GH - 1);
 		let newI = ROWOFF[newY] + newX;
-		let px = pxAtI(newI)
-		if (px && px.type === 'LEAF') { this.swap(px); return; }
-		if (px || dice(10)) this.xDir = this.yDir = 0;
+		let cell = cellAtI(newI)
+		if (cell && cell.type === 'LEAF') { this.swap(cell); return; }
+		if (cell || dice(10)) this.xDir = this.yDir = 0;
 		if (Math.abs(newX - this.startX) > 10) this.xDir = newX > this.startX ? -1 : 1;
 		if (Math.abs(newY - this.startY) > 10) this.yDir = newY > this.startY ? -1 : 1;
-		if (!px) this.updatePosition(newI);
+		if (!cell) this.updatePosition(newI);
 	}
+};
+
+
+p.updateGrassBlade = function (newX, newY) {
+	this.updatePosition(ROWOFF[newY] + newX);
+	if (this.finalSet) {
+		if (!this.colorSet && this.ground) {
+			this.setColor(this.ground.color);
+			this.colorSet = true;
+		}
+		return;
+	}
+	if (this.timeAlive < .1)
+		return;
+	let underGround;
+	for (let y = 1; y < this.height; y++) {
+		underGround = cellAtI(this.i + GW * y, this);
+		if (!underGround || underGround.type !== this.type)
+			return;
+	}
+	if (underGround) {
+		if (!this.finalSet && underGround.hasTouchedBorder)
+			this.finalSet = true;
+		underGround.toRemove();
+	}
+	else
+		this.toRemove();
 };

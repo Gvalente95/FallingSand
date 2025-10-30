@@ -1,21 +1,21 @@
 function switchUiPage(newPageIndex) {uiPageIndex = newPageIndex;}
 function setNewType(newIndex)
 {
-	let key = particleKeys[newIndex];
+	let key = cellKeys[newIndex];
 	if (key == 'MAKE') return (createNewType());
 	if (ISGAME) {
-		if (KEYS['Shift']) PARTICLE_PROPERTIES[particleKeys[newIndex]].kn = !PARTICLE_PROPERTIES[particleKeys[newIndex]].kn;
-		if (!PARTICLE_PROPERTIES[particleKeys[newIndex]].kn) return;
+		if (INPUT.keys['shift']) CELL_PROPERTIES[cellKeys[newIndex]].kn = !CELL_PROPERTIES[cellKeys[newIndex]].kn;
+		if (!CELL_PROPERTIES[cellKeys[newIndex]].kn) return;
 	}
-	if (ISGAME && !PARTICLE_PROPERTIES[particleKeys[newIndex]].kn) return;
+	if (ISGAME && !CELL_PROPERTIES[cellKeys[newIndex]].kn) return;
 	switchBrushAction(null);
 	uiLayerIndex = 1;
 	TYPEINDEX = newIndex;
 	for (const b of uiPagesButtons[uiPageIndex].buttons) {
-		if (b.label == particleKeys[newIndex]) {typeButton = b;
+		if (b.label == cellKeys[newIndex]) {typeButton = b;
 		b.new = false;}
 	}
-	BRUSHCOLOR = PARTICLE_PROPERTIES[particleKeys[TYPEINDEX]].color;
+	BRUSHCOLOR = CELL_PROPERTIES[cellKeys[TYPEINDEX]].color;
 }
 
 let settingBrushSize = false;
@@ -81,16 +81,17 @@ function findEmptyNear(x0, y0, rMax){
   return null;
 }
 
-function replaceParticles(scale){
+function replaceCells(scale){
 	const s2 = scale * scale;
-	const orig = activeParticles.slice();
-	activeParticles = [];
+	const orig = activeCells.slice();
+	activeCells = [];
 	grid1.fill(null);
 
 	const rBase = Math.max(2, Math.ceil(scale) + 2);
 
 	for (let k=0; k<orig.length; k++){
 		const p = orig[k];
+		if (p.type === "PLAYER") { p.toRemove(); continue; }
 		p.velX *= scale; p.velY *= scale;
 		let nx = Math.floor(p.x * scale);
 		let ny = Math.floor(p.y * scale);
@@ -105,7 +106,7 @@ function replaceParticles(scale){
 				p.toRemove();
 			}
 		}
-		if (placed) activeParticles.push(p);
+		if (placed) activeCells.push(p);
 		if (s2 > 1){
 			let extra = Math.floor(s2) - 1;
 			const frac = s2 - Math.floor(s2);
@@ -114,7 +115,7 @@ function replaceParticles(scale){
 			for (let t=0; t<extra; t++){
 				const spot = findEmptyNear(nx, ny, rBase);
 				if (!spot) break;
-				const q = new Particle(spot[0], spot[1], p.type);
+				const q = new Cell(spot[0], spot[1], p.type);
 				if (p.color) q.setColor(p.color);
 				q.velX = p.velX; q.velY = p.velY;
 			}
@@ -128,12 +129,15 @@ function setNewPixelSize(newPixelSize){
 
 	const scale = PIXELSIZE / newPixelSize;
 	PIXELSIZE = newPixelSize;
+	PLAYER.x = Math.round(PLAYER.x * scale);
+	PLAYER.y = Math.round(PLAYER.y * scale);
 	BRUSHSIZE = clamp(Math.round(BRUSHSIZE * scale), 1, MAXBRUSHSIZE);
 	GW = Math.max(1, (CANVW / PIXELSIZE) | 0);
 	GH = Math.max(1, (CANVH / PIXELSIZE) | 0);
 	initGrid();
 	buildWaterShades();
-	replaceParticles(scale);
+	replaceCells(scale);
+	PLAYER.initCells(PLAYER.x, PLAYER.y, PLAYER.w, PLAYER.h);
 }
 
 function switchHud(newActive = !SHOWHUD) {
@@ -153,9 +157,9 @@ function switchPause(newPause = !inPause) {
 	if (inPause) pauseStart = nowSec;
 	else {
 		pauseDuration = nowSec - pauseStart;
-		for (let i = 0; i < activeParticles.length; i++)
+		for (let i = 0; i < activeCells.length; i++)
 		{
-			let p = activeParticles[i];
+			let p = activeCells[i];
 			p.startTime += pauseDuration;
 		}
 	}
@@ -163,16 +167,16 @@ function switchPause(newPause = !inPause) {
 
 function fillScreen() {
 	initGrid();
-	activeParticles = [];
-	let yStart = (KEYS['Shift'] ? 0 : Math.floor(GH / 2));
+	activeCells = [];
+	let yStart = (INPUT.keys['shift'] ? 0 : Math.floor(GH / 2));
 	for (let x = 0; x < GW; x++){
 		for (let y = yStart; y < GH; y++){
-			new Particle(x, y, particleKeys[TYPEINDEX]);
+			new Cell(x, y, cellKeys[TYPEINDEX]);
 		}
 	}
 }
 
-function discoverType(element, x = MOUSEX - 100, y = MOUSEY - 60) {
+function discoverType(element, x = MOUSE.x - 100, y = MOUSE.y - 60) {
 	if (!ISGAME) return;
 	let type = element;
 	if (element && typeof element === 'object') {
@@ -180,11 +184,11 @@ function discoverType(element, x = MOUSEX - 100, y = MOUSEY - 60) {
 		x = element.x * PIXELSIZE;
 		y = element.y * PIXELSIZE;
 	}
-	if (PARTICLE_PROPERTIES[type].kn) return;
-	let prtClr = setBrightness(PARTICLE_PROPERTIES[type].color);
-	let infobox = initLabelDiv(x, y, 'New Particle Discovered!');
-	let colorBox = initLabelDiv(x, y + 20, type, prtClr);
-	PARTICLE_PROPERTIES[type].kn = 1;
+	if (CELL_PROPERTIES[type].kn) return;
+	let cellClr = setBrightness(CELL_PROPERTIES[type].color);
+	let infobox = initLabelDiv(x, y, 'New Cell Discovered!');
+	let colorBox = initLabelDiv(x, y + 20, type, cellClr);
+	CELL_PROPERTIES[type].kn = 1;
 	updateUi();
 
 	const start = performance.now();
@@ -203,7 +207,7 @@ function discoverType(element, x = MOUSEX - 100, y = MOUSEY - 60) {
 		colorBox.style.left = `${curX}px`;
 		colorBox.style.top  = `${curY + 20}px`;
 		infobox.style.color = setAlpha('rgba(255,255,255,1)', 1 - k);
-		colorBox.style.color = setAlpha(prtClr, 1 - k);
+		colorBox.style.color = setAlpha(cellClr, 1 - k);
 		if (elapsed < duration) requestAnimationFrame(frame);
 		else {
 			infobox.remove();

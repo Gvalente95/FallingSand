@@ -12,6 +12,7 @@ const UPDATE_HANDLERS = {
 	TORCH: p => p.FireEffect(p.newX, p.newY),
 	MAGMA: p => p.MagmaEffect(p.newX, p.newY),
 	BOLT: p => p.updateBolt(p.newX, p.newY),
+	GBLADE: p => p.updateGrassBlade(p.newX, p.newY),
 };
 
 p.getNeighborCells = function () { 
@@ -61,7 +62,7 @@ p.updateType = function () {
 	else if (this.isShroom && this.hasTouchedBorder && this.isGrower && !this.dead) return this.updateShroom(this.x, this.y);
 	else if (this.type === 'TREE' && this.parent && !this.dead) return this.updateTree(this.x, this.y);
 	else if (this.type === 'TORCH' && dice(10)) {
-		new Particle(this.x, this.y - 1, 'FIRE');
+		new Cell(this.x, this.y - 1, 'FIRE');
 	}
 	if (this.updT === 'STATIC') return;
 	if (this.type !== 'ALIEN') this.updateVelocity();
@@ -86,7 +87,7 @@ p.setType = function(newType, transformType = null)
 	this.isAnt = (this.type === 'ANT' || this.type === 'FIREANT');
 	this.inWater = false;
 	this.timeInWater = 0;
-	this.properties = PARTICLE_PROPERTIES[newType];
+	this.properties = CELL_PROPERTIES[newType];
 	this.cr = this.properties.cr;
 	this.lt = this.properties.lt * f_range(.5, 1.5);
 	this.douse = this.properties.douse;
@@ -103,6 +104,7 @@ p.setType = function(newType, transformType = null)
 	this.fout = this.properties.fout;
 	this.xDir = rdir(); this.yDir = rdir();
 	this.heigth = 0;
+	this.corrosionType = null;
 	this.transformType = transformType;
 	this.setTypeSpecifics();
 }
@@ -112,6 +114,11 @@ p.setTypeSpecifics = function(){
 	if (this.updT == 'STATIC') { this.velY = 0; this.velX = 0; }
 	if (this.type == 'FISH') {
 		let clrs = ["rgb(135, 60, 163)", "rgb(11, 93, 61)", this.properties.color];
+		this.setColor(clrs[r_range(0, clrs.length)]);
+	}
+	else if (this.type === "GBLADE") {
+		this.height = r_range(1, 4);
+		let clrs = ["rgba(22, 139, 53, 1)", "rgba(32, 87, 47, 1)", "rgba(83, 113, 52, 1)", this.properties.color];
 		this.setColor(clrs[r_range(0, clrs.length)]);
 	}
 	else if (this.isShroom) {

@@ -14,24 +14,24 @@ p.swap = function(other)
 p.hasTouchedSurfaceCheck = function()
 	{
 		let y = 0;
-		let px = null;
+		let cell = null;
 		let hasBubble = this.type == 'WATER' && this.timeAlive > 2;
 		let newY;
 		while (++y < 50)
 		{
 			newY = this.y + y;
 			if (newY >= GH - 1) {
-				if (hasBubble && dice(10)) new Particle(this.newX, this.newY - 1, this.type == 'LAVA' ? 'DUST' : 'BUBBLE');
+				if (hasBubble && dice(10)) new Cell(this.newX, this.newY - 1, this.type == 'LAVA' ? 'DUST' : 'BUBBLE');
 				return (true);
 			}
-			px = pxAtI(ROWOFF[newY] + this.x);
-			if (px && (px.physT == 'SOLID')) {
-				if (hasBubble && dice(10)) new Particle(this.newX, this.newY - 1, this.type == 'LAVA' ? 'DUST' : 'BUBBLE');
+			cell = cellAtI(ROWOFF[newY] + this.x);
+			if (cell && (cell.physT == 'SOLID')) {
+				if (hasBubble && dice(10)) new Cell(this.newX, this.newY - 1, this.type == 'LAVA' ? 'DUST' : 'BUBBLE');
 				return (true);
 			}
-			if (!px) break;
+			if (!cell) break;
 		}
-		return (px != null);
+		return (cell != null);
 }
 
 p.setColor = function(color = this.properties.color) {
@@ -43,7 +43,7 @@ p.setColor = function(color = this.properties.color) {
 p.replace = function(newType, transformType = null){
 	let p = [this.x, this.y];
 	this.toRemove();
-	let newP = new Particle(p[0], p[1], newType);
+	let newP = new Cell(p[0], p[1], newType);
 	if (transformType) newP.transformType = transformType;
 	return (newP);
 }
@@ -51,7 +51,7 @@ p.replace = function(newType, transformType = null){
 function shouldBurn(agressor, victim)
 {
 	let brn = victim.brn;
-	if (victim.wet && victim.wetType) brn = PARTICLE_PROPERTIES[victim.wetType].brn;
+	if (victim.wet && victim.wetType) brn = CELL_PROPERTIES[victim.wetType].brn;
 	if (!agressor.brnpwr || !brn) return (0);
 	let sumChance = Math.max(1, 2000 - brn - agressor.brnpwr);
 	return (dice(sumChance));
@@ -59,17 +59,17 @@ function shouldBurn(agressor, victim)
 
 function shouldBurnType(typeA, typeB)
 {
-	let burnForce = PARTICLE_PROPERTIES[typeA].brnpwr;
-	let brn = PARTICLE_PROPERTIES[typeB].brn;
+	let burnForce = CELL_PROPERTIES[typeA].brnpwr;
+	let brn = CELL_PROPERTIES[typeB].brn;
 	if (!burnForce || !brn) return (0);
 	let sumChance = Math.max(1, 2000 - brn - burnForce);
 	return (dice(sumChance));
 }
-function shouldBurnParticle(typeA, victim)
+function shouldBurnCell(typeA, victim)
 {
-	let burnForce = PARTICLE_PROPERTIES[typeA].brnpwr;
+	let burnForce = CELL_PROPERTIES[typeA].brnpwr;
 	let brn = victim.brn;
-	if (victim.wet && victim.wetType) brn = PARTICLE_PROPERTIES[victim.wetType].brn;
+	if (victim.wet && victim.wetType) brn = CELL_PROPERTIES[victim.wetType].brn;
 	if (!burnForce || !brn) return (0);
 	let sumChance = Math.max(1, 2000 - brn - burnForce);
 	return (dice(sumChance));
@@ -81,7 +81,7 @@ p.getRandomNeighbor = function (ignoreType = null) {
     const nx = this.x + rdir[0];
     const ny = this.y + rdir[1];
     if (nx < 0 || nx >= GW || ny < 0 || ny >= GH) return;
-	const px = pxAtI(ROWOFF[ny] + nx, this);
-	if (!px || px === this || (ignoreType && px.type === ignoreType)) return null;
-	return px;
+	const cell = cellAtI(ROWOFF[ny] + nx, this);
+	if (!cell || cell === this || (ignoreType && cell.type === ignoreType)) return null;
+	return cell;
 };

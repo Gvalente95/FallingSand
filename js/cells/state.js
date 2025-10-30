@@ -8,8 +8,8 @@ p.updateBurn = function () {
 		else { this.setType('COAL'); this.aliveTime = 0; }
 		this.burning = 0;
 	}
-	else if (dice(3) && !pxAtI(ROWOFF[this.y - 1] + this.x)) {
-		let newp = new Particle(this.x, this.y - 1, 'FIRE');
+	else if (dice(3) && !cellAtI(ROWOFF[this.y - 1] + this.x)) {
+		let newp = new Cell(this.x, this.y - 1, 'FIRE');
 	}
 	let depth = 2;
 	for (let x = -depth; x < depth; x++)
@@ -17,9 +17,9 @@ p.updateBurn = function () {
 		{
 			if (x === 0 && y === 0) continue;
 			if (isOutOfBorder(this.x + x, this.y + y)) continue;
-			let px = pxAtI(ROWOFF[this.y + y] + this.x + x, this);
-			if (px && !px.burning && shouldBurnParticle('FIRE', px)) px.setToFire(this.burnType);
-			if (!px && dice(30)) new Particle(this.x + x, this.y + y, 'DUST');
+			let cell = cellAtI(ROWOFF[this.y + y] + this.x + x, this);
+			if (cell && !cell.burning && shouldBurnCell('FIRE', cell)) cell.setToFire(this.burnType);
+			if (!cell && dice(30)) new Cell(this.x + x, this.y + y, 'DUST');
 		}
 }
 
@@ -32,18 +32,18 @@ p.stopFire = function ()
 p.setToFire = function(burnType = 'FIRE', duration = 1000 - this.brn)
 {
 	this.dead = true;
+	if (burnType === 'MAGMA' && this.type === 'MAGMA') return;
 	if (this.frozen) { this.unFreeze(50); return; }
 	if (this.type === 'ROCK') {return (this.setType('MAGMA'));}
 	if (this.type === 'ICE' || this.type === 'SNOW') {return (this.setType('WATER'));}
 	this.warm = 200;
 	if (this.wet > 50 && this.wetType != 'OIL') { this.wet -= 50; return; }
 	if (this.burning) return;
-	if (this.type === 'MAGMA') this.setType('MAGMA');
-	else if (this.type === 'MAGMA') this.setType('LAVA');
+	if (this.type === 'MAGMA') this.setType('LAVA');
 	else {
 		this.burning = duration;
 		this.burnType = burnType;
-		this.setColor(addColor(this.baseColor, PARTICLE_PROPERTIES[burnType].color, .5));
+		this.setColor(addColor(this.baseColor, CELL_PROPERTIES[burnType].color, .5));
 	}
 }
 
@@ -56,7 +56,7 @@ p.setWet = function(wetAmount = 100, type = 'WATER') {
 	this.wetStart = now;
 	this.wetType = type;
 	this.wet = wetAmount;
-	this.setColor(addColor(this.baseColor, PARTICLE_PROPERTIES[this.wetType].color, (wetAmount / 10) / 100));
+	this.setColor(addColor(this.baseColor, CELL_PROPERTIES[this.wetType].color, (wetAmount / 10) / 100));
 	return (1);
 }
 
@@ -64,10 +64,10 @@ p.updateWet = function () {
 	this.wetDur = now - this.wetStart;
 	if (this.burning) { if (this.wetType === 'OIL') this.wet = 0; else this.stopFire();}
 	if (--this.wet <= 0) {
-		let l = pxAtI(ROWOFF[this.y] + this.x - 1);
+		let l = cellAtI(ROWOFF[this.y] + this.x - 1);
 		if (l && l.physT === 'LIQUID') this.wet = 200;
 		else {
-			l = pxAtI(ROWOFF[this.y] + this.x + 1);
+			l = cellAtI(ROWOFF[this.y] + this.x + 1);
 			if (l && l.physT === 'LIQUID') this.wet = 200;
 		}
 		if (this.wet <= 0) { this.setColor(this.baseColor); return; }
@@ -80,20 +80,20 @@ p.updateWet = function () {
 		{
 			if (x === 0 && y === 0) continue;
 			if (isOutOfBorder(this.x + x, this.y + y)) continue;
-			let px = pxAtI(ROWOFF[this.y + y] + this.x + x, this);
-			if (px) px.setWet(this.wet - 10, this.wetType);
+			let cell = cellAtI(ROWOFF[this.y + y] + this.x + x, this);
+			if (cell) cell.setWet(this.wet - 10, this.wetType);
 		}
 	}
 	if (dice(500)) {
-		let pxAb = pxAtI(ROWOFF[this.y - 1] + this.x);
-		if (pxAb && pxAb.type === this.wetType) {
-			pxAb = pxAb.replace('BUBBLE', this.wetType);
+		let cellAb = cellAtI(ROWOFF[this.y - 1] + this.x);
+		if (cellAb && cellAb.type === this.wetType) {
+			cellAb = cellAb.replace('BUBBLE', this.wetType);
 		}
 	}
 	if (this.isShroom && this.isGrower && dice(100)) {
-		let px = pxAtI(ROWOFF[this.y + 1] + this.x);
-		if (px && px.physT === 'LIQUID') {
-			px.setType('BUBBLE', px.type);
+		let cell = cellAtI(ROWOFF[this.y + 1] + this.x);
+		if (cell && cell.physT === 'LIQUID') {
+			cell.setType('BUBBLE', cell.type);
 		}		
 	}
 	if (this.hasTouchedBorder && this.updT != 'ALIVE' && this.wetDur > 5000) {

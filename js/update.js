@@ -1,8 +1,8 @@
 function updateInput()
 {
-	PXATMOUSE = pxAtI(ROWOFF[MOUSEGRIDY] + MOUSEGRIDX);
-	if (MOUSEPRESSED && !isTwoFingerTouch) {
-		if ((BRUSHACTION === 'CUT') || (KEYS['Shift'] && !isWheeling)) deleteParticulesAtMouse();
+	MOUSE.cell = cellAtI(ROWOFF[MOUSE.gridY] + MOUSE.gridX);
+	if (MOUSE.pressed && !isTwoFingerTouch) {
+		if ((BRUSHACTION === 'CUT') || (INPUT.keys['shift'] && !isWheeling)) deleteParticulesAtMouse();
 		else if (BRUSHACTION) {
 			switch (BRUSHACTION) {
 				case 'VIBRATE': vibrateRadius(); break;
@@ -11,10 +11,11 @@ function updateInput()
 				default: return;
 			}
 		}
-		else launchParticules(particleKeys[TYPEINDEX]);
+		else launchParticules(cellKeys[TYPEINDEX]);
 	}
-	if (KEYS['Backspace']) deleteParticulesAtMouse();
-	if (KEYS['x'] && PXATMOUSE) deleteAllParticules(PXATMOUSE.type);
+	if (INPUT.keys['backspace']) deleteParticulesAtMouse();
+	if (INPUT.keys['x'] && MOUSE.cell) deleteAllParticules(MOUSE.cell.type);
+	INPUT.update();
 }
 
 let now = performance.now(), nowSec = now / 1000;
@@ -38,12 +39,12 @@ function updateTime() {
 function updateParticules() {
 	if (ISRAINING) {
 		for (let i = 0; i < RAINPOW; i++)
-			launchParticlesRect(particleKeys[TYPEINDEX], r_range(1, GW - 1), 1, 1, 50);
+			launchCellsRect(cellKeys[TYPEINDEX], r_range(1, GW - 1), 1, 1, 50);
 	}
-	for (let i = 0; i < particleEmitters.length; i++)
-		particleEmitters[i].update();
-	for (let i = 0; i < activeParticles.length; i++){
-		let p = activeParticles[i];
+	for (let i = 0; i < cellEmitters.length; i++)
+		cellEmitters[i].update();
+	for (let i = 0; i < activeCells.length; i++){
+		let p = activeCells[i];
 		p.update();
 	}
 }
@@ -51,8 +52,15 @@ function updateParticules() {
 function update() {
 	updateInput();
 	updateTime();
-	if (!inPause) updateParticules();
-	flushDestroyedParticles();
+	if (!inPause) {
+		updateParticules();
+		if (PLAYER) PLAYER.update();
+	}
+	flushDestroyedCells();
+}
+
+function loop() {
+	update();
 	render();
-	requestAnimationFrame(update);
+	requestAnimationFrame(loop);
 }

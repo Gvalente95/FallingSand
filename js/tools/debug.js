@@ -1,6 +1,6 @@
 // const PROF=makeProfiler();
 
-// PROF.wrapProto(Particle, [
+// PROF.wrapProto(Cell, [
 //   'updatePosition','updateVelocity','updateMovement',
 // 	'update', 'render', 'pxAtp'
 // ]);

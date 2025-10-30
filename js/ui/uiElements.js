@@ -238,7 +238,7 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 		const map={
 			"ArrowUp":"↑","ArrowDown":"↓","ArrowLeft":"←","ArrowRight":"→",
 			"Space":"␣","Enter":"⏎","Escape":"Esc","Backspace":"⌫",
-			"ShiftLeft":"Shift","ShiftRight":"Shift","ControlLeft":"Ctrl","ControlRight":"Ctrl",
+			"ShiftLeft":"shift","ShiftRight":"shift","ControlLeft":"Ctrl","ControlRight":"Ctrl",
 			"AltLeft":"Alt","AltRight":"Alt","MetaLeft":"Meta","MetaRight":"Meta"
 		};
 		if(map[k]) return map[k];
@@ -310,14 +310,14 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 			div.cursorImg.style.display = "none";
 			div.cursorImg.style.pointerEvents = "none";
 			let rafId = null;
-			const inside = () => MOUSEX >= 0 && MOUSEY >= 0 && MOUSEX < CANVW && MOUSEY < CANVH;
+			const inside = () => MOUSE.x >= 0 && MOUSE.y >= 0 && MOUSE.x < CANVW && MOUSE.y < CANVH;
 			const stop = () => { if (rafId) cancelAnimationFrame(rafId); rafId = null; div.cursorImg.style.display = "none"; };
 			const loop = () => {
 				if (!div.active) return stop();
 				if (!inside()) { div.cursorImg.style.display = "none"; rafId = requestAnimationFrame(loop); return; }
 				let brRad = (BRUSHSIZE / 2) * PIXELSIZE;
-				div.cursorImg.style.top = (MOUSEY - brRad) + "px";
-				div.cursorImg.style.left = (MOUSEX + brRad) + "px";
+				div.cursorImg.style.top = (MOUSE.y - brRad) + "px";
+				div.cursorImg.style.left = (MOUSE.x + brRad) + "px";
 				div.cursorImg.style.display = "block";
 				rafId = requestAnimationFrame(loop);
 			};

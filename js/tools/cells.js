@@ -1,4 +1,4 @@
-function deleteParticules(x = MOUSEX, y = MOUSEY, radius = 10, type = null, isDisc = true) {
+function deleteParticules(x = MOUSE.x, y = MOUSE.y, radius = 10, type = null, isDisc = true) {
     const radiusSquared = radius * radius;
     for (let dy = -radius; dy <= radius; dy++) {
         for (let dx = -radius; dx <= radius; dx++) {
@@ -7,7 +7,7 @@ function deleteParticules(x = MOUSEX, y = MOUSEY, radius = 10, type = null, isDi
 				let py = y + dy * PIXELSIZE;
 				let gx = Math.floor((px) / PIXELSIZE);
 				let gy = Math.floor(py / PIXELSIZE);
-				const p = pxAtI(ROWOFF[gy] + gx);
+				const p = cellAtI(ROWOFF[gy] + gx);
 				if (p && (!type || p.type == type)) p.toRemove(true);
             }
         }
@@ -15,20 +15,21 @@ function deleteParticules(x = MOUSEX, y = MOUSEY, radius = 10, type = null, isDi
 }
 
 var randomizeChance = 2;
-function launchParticules(type = 'SAND', x = MOUSEX, y = MOUSEY, radius = BRUSHSIZE, isDisc = BRUSHTYPE == BRUSHTYPES.DISC, useMouseDx = true)
+function launchParticules(type = 'SAND', x = MOUSE.x, y = MOUSE.y, radius = BRUSHSIZE, isDisc = BRUSHTYPE == BRUSHTYPES.DISC, useMouseDx = true, avx = 0, avy = 0)
 {
 	let color = null;
 
-	if (useMouseDx && PARTICLE_PROPERTIES[type].physT === 'GAS') useMouseDx = false;
-	let addedX = !useMouseDx ? 0 : (MOUSEDX / PIXELSIZE) * (PARTICLE_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05);
-	let addedY = !useMouseDx ? 0 : (MOUSEDY / PIXELSIZE) * (PARTICLE_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05);
+	if (useMouseDx && CELL_PROPERTIES[type].physT === 'GAS') useMouseDx = false;
+	let addedX = !useMouseDx ? 0 : (MOUSE.dx / PIXELSIZE) * (CELL_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05);
+	let addedY = !useMouseDx ? 0 : (MOUSE.dy / PIXELSIZE) * (CELL_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05);
 
-	let isRandomized = PARTICLE_PROPERTIES[type].physT === 'SOLID' && type != 'Rainbow';
+	let isRandomized = CELL_PROPERTIES[type].physT === 'SOLID' && type != 'Rainbow';
+	if (type === 'GBLADE') isRandomized = false;
 	if (type === 'FISH' || type === 'SHROOM' || type === 'MUSHX') isRandomized = false;
 	if (type === 'RAINBOW') color = getRainbowColor(FRAME, .1);
-	else if (isRandomized) color = addColor(PARTICLE_PROPERTIES[type].color, getRainbowColor(FRAME, .1), .1);
+	else if (isRandomized) color = addColor(CELL_PROPERTIES[type].color, getRainbowColor(FRAME, .1), .1);
 
-	if (activeParticles.length > MAXPARTICLES) return;
+	if (activeCells.length > MAXCells) return;
 	const radiusSquared = radius * radius;
     for (let dy = -radius; dy <= radius; dy++) {
         for (let dx = -radius; dx <= radius; dx++) {
@@ -39,42 +40,42 @@ function launchParticules(type = 'SAND', x = MOUSEX, y = MOUSEY, radius = BRUSHS
 				let gridY = Math.floor(py / PIXELSIZE);
 				let clampedX = clamp(gridX, 1, GW - 1);
 				let clampedY = clamp(gridY, 1, GH - 1);
-				let newP = new Particle(clampedX, clampedY, type);
+				let newP = new Cell(clampedX, clampedY, type);
 				if (color) {
 					if (randomizeChance > 0 && (isRandomized && dice(randomizeChance))) newP.setColor(randomizeColor(color, 5));
 					else newP.setColor(color);
 				}
 				if (radius <= 1) return;
-				newP.velX += addedX;
-				newP.velY += addedY;
+				newP.velX += addedX + avx;
+				newP.velY += addedY + avy;
             }
         }
 	}
 }
 
-function deleteParticulesAtMouse() {deleteParticules(MOUSEX - BRUSHSIZE / 2 + PIXELSIZE, MOUSEY - BRUSHSIZE / 2 + PIXELSIZE, BRUSHSIZE, null, BRUSHTYPE == 'DISC');}
+function deleteParticulesAtMouse() {deleteParticules(MOUSE.x - BRUSHSIZE / 2 + PIXELSIZE, MOUSE.y - BRUSHSIZE / 2 + PIXELSIZE, BRUSHSIZE, null, BRUSHTYPE == 'DISC');}
 
 function deleteAllParticules(type = null)
 {
-	for (let i = 0; i < activeParticles.length; i++)
+	for (let i = 0; i < activeCells.length; i++)
 	{
-		let p = activeParticles[i];
+		let p = activeCells[i];
 		if (!type || p.type == type)
-			destroyedParticles.push(p);
+			destroyedCells.push(p);
 	}
 }
 
-function launchParticlesRect(type, xp, yp, w, h) {
+function launchCellsRect(type, xp, yp, w, h) {
 	for (let y = 0; y < h; y++){
 		for (let x = 0; x < w; x++){
-			newP = new Particle(xp, yp, type);
+			newP = new Cell(xp, yp, type);
 			if (type === 'RAINBOW') newP.setColor(getRainbowColor(FRAME, .1));
 		}
 	}
 }
 
 
-function vibrateRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity = 5, isCircle = BRUSHTYPE == 'DISC') {
+function vibrateRadius(cx = MOUSE.x, cy = MOUSE.y, radius = BRUSHSIZE, intensity = 5, isCircle = BRUSHTYPE == 'DISC') {
   const r2 = radius * radius;
   for (let dy = -radius; dy <= radius; dy++) {
     for (let dx = -radius; dx <= radius; dx++) {
@@ -84,7 +85,7 @@ function vibrateRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity =
 		let gx = Math.floor(rx / PIXELSIZE);
 		let gy = Math.floor(ry / PIXELSIZE);
 		if (isOutOfBorder(gx, gy)) break;
-		const p = pxAtI(ROWOFF[gy] + gx);
+		const p = cellAtI(ROWOFF[gy] + gx);
 		if (!p) continue;
 		p.velX = f_range(-intensity, intensity + 1);
 		p.velY = f_range(-intensity, intensity + 1);
@@ -92,7 +93,7 @@ function vibrateRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity =
   }
 }
 
-function selectRadius(selType = 'GRAB', cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, isCircle = BRUSHTYPE == 'DISC') {
+function selectRadius(selType = 'GRAB', cx = MOUSE.x, cy = MOUSE.y, radius = BRUSHSIZE, isCircle = BRUSHTYPE == 'DISC') {
 	const r2 = radius * radius;
 	for (let dy = -radius; dy <= radius; dy++) {
 		for (let dx = -radius; dx <= radius; dx++) {
@@ -103,7 +104,7 @@ function selectRadius(selType = 'GRAB', cx = MOUSEX, cy = MOUSEY, radius = BRUSH
 				let gy = Math.floor(ry / PIXELSIZE);
 				if (isOutOfBorder(gx,gy)) break;
 				let i = ROWOFF[gy] + gx
-				const p = pxAtI(i);
+				const p = cellAtI(i);
 				if (!p) continue;
 				if (selType === 'LIQUID') {
 					if (p.physT === 'LIQUID') continue;
@@ -119,15 +120,15 @@ function selectRadius(selType = 'GRAB', cx = MOUSEX, cy = MOUSEY, radius = BRUSH
 				if (grid1[i] === p) grid1[i] = null;
 				p.sx = Math.floor(dx);
 				p.sy = Math.floor(dy);
-				selParticles.push(p);
+				selCells.push(p);
 			}
 		}
 	}
 }
 
 function resetSelectedType(typeToReset) {
-	for (let i = 0; i < selParticles.length; i++){
-		let p = selParticles[i];
+	for (let i = 0; i < selCells.length; i++){
+		let p = selCells[i];
 		if (p.selType != typeToReset) continue;
 		if (typeToReset === 'GRAB') {
 			let idx = ROWOFF[p.y] + p.x;
@@ -135,8 +136,8 @@ function resetSelectedType(typeToReset) {
 			if (pAt && pAt != p) pAt.toRemove();
 			p.updatePosition(idx);
 			p.selType = null;
-			p.velX += MOUSEDX / PIXELSIZE;
-			p.velY += MOUSEDY / PIXELSIZE;
+			p.velX += MOUSE.dx / PIXELSIZE;
+			p.velY += MOUSE.dy / PIXELSIZE;
 			p.newX = p.x;
 			p.newY = p.y;
 			p.color = p.baseColor;
@@ -144,7 +145,7 @@ function resetSelectedType(typeToReset) {
 	}
 }
 
-function explodeRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity = 2, transformType = null, ignoreType = null) {
+function explodeRadius(cx = MOUSE.x, cy = MOUSE.y, radius = BRUSHSIZE, intensity = 2, transformType = null, ignoreType = null) {
 	const r2 = radius * radius;
 	let xPushLimits = [0, intensity];
 	let yPushLimits = [0, intensity];
@@ -156,7 +157,7 @@ function explodeRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity =
 				let gx = Math.floor(rx / PIXELSIZE);
 				let gy = Math.floor(ry / PIXELSIZE);
 				if (isOutOfBorder(gx, gy)) break;
-				const p = pxAtI(ROWOFF[gy] + gx);
+				const p = cellAtI(ROWOFF[gy] + gx);
 				if (!p) continue;
 				if (ignoreType && p.type == ignoreType) continue;
 				if (p.expl) p.lt = 0;
@@ -176,21 +177,21 @@ function explodeRadius(cx = MOUSEX, cy = MOUSEY, radius = BRUSHSIZE, intensity =
 	}
 }
 
-function resetParticles()
+function resetCells()
 {
-	for (let i = 0; i < particleEmitters.length; i++) particleEmitters[i].onRemove();
-	particleEmitters = [];
+	for (let i = 0; i < cellEmitters.length; i++) cellEmitters[i].onRemove();
+	cellEmitters = [];
 	deleteAllParticules();
-	activeParticles = [];
+	activeCells = [];
 	initGrid();
 }
 
 function deleteOldestParticules(num) {
-	activeParticles.splice(0, num);
+	activeCells.splice(0, num);
 }
 
-function flushDestroyedParticles()
+function flushDestroyedCells()
 {
-	for (let i = 0; i < destroyedParticles.length; i++) destroyedParticles[i].onRemove();
-	destroyedParticles = [];
+	for (let i = 0; i < destroyedCells.length; i++) destroyedCells[i].onRemove();
+	destroyedCells = [];
 }

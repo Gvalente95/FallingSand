@@ -1,6 +1,6 @@
 
 function createNewType() {
-	initInputParticleValuesContainer();
+	initInputCellValuesContainer();
 }
 
 function hsvaToRgba(h,s,v,a){
@@ -106,7 +106,7 @@ function createRadialColorPicker(target, initial, onChange){
 }
 
 let defaultName = 0;
-function initInputParticleValuesContainer() {
+function initInputCellValuesContainer() {
 	const overlay = document.createElement('div');
 	const mod = document.createElement('div');
 	const form = document.createElement('div');
@@ -283,7 +283,7 @@ function initInputParticleValuesContainer() {
 			dns: Number(densI.value),
 			spread: Number(spreadI.value)
 		};
-		addParticleType(p);
+		addCellType(p);
 		close();
 	});
 
@@ -307,7 +307,7 @@ function initInputParticleValuesContainer() {
 }
 
 
-function addParticleType(props = {}) {
+function addCellType(props = {}) {
 	const defaults = {
 		name: 'Ola',
 		color: 'rgba(255,255,255,1)',
@@ -325,8 +325,8 @@ function addParticleType(props = {}) {
 	if (props.physT && !Object.values(PHYSTYPES).includes(props.physT)) throw new Error('invalid physT');
 	if (props.updT && !Object.values(UPDATE_TYPES).includes(props.updT)) throw new Error('invalid updT');
 
-	particleKeys = Object.keys(PARTICLE_PROPERTIES);
-	PARTICLE_PROPERTIES[key] = { ...defaults, ...props };
+	cellKeys = Object.keys(CELL_PROPERTIES);
+	CELL_PROPERTIES[key] = { ...defaults, ...props };
 
 	const customIdx = uiPagesButtons.findIndex(p => p.label === 'CUSTOM');
 	if (customIdx === -1) return key;
@@ -336,8 +336,8 @@ function addParticleType(props = {}) {
 	const buttonHeight = 45;
 	const x = -(5 + customIdx * buttonSpread) + buttons.length * buttonSpread;
 	const y = buttonHeight;
-	const idxInKeys = particleKeys.indexOf(key);
-	const newBut = initButton(key, x, y, btnW, btnH, PARTICLE_PROPERTIES[key].color, setNewType, idxInKeys, page);
+	const idxInKeys = cellKeys.indexOf(key);
+	const newBut = initButton(key, x, y, btnW, btnH, CELL_PROPERTIES[key].color, setNewType, idxInKeys, page);
 	buttons.push(newBut);
 	return key;
 }

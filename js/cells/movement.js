@@ -7,7 +7,6 @@ p.updateMovement = function () {
 	}
 	let k = SIMSPEED * dt;
 	if (this.physT == 'GAS') k = 1;
-
 	let newX = this.x + this.velX * k;
 	let newY = this.y + this.velY * k;
 
@@ -20,6 +19,7 @@ p.updateMovement = function () {
 	let curX = this.x, curY = this.y;
 	let lastX = curX, lastY = curY;
 	const side = rdir();
+	let XDisplacement = this.type !== "GBLADE";
 
 	for (let i = 0; i < steps; i++) {
 		curX += xStep; curY += yStep;
@@ -57,15 +57,17 @@ p.updateMovement = function () {
 			}
 			else if (this.type === 'ICE') { this.velY = this.velX = 0; }
 		}
-		const lx = realX + side;
-		if (lx >= 0 && lx < GW) {
-			const s = grid1[realY * GW + lx];
-			if (!s) { curX += side; continue; }
-		}
-		const rx = realX - side;
-		if (rx >= 0 && rx < GW) {
-			const s2 = grid1[realY * GW + rx];
-			if (!s2) { curX -= side; continue; }
+		if (XDisplacement) {
+			const lx = realX + side;
+			if (lx >= 0 && lx < GW) {
+				const s = grid1[realY * GW + lx];
+				if (!s) { curX += side; continue; }
+			}
+			const rx = realX - side;
+			if (rx >= 0 && rx < GW) {
+				const s2 = grid1[realY * GW + rx];
+				if (!s2) { curX -= side; continue; }
+			}
 		}
 		curX -= xStep; curY -= yStep; break;
 	}

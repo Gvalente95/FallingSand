@@ -8,7 +8,7 @@ p.updateLiquidVelocity = function (g) {
 			n.setColor(newClr);
 			return;
 		}
-		if (dice(400) && !pxAtI(ROWOFF[this.y - 1] + this.x, this))
+		if (dice(400) && !cellAtI(ROWOFF[this.y - 1] + this.x, this))
 		{
 			let prvClr = this.baseColor;
 			let type = this.type;
@@ -34,7 +34,8 @@ p.updateGasVelocity = function () {
 };
 
 p.updateSolidVelocity = function (g) {
-	if (this.y < GH - 1 && (this.x === 0 || this.x == GW - 1 || this.y === 0)) { this.velX *= -1; this.velY = 2; }
+	if ((this.x === 0 || this.x == GW - 1)) { this.velX *= -.4; }
+	if (this.y === 0) { this.velY = 2; this.velX *= .4; }
 	if (this.type === 'FISH' && this.inWater) return;
 	if (this.type === 'SNOW') {
 		if (FRAME % 2 != 0) { this.velX = this.velY = 0; return; }
@@ -52,21 +53,24 @@ p.updateSolidVelocity = function (g) {
 		this.hasTouchedBorder = (this.y >= GH - 1 || (g && (g.updT === 'STATIC' || g.hasTouchedBorder)));
 		if (this.hasTouchedBorder) {this.velX = 0;}	
 	}
-	else if (this.hasTouchedBorder > 0 && !g && this.y < GH - 1) {
+	else if (this.hasTouchedBorder > 0 && !g && this.y < GH - 1)
 		this.hasTouchedBorder--;
-	}
 	const grounded = g && g.velY === 0 && (g.physT === 'SOLID' || g.frozen);
 	if (grounded && this.updT !== 'ALIVE') {
 		this.velY = g.updT === 'STATIC' ? 1 : 0;
 		this.velX *= (1 - XDRAG);
 		if (Math.abs(this.velX) < .01) this.velX = 0;
-	} else if (!g) this.velY += GRAVITY;
+	}
+	else if (!g)
+		this.velY += GRAVITY;
+	if (this.type === "GBLADE")
+		this.velX = 0;
 };
 
 p.updateVelocity = function () {
 	const pt = this.physT;
 	// let Y = ((pt === 'GAS' || GRAVITY < 0) ? -1 : 1);
-	// const g = pxAtI(ROWOFF[this.y + Y] + this.x, this);
+	// const g = cellAtI(ROWOFF[this.y + Y] + this.x, this);
 	const g = ((GRAVITY < 0 || pt === 'GAS') ? this.u : this.d);
 	this.ground = g;
 	if (pt === 'LIQUID') return this.updateLiquidVelocity(g);
