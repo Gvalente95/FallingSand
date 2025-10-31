@@ -63,7 +63,7 @@ p.updateSolidVelocity = function (g) {
 	}
 	else if (!g)
 		this.velY += GRAVITY;
-	if (this.type === "GBLADE")
+	if (this.type === "GBLADES")
 		this.velX = 0;
 };
 

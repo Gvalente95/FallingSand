@@ -4,6 +4,10 @@ let hudEvery = 4, hudTick = 0;
 function updateHUD(){
 	if (++hudTick % hudEvery !== 0) return;
 	let topNow = `x${MOUSE.x},y${MOUSE.y}  gx${MOUSE.gridX},gy${MOUSE.gridY}\nBrush Size: ${BRUSHSIZE}\nPx Size: ${PIXELSIZE}\nPxls: ${activeCells.length}\nFrm: ${FRAME} Dt: ${Number(dt).toFixed(2)}s`;
+	if (PLAYER) {
+		let dpx = [`\n\nPLAYER\nx${PLAYER.x} y${PLAYER.y}\nmx${Number(PLAYER.mv[0]).toFixed(3)} my${Number(PLAYER.mv[1]).toFixed(3)}\nwtr:${PLAYER.inWater} grd:${PLAYER.grounded}`];
+		topNow += dpx.join('\n');
+	}
 	if (MOUSE.cell && !isMobile) {
 		const x = `${MOUSE.cell.x}`;
 		const y = `${MOUSE.cell.y}`;

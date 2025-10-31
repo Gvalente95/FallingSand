@@ -2,7 +2,7 @@ function updateInput()
 {
 	MOUSE.cell = cellAtI(ROWOFF[MOUSE.gridY] + MOUSE.gridX);
 	if (MOUSE.pressed && !isTwoFingerTouch && (!isMobile || !MOUSE.clickedOnPlayer)) {
-		if ((BRUSHACTION === 'CUT') || (INPUT.keys['shift'] && !isWheeling)) deleteParticulesAtMouse();
+		if ((BRUSHACTION === 'CUT') || (INPUT.keys['shift'] && !isWheeling)) delCellsAtMouse();
 		else if (BRUSHACTION) {
 			switch (BRUSHACTION) {
 				case 'VIBRATE': vibrateRadius(); break;
@@ -11,10 +11,10 @@ function updateInput()
 				default: return;
 			}
 		}
-		else launchParticules(cellKeys[TYPEINDEX]);
+		else launchCells(cellKeys[TYPEINDEX]);
 	}
-	if (INPUT.keys['backspace']) deleteParticulesAtMouse();
-	if (INPUT.keys['x'] && MOUSE.cell) deleteAllParticules(MOUSE.cell.type);
+	if (INPUT.keys['backspace']) delCellsAtMouse();
+	if (INPUT.keys['x'] && MOUSE.cell) delAllCells(MOUSE.cell.type);
 	INPUT.update();
 }
 
@@ -36,10 +36,12 @@ function updateTime() {
 	ticks = 0;
 }
 
+let wakeFrame = false;
 function updateParticules() {
+	wakeFrame = (FRAME % 100 === 0);
 	if (ISRAINING) {
 		for (let i = 0; i < RAINPOW; i++)
-			launchCellsRect(cellKeys[TYPEINDEX], r_range(1, GW - 1), 1, 1, 50);
+			launchCells(cellKeys[TYPEINDEX], r_range(1, CANVW - 1), 1, 1, 1, false, false, 0, 0);
 	}
 	for (let i = 0; i < cellEmitters.length; i++)
 		cellEmitters[i].update();
@@ -60,9 +62,20 @@ function update() {
 }
 
 function loop() {
-	if (!inLoadMenu && !inPrompt) {
+	if (!LD.active) {
 		update();
 		render();
 	}
 	requestAnimationFrame(loop);
-}	
+}
+
+
+// render("blur(5px)");
+// render("contrast(2)");
+// render("brightness(1.5)");
+// render("grayscale(1)");
+// render("invert(1)");
+// render("opacity(0.5)");
+// render("saturate(1.2)");
+// render("sepia(.4)");
+// render("drop-shadow(5px 5px 10px rgba(0,0,0,0.5))");

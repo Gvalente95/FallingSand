@@ -16,29 +16,50 @@ function _serializeCurrent() {
 	return {
 		GW, GH, PIXELSIZE,
 		player: { x: PLAYER.x, y: PLAYER.y, w: PLAYER.w, h: PLAYER.h },
-		cells: activeCells.map(c => ({ type: c.type, x: c.x, y: c.y })),
-		cellEmitters: cellEmitters.map(c => ({ type: c.type, x: c.x, y: c.y, radius: c.radius })),
+		cells: activeCells.map(c => ({ type: c.type, x: c.x, y: c.y, clr:c.color })),
+		cellEmitters: cellEmitters.map(c => ({ type: c.type, x: c.x, y: c.y, radius: c.radius, capacity: c.capacity })),
 		screenshot: canvas.toDataURL("image/png")
 	};
 }
 
-function saveMapAs(name, data){
-  localStorage.setItem(MAP_PREFIX + name, JSON.stringify(data));
+async function saveMapAs(name, data) {
+  const key = MAP_PREFIX + name;
+  const json = JSON.stringify(data);
+  try {
+    localStorage.setItem(key, json);
+  } catch (err) {
+    await idbPut(key, json);
+  }
   const idx = _getIndex();
   if (!idx.includes(name)) { idx.push(name); _setIndex(idx); }
   localStorage.setItem(LAST_KEY, name);
   return name;
 }
 
-async function  saveMap() {
-	const newName = await promptUser("Select map name:", "");
-	if (!newName)
+function getMapDataLS(name){
+  const raw = localStorage.getItem(MAP_PREFIX + name);
+  return raw ? JSON.parse(raw) : null;
+}
+
+async function getMapDataAsync(name){
+  const fromLS = getMapDataLS(name);
+  if (fromLS) return fromLS;
+  const raw = await idbGet(MAP_PREFIX + name);
+  return raw ? JSON.parse(raw) : null;
+}
+
+
+async function saveMap() {
+  const newName = await promptUser("Select map name:", "");
+	if (!newName) {
+		announce("invalid name");
 		return;
-	saveMapAs(newName, _serializeCurrent());
-	let infobox = initLabelDiv(CANVW / 2 - 100, CANVH / 2, 'Map Saved as' + newName);
-	setTimeout(() => {
-		infobox.remove();
-	}, 500);
+	}
+  let dur = 500;
+  let msg = newName + " was saved";
+  try { await saveMapAs(newName, _serializeCurrent()); }
+  catch (err) { msg = "Error: " + err; dur = 4000; }
+	announce(msg, dur);
 }
 
 function getMapData(name){
@@ -59,22 +80,29 @@ function listMaps() {
 		console.log(dm);
 }
 
-function deleteMap(name){
-  localStorage.removeItem(MAP_PREFIX + name);
-  _setIndex(_getIndex().filter(n => n !== name));
-  const last = localStorage.getItem(LAST_KEY);
-  if (last === name) localStorage.removeItem(LAST_KEY);
+async function deleteMap(name){
+  const key = MAP_PREFIX + name;
+  localStorage.removeItem(key);
+  await idbDel(key).catch(()=>{});
+	_setIndex(_getIndex().filter(n => n !== name));
+	if (localStorage.getItem(LAST_KEY) === name) {
+		localStorage.removeItem(LAST_KEY);
+	  	announce(name + " deleted");
+  }
 }
 
-function renameMap(oldName, newName){
-  if (!newName || oldName === newName) return false;
-  const data = getMapData(oldName); if (!data) return false;
-  saveMapAs(newName, data);
-  deleteMap(oldName);
-  return true;
+async function renameMap(oldName, newName){
+	if (!newName || oldName === newName) return false;
+	const data = await getMapDataAsync(oldName);
+	if (!data) return false;
+	await saveMapAs(newName, data);
+	await deleteMap(oldName);
+	announce(oldName + " ranamed to " + newName);
+	return true;
 }
 
-function applyMapData(data){
+function applyMapData(data) {
+	cellEmitters = [];
 	PIXELSIZE = data.PIXELSIZE;
 	GW = data.GW;
 	GH = data.GH;
@@ -83,11 +111,52 @@ function applyMapData(data){
 	PLAYER = new Player(data.player.x, data.player.y, data.player.w, data.player.h);
 	for (let i = 0; i < data.cells.length; i++){
 		const c = data.cells[i];
-		new Cell(c.x, c.y, c.type);
+		let newC = new Cell(c.x, c.y, c.type);
+		if (c.clr)
+			newC.setColor(c.clr);
 	}
 	for (let i = 0; i < data.cellEmitters.length; i++){
 		const ce = data.cellEmitters[i];
-		cellEmitters.push(new CellEmitter(ce.x, ce.y, ce.type));
+		cellEmitters.push(new CellEmitter(ce.x, ce.y, ce.type, ce.capacity));
 	}
 	if (typeof buildWaterShades === "function") buildWaterShades();
+}
+
+const IDB_DB = "WebGameMaps";
+const IDB_STORE = "maps";
+
+function idbOpen() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_DB, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(IDB_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function idbPut(key, value) {
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    tx.objectStore(IDB_STORE).put(value, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function idbGet(key) {
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, "readonly");
+    const req = tx.objectStore(IDB_STORE).get(key);
+    req.onsuccess = () => resolve(req.result ?? null);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function idbDel(key) {
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    tx.objectStore(IDB_STORE).delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
 }

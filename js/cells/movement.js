@@ -42,7 +42,7 @@ p.updateMovement = function () {
 		else if (this.physT === 'LIQUID' && hit.physT === 'LIQUID') {
 			const a = this.type, b = hit.type;
 			if ((a === 'LAVA' && b === 'WATER') || (a === 'WATER' && b === 'LAVA')) {
-				if (a === 'LAVA') (dice(5) ? this.setType('COAL') : hit.setType('STEAM'));
+				if (a === 'LAVA') (dice(5) ? this.setType('HOTCOAL') : hit.setType('STEAM'));
 				else this.setType('STEAM');
 				curX -= xStep; curY -= yStep; break;
 			}

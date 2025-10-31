@@ -6,9 +6,11 @@ class InputManager
 		this.y = 0;
 		this.lastKey = null;
 		this.shift = false;
+		this.selBox = null;
 	}
 
 	update() {
+		if (inPrompt || LD.active) return;
 		this.shift = this.keys["shift"];
 		let keyX = (this.keys['a'] ? -1 : 0) + (this.keys['d'] ? 1 : 0);
 		let keyY = (this.keys['w'] ? -1 : 0) + (this.keys['s'] ? 1 : 0);
@@ -36,8 +38,6 @@ class Mouse{
 		this.gridY = 0;
 		this.clicked = false;
 		this.pressed = false;
-		this.stuckX = 0;
-		this.stuckY = 0;
 		this.cell = null;
 		this.clickedOnPlayer = false;
 		this.clickColor = getRandomColor();
@@ -55,21 +55,18 @@ class Mouse{
 	mousemove(x, y) {
 		const dx = x - this.x;
 		const dy = y - this.y;
-		if (this.lockAxis) {
-			this.lockAxis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
-			if (this.lockAxis === "x") x = this.stuckX;
-			else y = this.stuckY;
-		}
 		this.dx = dx;
 		this.dy = dy;
 		this.setPos(x, y);
 	}
 
 	mousedown(x, y) {
-		for (const c of PLAYER.cells) {
-			if (c.x === Math.floor(x / PIXELSIZE) && c.y === Math.floor(y / PIXELSIZE)) {
-				this.clickedOnPlayer = true;
-				break;
+		if (PLAYER && isMobile) {
+			for (const c of PLAYER.cells) {
+				if (c.x === Math.floor(x / PIXELSIZE) && c.y === Math.floor(y / PIXELSIZE)) {
+					this.clickedOnPlayer = true;
+					break;
+				}
 			}
 		}
 		this.clicked = true;
@@ -86,8 +83,8 @@ class Mouse{
 }
 
 window.addEventListener('mousedown', (e) => {
-	if (inLoadMenu && sSContainer.style.display == "none") {
-		exitLoadMenu();
+	if (LD.active && LD.container.style.display == "none") {
+		LD.closeMenu();
 	}
 });
 
@@ -118,10 +115,13 @@ window.addEventListener('keydown', (e) => {
 	if (e.code === 'Tab') e.preventDefault();
 	else if (e.key === 't') { ISGAME = !ISGAME; updateUi(); }
 	else if (e.key === 'k') switchUiDisplay();
+	else if (e.code === "Escape") {
+		if (LD.active)
+			LD.closeMenu();
+	}
 	else if (e.key === 'h') PLAYER.death();
-	else if (e.key === 'z') {
-		MOUSE.stuckX = MOUSE.x;
-		MOUSE.stuckY = MOUSE.y;
+	else if (e.key === 'z' && !INPUT.selBox) {
+		INPUT.selBox = [MOUSE.gridX, MOUSE.gridY];
 	}
 	INPUT.lastKey = e.key.toLowerCase();
 	INPUT.keys[INPUT.lastKey] = true;
@@ -129,8 +129,19 @@ window.addEventListener('keydown', (e) => {
 
 window.addEventListener('keyup', (e) => {
 	if (inPrompt) return;
+	if (e.key === 'z') {
+		const gx0 = Math.min(INPUT.selBox[0], MOUSE.gridX);
+		const gy0 = Math.min(INPUT.selBox[1], MOUSE.gridY);
+		const gw  = Math.abs(INPUT.selBox[0] - MOUSE.gridX) + 1;
+		const gh  = Math.abs(INPUT.selBox[1] - MOUSE.gridY) + 1;
+		const cx  = (gx0 + gw / 2) * PIXELSIZE;
+		const cy  = (gy0 + gh / 2) * PIXELSIZE;
+		const rx  = Math.floor(gw / 2);
+		const ry  = Math.floor(gh / 2);
+		launchCells(cellKeys[TYPEINDEX], cx, cy, rx, ry, false, false);
+		INPUT.selBox = null;
+	}
 	INPUT.keys[e.key.toLowerCase()] = false;
-  	if (e.key.toLowerCase() === "z") MOUSE.lockAxis = null;
 	if (isWheeling && e.key === 'Shift') isWheeling = false;
 });
 
@@ -198,7 +209,7 @@ document.addEventListener('touchstart', (e) => {
     if (e.touches.length === 1 && !isTwoFingerTouch) {
         if (now - lastTouchTime < 300) {
             isDoubleTouch = true;
-            deleteParticulesAtMouse();
+            delCellsAtMouse();
         }
         lastTouchTime = now;
         simulateMouseEvent(e, 'mousedown');

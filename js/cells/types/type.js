@@ -40,11 +40,34 @@ p.getNeighborCells = function () {
 	return this.neighborCount;
 }
 
+p.trySetToSleep = function () {
+	if (this.burning || this.frozen || this.cor || this.wet || this.warm)
+		return false;
+	if (this.updT === 'STATIC')
+		return true;
+	else if (this.physT === 'LIQUID') {
+		if (!this.hasTouchedSurface) return false;
+		if (!(this.y >= GH - 1 || grid1[this.i + GW])) return false;
+		if (!(this.x <= 0 || grid1[this.i - 1])) return false;
+		return (this.x >= GW - 1 || grid1[this.i + 1]);
+	}
+	else {
+		if (!this.hasTouchedBorder) return false;
+		if (!(this.y >= GH - 1 || this.x <= 0 || grid1[this.i + GW - 1])) return false;
+		if (!(this.y >= GH - 1 || this.x >= GW - 1 || grid1[this.i + GW - 1])) return false;
+		return (this.y >= GH - 1 || grid1[this.i + GW]);
+	}
+}
+
 p.updateType = function () {
 	this.neighbors = null;
+	if (this.physT !== 'LIQUID' || FRAME%100 === 0) {
+		if (this.isBasic && !this.cor && !this.freeze && !this.burning && this.trySetToSleep()) {
+			this.isAsleep = true;
+			return;
+		}
+	}
 	this.getNeighborCells();
-	// this.noUpdate = this.neighborCount >= 8;
-	// if (this.noUpdate) return;
 	if (this.type === 'DUST' && FRAME % 2 == 0) return;
 	if (this.cor) this.applyCorrosion();
 	if (this.freeze) this.applyFrost(this.type, 50, true);
@@ -107,6 +130,8 @@ p.setType = function(newType, transformType = null)
 	this.corrosionType = null;
 	this.transformType = transformType;
 	this.setTypeSpecifics();
+	this.isBasic = this.type !== 'BUBBLE' && this.updT !== 'ALIVE' && (this.physT !== 'GAS') && !this.freeze && !this.brnpwr && !this.lt != Infinity && !this.cor && !this.expl;
+	this.isAsleep = this.updT === 'STATIC' && this.isBasic;
 }
 
 p.setTypeSpecifics = function(){

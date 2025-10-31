@@ -282,7 +282,7 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
  			if (e.code === keyToggle || e.key == keyToggle || e.key.toLowerCase() == keyToggle) {activate();}
 		});
 		if (!isMobile) {
-			div.badge = initLabelDiv(x + w - 10, canvas.height + 5, formatKeyLabel(keyToggle), 'rgba(203, 185, 211, 1)');
+			div.badge = initLabelDiv(x + w - 10, canvas.height + 5, formatKeyLabel(keyToggle), null, 'rgba(203, 185, 211, 1)');
 			div.badge.style.fontSize = '12px';
 			div.badge.style.pointerEvents = "none";
 			div.style.paddingTop = '10px';
@@ -290,7 +290,7 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
 			uiContainer.appendChild(div.badge);
 
 			if (desc) {
-				let descDiv = initLabelDiv(x, canvas.height - 30, desc, "rgba(255, 255, 255, 1)", document.body);
+				let descDiv = initLabelDiv(x, canvas.height - 30, desc, null, "rgba(255, 255, 255, 1)", document.body);
 				div.addEventListener("mouseenter", () => {
 					if (!inPrompt || div.isPrompt)
 						descDiv.style.display = "block";
@@ -502,10 +502,15 @@ function fitHeaderDragWidth(header){
 	header.style.left = clamp(curLeft, b.min, b.max) + "px";
 }
 
-function initLabelDiv(x, y, text = '', color = 'white', parent = document.body) {
+function initLabelDiv(x, y, text = '', bgrColor = null, color = 'white', parent = document.body) {
 	let div = document.createElement("label");
 	div.className = "infoText";
 	div.style.position = "fixed";
+	if (bgrColor) {
+		div.style.paddingTop = "3px";
+		div.style.paddingLeft = "3px";
+		div.style.backgroundColor = bgrColor;
+	}
 	div.style.top = y + "px";
 	div.style.left = x + "px";
 	div.style.whiteSpace = "pre";
@@ -520,64 +525,63 @@ let inPrompt = false;
 let promptDiv = null;
 
 function promptUser(label, defaultValue = "") {
-  inPrompt = true;
+	inPrompt = true;
+	return new Promise((resolve) => {
+	const overlay = document.createElement("div");
+	overlay.style.position = "fixed";
+	overlay.style.top = 0;
+	overlay.style.left = 0;
+	overlay.style.width = "100vw";
+	overlay.style.height = "100vh";
+	overlay.style.background = "rgba(0,0,0,0.4)";
+	overlay.style.display = "flex";
+	overlay.style.justifyContent = "center";
+	overlay.style.alignItems = "center";
+	overlay.style.zIndex = "9999";
 
-  return new Promise((resolve) => {
-    const overlay = document.createElement("div");
-    overlay.style.position = "fixed";
-    overlay.style.top = 0;
-    overlay.style.left = 0;
-    overlay.style.width = "100vw";
-    overlay.style.height = "100vh";
-    overlay.style.background = "rgba(0,0,0,0.4)";
-    overlay.style.display = "flex";
-    overlay.style.justifyContent = "center";
-    overlay.style.alignItems = "center";
-    overlay.style.zIndex = "9999";
+	const box = document.createElement("div");
+	box.style.background = "white";
+	box.style.padding = "10px";
+	box.style.borderRadius = "8px";
 
-    const box = document.createElement("div");
-    box.style.background = "white";
-    box.style.padding = "10px";
-    box.style.borderRadius = "8px";
+	const labelEl = document.createElement("div");
+	labelEl.className = "infoText";
+	labelEl.textContent = label;
 
-    const labelEl = document.createElement("div");
-    labelEl.className = "infoText";
-    labelEl.textContent = label;
+	const input = document.createElement("input");
+	input.type = "text";
+	input.value = defaultValue;
 
-    const input = document.createElement("input");
-    input.type = "text";
-    input.value = defaultValue;
+	const okBtn = document.createElement("button");
+	okBtn.textContent = "OK";
+	okBtn.className = "infoText";
+	okBtn.onclick = () => cleanup(input.value.trim());
 
-    const okBtn = document.createElement("button");
-    okBtn.textContent = "OK";
-    okBtn.className = "infoText";
-    okBtn.onclick = () => cleanup(input.value.trim());
+	const cancelBtn = document.createElement("button");
+	cancelBtn.textContent = "Cancel";
+	cancelBtn.className = "infoText";
+	cancelBtn.onclick = () => cleanup(null);
 
-    const cancelBtn = document.createElement("button");
-    cancelBtn.textContent = "Cancel";
-    cancelBtn.className = "infoText";
-    cancelBtn.onclick = () => cleanup(null);
+	const cleanup = (val) => {
+		inPrompt = false;
+		window.removeEventListener("keydown", onKey);
+		overlay.remove();
+		resolve(val);
+	};
 
-    const cleanup = (val) => {
-      inPrompt = false;
-      window.removeEventListener("keydown", onKey);
-      overlay.remove();
-      resolve(val);
-    };
+	const onKey = (e) => {
+		if (e.key === "Enter") cleanup(input.value.trim());
+		else if (e.key === "Escape") cleanup(null);
+	};
 
-    const onKey = (e) => {
-      if (e.key === "Enter") cleanup(input.value.trim());
-      else if (e.key === "Escape") cleanup(null);
-    };
+	window.addEventListener("keydown", onKey);
 
-    window.addEventListener("keydown", onKey);
+	box.append(labelEl, input, okBtn, cancelBtn);
+	overlay.appendChild(box);
+	document.body.appendChild(overlay);
 
-    box.append(labelEl, input, okBtn, cancelBtn);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
-
-    setTimeout(() => input.focus(), 0);
-  });
+	setTimeout(() => input.focus(), 0);
+	});
 }
 
 
@@ -599,9 +603,23 @@ function confirmChoice(label, onEnd, color = "rgba(190, 104, 96, 1)") {
 	confirmDiv.style.backgroundColor = color;
 	confirmDiv.style.zIndex = "9999";
 	confirmDiv.style.border = "10px solid " + color;
+	confirmDiv.setAttribute("tabindex", "0");
+	confirmDiv.focus();
+	const onKey = (e) => {
+	if (e.code === "Escape" || e.code === "Enter") {
+		confirmDiv.remove();
+		confirmDiv = null;
+		inPrompt = false;
+		window.removeEventListener("keydown", onKey);
+		if (e.code === "Enter") onEnd(true);
+	}
+	};
+	window.addEventListener("keydown", onKey);
+	
+
 	document.body.appendChild(confirmDiv);
 
-	initLabelDiv(x + 20, y + 15, label, "rgba(250, 250, 250, 1)", confirmDiv);
+	initLabelDiv(x + 20, y + 15, label, null, "rgba(250, 250, 250, 1)", confirmDiv);
 
 	const yesBtn = initButton("Yes", 0, h - bh, bw, bh, "rgba(0, 0, 0, 0.13)", () => {
 	confirmDiv.remove(); confirmDiv = null; inPrompt = false; if (onEnd) onEnd(true);

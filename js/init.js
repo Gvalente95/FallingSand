@@ -63,7 +63,7 @@ function initActionHeader(yPos)
 	initButton("Emitter", xs * nn++, 0, w, h, clr, spawnEmitterAtMouse, null, hdr, null, 'l', p + "emit.png", null, clr, "Create pixel emitter on click");
 	initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, 'n', p + "next.png", null, clr, "Next frame");
 	initButton("Save", xs * nn++, 0, w, h, clr, saveMap, null, hdr, null, "1", p + "save.png", null, clr, "Save Environment");
-	initButton("Load", xs * nn++, 0, w, h, clr, loadMap, null, hdr, false, "2", p + "load.png", null, clr, "Load Environment");
+	initButton("Load", xs * nn++, 0, w, h, clr, () => {LD.toggleMenu()}, null, hdr, null, "2", p + "load.png", null, clr, "Load Environment");
 	fitHeaderDragWidth(hdr);
 }
 
@@ -92,7 +92,7 @@ function initCellPagesHeader(y) {
 			if (!hasTag(key, name)) continue;
 			let x = xp++ * buttonSpread;
 			const btn = initButton(key, x, 0, w, h, background, setNewType, v, elementsHeader, null, null, null, null, prop.color);
-			let newDiv = initLabelDiv(x, CANVH + y + 35, 'new', 'rgba(0, 217, 255, 1)');
+			let newDiv = initLabelDiv(x, CANVH + y + 35, 'new', null, 'rgba(0, 217, 255, 1)');
 			newDiv.style.opacity = '0';
 			btn.newDiv = newDiv;
 			famButton.buttons.push(btn);
@@ -133,11 +133,13 @@ function init()
 {
 	INPUT = new InputManager();
 	MOUSE = new Mouse();
+	LD = new LoadData();
+	LD.toggleMenu(false);
 	initCreationRules();
 	au = new AudioManager();
 	initUi();
 	initGrid();
-	PLAYER = new Player(50, GH - 14, 8, 14);
+	PLAYER = new Player(50, GH - 14);
 }
 
 window.onload = () => { init(); loop(); };

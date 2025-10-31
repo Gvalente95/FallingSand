@@ -1,4 +1,4 @@
-function deleteParticules(x = MOUSE.x, y = MOUSE.y, radius = 10, type = null, isDisc = true) {
+function deleteCells(x = MOUSE.x, y = MOUSE.y, radius = 10, type = null, isDisc = true) {
     const radiusSquared = radius * radius;
     for (let dy = -radius; dy <= radius; dy++) {
         for (let dx = -radius; dx <= radius; dx++) {
@@ -14,48 +14,77 @@ function deleteParticules(x = MOUSE.x, y = MOUSE.y, radius = 10, type = null, is
 	}
 }
 
-var randomizeChance = 2;
-function launchParticules(type = 'SAND', x = MOUSE.x, y = MOUSE.y, radius = BRUSHSIZE, isDisc = BRUSHTYPE == BRUSHTYPES.DISC, useMouseDx = true, avx = 0, avy = 0)
-{
-	let color = null;
 
+function launchCell(type, x, y, clr, vx, vy, isRandomized) {
+	const newP = new Cell(x, y, type);
+	if (clr){
+		if (randomizeChance > 0 && isRandomized && dice(randomizeChance)) newP.setColor(randomizeColor(clr, 5));
+		else newP.setColor(clr);
+	}
+	newP.velX += vx;
+	newP.velY += vy;
+	return newP;
+}
+
+var randomizeChance = 2;
+function launchCells(type = 'SAND', px = MOUSE.x, py = MOUSE.y, rx = BRUSHSIZE, ry = BRUSHSIZE, isDisc = BRUSHTYPE == BRUSHTYPES.DISC, useMouseDx = true, avx = 0, avy = 0) {
+	if (type === "PLAYER") {
+		let gx = Math.round(px / PIXELSIZE);
+		let gy = Math.round(py / PIXELSIZE);
+		if (!PLAYER)
+			PLAYER = new Player(gx, gy);
+		else {
+			PLAYER.place(gx, gy);
+			PLAYER.mv = [0, 0];
+		}
+		return;
+	}
+	let launchedCells = [];
+	let color = null;
 	if (useMouseDx && CELL_PROPERTIES[type].physT === 'GAS') useMouseDx = false;
-	let addedX = !useMouseDx ? 0 : (MOUSE.dx / PIXELSIZE) * (CELL_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05);
-	let addedY = !useMouseDx ? 0 : (MOUSE.dy / PIXELSIZE) * (CELL_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05);
+
+	const addedX = useMouseDx ? (MOUSE.dx / PIXELSIZE) * (CELL_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05) : 0;
+	const addedY = useMouseDx ? (MOUSE.dy / PIXELSIZE) * (CELL_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05) : 0;
 
 	let isRandomized = CELL_PROPERTIES[type].physT === 'SOLID' && type != 'Rainbow';
-	if (type === 'GBLADE') isRandomized = false;
-	if (type === 'FISH' || type === 'SHROOM' || type === 'MUSHX') isRandomized = false;
+	if (type === 'GBLADE' || type === 'FISH' || type === 'SHROOM' || type === 'MUSHX') isRandomized = false;
 	if (type === 'RAINBOW') color = getRainbowColor(FRAME, .1);
 	else if (isRandomized) color = addColor(CELL_PROPERTIES[type].color, getRainbowColor(FRAME, .1), .1);
 
 	if (activeCells.length > MAXCells) return;
-	const radiusSquared = radius * radius;
-    for (let dy = -radius; dy <= radius; dy++) {
-        for (let dx = -radius; dx <= radius; dx++) {
-            if (!isDisc || (dx * dx + dy * dy) <= radiusSquared) {
-				let px = x + dx * PIXELSIZE;
-				let py = y + dy * PIXELSIZE;
-				let gridX = Math.floor(px / PIXELSIZE);
-				let gridY = Math.floor(py / PIXELSIZE);
-				let clampedX = clamp(gridX, 1, GW - 1);
-				let clampedY = clamp(gridY, 1, GH - 1);
-				let newP = new Cell(clampedX, clampedY, type);
-				if (color) {
-					if (randomizeChance > 0 && (isRandomized && dice(randomizeChance))) newP.setColor(randomizeColor(color, 5));
-					else newP.setColor(color);
-				}
-				if (radius <= 1) return;
-				newP.velX += addedX + avx;
-				newP.velY += addedY + avy;
-            }
-        }
+
+	const cx = Math.floor(px / PIXELSIZE);
+	const cy = Math.floor(py / PIXELSIZE);
+	if (rx === 1 && ry === 1) {
+		const ix = clamp(cx, 0, GW - 1);
+		const iy = clamp(cy, 0, GH - 1);
+		const c = launchCell(type, ix, iy, color, addedX + avx, addedY + avy, isRandomized);
+		if (c && c.active)
+			launchedCells.push(c);
+		return launchedCells;
 	}
+	const rxg = Math.max(0, Math.floor(rx));
+	const ryg = Math.max(0, Math.floor(ry));
+
+	for (let gy = cy - ryg; gy <= cy + ryg; gy++){
+		for (let gx = cx - rxg; gx <= cx + rxg; gx++){
+			if (isDisc){
+				const dx = gx - cx, dy = gy - cy;
+				if ((dx*dx)/(rxg*rxg || 1) + (dy*dy)/(ryg*ryg || 1) > 1) continue;
+			}
+			const ix = clamp(gx, 0, GW - 1);
+			const iy = clamp(gy, 0, GH - 1);
+			const c = launchCell(type, ix, iy, color, addedX + avx, addedY + avy, isRandomized);
+			if (c && c.active)
+				launchedCells.push(c);
+		}
+	}
+	return launchedCells;
 }
 
-function deleteParticulesAtMouse() {deleteParticules(MOUSE.x - BRUSHSIZE / 2 + PIXELSIZE, MOUSE.y - BRUSHSIZE / 2 + PIXELSIZE, BRUSHSIZE, null, BRUSHTYPE == 'DISC');}
+function delCellsAtMouse() {deleteCells(MOUSE.x - BRUSHSIZE / 2 + PIXELSIZE, MOUSE.y - BRUSHSIZE / 2 + PIXELSIZE, BRUSHSIZE, null, BRUSHTYPE == 'DISC');}
 
-function deleteAllParticules(type = null)
+function delAllCells(type = null)
 {
 	for (let i = 0; i < activeCells.length; i++)
 	{
@@ -181,12 +210,12 @@ function resetCells()
 {
 	for (let i = 0; i < cellEmitters.length; i++) cellEmitters[i].onRemove();
 	cellEmitters = [];
-	deleteAllParticules();
+	delAllCells();
 	activeCells = [];
 	initGrid();
 }
 
-function deleteOldestParticules(num) {
+function delOldestCells(num) {
 	activeCells.splice(0, num);
 }
 

@@ -5,7 +5,7 @@ p.updateBurn = function () {
 		if (this.expl) {return (this.lt = r_range(1, 20));}
 		if (this.type === 'OIL') this.lt = 0;
 		else if (this.type === 'SAND' && dice(20)) this.setType('GLASS');
-		else { this.setType('COAL'); this.aliveTime = 0; }
+		else { this.setType('HOTCOAL'); this.aliveTime = 0; }
 		this.burning = 0;
 	}
 	else if (dice(3) && !cellAtI(ROWOFF[this.y - 1] + this.x)) {

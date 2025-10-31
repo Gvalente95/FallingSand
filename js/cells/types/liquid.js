@@ -18,12 +18,12 @@ p.updateLiquid = function (curX, curY, spreadAm = this.spreadAmount) {
 		this.velX = 0; this.swap(up); return;
 	}
 	if (!this.hasTouchedSurface) {
-		if (this.hasTouchedSurfaceCheck()) this.hasTouchedSurface = true;
+		if (this.hasTouchedSurfaceCheck()) { this.hasTouchedSurface = true; }
 		else { this.updatePosition(ROWOFF[curY] + curX); return; }
 	}
 	if (!this.ground || curY == GH - 1) return (this.updatePosition(ROWOFF[curY] + curX));
-	if (this.timeAlive > 1 && (secTick || hasInput)) this.shouldSpread = this.shouldSpreadCheck();
-	if (!this.shouldSpread) return (this.updatePosition(ROWOFF[curY] + curX));
+	// if (this.timeAlive > 1 && (secTick || hasInput)) this.shouldSpread = this.shouldSpreadCheck();
+	// if (!this.shouldSpread) return (this.updatePosition(ROWOFF[curY] + curX));
 	let xDir = this.xDir || 1;
 	if ((curX <= 0 && xDir < 0) || (curX >= GW - 1 && xDir > 0)) xDir = -xDir;
 

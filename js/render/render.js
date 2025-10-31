@@ -147,6 +147,8 @@ function showCell(cell, x, y, alpha, size) {
 	}
 	if (alpha != 1) color = `rgba(${cell.rgb}, ${alpha})`;
 	else if (cell.isWater && !cell.frozen) color = waterShades[cell.y].color;
+	// if (cell.isAsleep)
+	// 	color = "red";
 	if (prevCtx != color) {
 		ctx.fillStyle = color;
 		prevCtx = color;
@@ -154,38 +156,59 @@ function showCell(cell, x, y, alpha, size) {
 	ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, size, size);
 }
 
-function render() {
+function render(fx = null) {
 	prevCtx = null;
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	let showSize = PIXELSIZE;
-	let isGridding = (gridMode || isWheeling);
-	if (isGridding) {
-		showSize--;
+
+	const showSize = PIXELSIZE;
+	const isGridding = (gridMode || isWheeling);
+	if (isGridding)
 		ctx.drawImage(gridLayer, 0, 0);
-	}
 	for (let i = 0; i < activeCells.length; i++) {
-		let px = activeCells[i];
-		if (px.type !== "PLAYER")
-			showCell(px, px.x, px.y, 1, showSize);
+		const px = activeCells[i];
+		if (px.type === "PLAYER") continue;
+		showCell(px, px.x, px.y, 1, showSize);
 	}
-	if (PLAYER)
-		PLAYER.render(showSize);
+	if (PLAYER) PLAYER.render(showSize);
+	if (INPUT.selBox) {
+		ctx.fillStyle = setAlpha(CELL_PROPERTIES[cellKeys[TYPEINDEX]].color, .8);
+		const x = (Math.min(INPUT.selBox[0], MOUSE.gridX)) * PIXELSIZE;
+		const y = (Math.min(INPUT.selBox[1], MOUSE.gridY)) * PIXELSIZE;
+		const w = Math.abs(INPUT.selBox[0] - MOUSE.gridX) * PIXELSIZE;
+		const h = Math.abs(INPUT.selBox[1] - MOUSE.gridY) * PIXELSIZE;
+		ctx.fillRect(x, y, w, h);
+	}
 	renderBrush();
 	FRAME++;
 	if (SHOWHUD) updateHUD();
+
+	if (fx) {
+		render._tmp ||= document.createElement("canvas");
+		const t = render._tmp;
+		t.width = canvas.width;
+		t.height = canvas.height;
+		const k = t.getContext("2d");
+		k.clearRect(0, 0, t.width, t.height);
+		k.drawImage(canvas, 0, 0);
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.filter = fx;
+		console.warn(ctx.filter);
+		ctx.drawImage(t, 0, 0);
+		ctx.filter = "none";
+	}
 }
 
-function captureScreenshot() {
-  const color = "rgba(43, 39, 39, 0.85)";
-  ctx.fillStyle = color;
-  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-  const showSize = PIXELSIZE;
-  for (let i = 0; i < activeCells.length; i++) {
-    const px = activeCells[i];
-    if (px.type !== "PLAYER")
-      showCell(px, px.x, px.y, 1, showSize);
-  }
-  if (PLAYER)
-    PLAYER.render(showSize);
+function captureScreenshot() {
+	const color = "rgba(43, 39, 39, 0.85)";
+	ctx.fillStyle = color;
+	ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+	const showSize = PIXELSIZE;
+	for (let i = 0; i < activeCells.length; i++) {
+	const px = activeCells[i];
+	if (px.type !== "PLAYER")
+		showCell(px, px.x, px.y, 1, showSize);
+	}
+	if (PLAYER)
+	PLAYER.render(showSize);
 }

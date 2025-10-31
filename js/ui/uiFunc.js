@@ -187,7 +187,7 @@ function discoverType(element, x = MOUSE.x - 100, y = MOUSE.y - 60) {
 	if (CELL_PROPERTIES[type].kn) return;
 	let cellClr = setBrightness(CELL_PROPERTIES[type].color);
 	let infobox = initLabelDiv(x, y, 'New Cell Discovered!');
-	let colorBox = initLabelDiv(x, y + 20, type, cellClr);
+	let colorBox = initLabelDiv(x, y + 20, type, null, cellClr);
 	CELL_PROPERTIES[type].kn = 1;
 	updateUi();
 
@@ -221,4 +221,10 @@ function discoverType(element, x = MOUSE.x - 100, y = MOUSE.y - 60) {
 function switchUiDisplay(newActive = !uiDisplayed) {
 	uiDisplayed = newActive;
 	uiContainer.style.display = (uiDisplayed === true ? 'block' : 'none');
+}
+
+
+function announce(msg, dur = 2000, bgr = "rgba(63,15,15,1)") {
+	const infobox = initLabelDiv(CANVW/2 - msg.length*5, CANVH/2, msg, bgr, "rgba(255,255,255,1)", document.body);
+	setTimeout(() => infobox.remove(), dur);
 }

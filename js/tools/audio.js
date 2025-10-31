@@ -2,9 +2,9 @@ const audioPath = "ressources/audio/";
 class AudioManager {
 	constructor() {
 		this.lastPlayTime = 0;
-		this.canPlay = isMobile ? false : true;
+		this.canPlay = false;
 		this.maxQueue = 200;
-		this.active = true;
+		this.active = false;
 		this.playInterval = 0.05;
 		this.audioQueue = [];
 		this.buttonOk = new Audio(audioPath + "buttonOk.mp3");
@@ -16,6 +16,7 @@ class AudioManager {
 		this.soundCapture = new Audio(audioPath + "Capture.mp3");
 		this.soundDenied = new Audio(audioPath + "denied.mp3");
 		this.trill = new Audio(audioPath + "trill.mp3");
+		this.musBgr = new Audio(audioPath + "FluorescentCaves.wav");
 		// this.initElementSounds("ressources/audio/Elements");
 	}
 
@@ -55,10 +56,7 @@ class AudioManager {
 	}
 
 	update() {
-		this.canPlay = (
-			this.active &&
-			(now - this.lastPlayTime > this.playInterval)
-		);
+		this.canPlay = (this.active && (now - this.lastPlayTime > this.playInterval));
 	}
 
 	playSound(sound, volume = 1) {
@@ -67,6 +65,15 @@ class AudioManager {
 		const newAu = new Audio(sound.src);
 		newAu.volume = volume;
 		newAu.play();
+	}
+
+	playLoop(sound, volume) {
+		if (!this.canPlay) return;
+		sound.volume = volume;
+		sound.onended = () => {
+			this.playLoop(sound, volume);
+		};
+		sound.play();
 	}
 
 	playInQueue(original, volume) {

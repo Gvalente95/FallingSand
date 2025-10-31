@@ -2,7 +2,10 @@ function randomizeColor(color, range = 10) {
   const named = { yellow:'rgb(255,255,0)', blue:'rgb(0,0,255)', brown:'rgb(165,42,42)' };
   if (typeof color === 'string' && named[color.toLowerCase()]) color = named[color.toLowerCase()];
   const m = String(color).match(/^\s*rgba?\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})(?:,\s*[\d.]+)?\)\s*$/i);
-  if (!m) throw new Error('rgb()/rgba() only');
+	if (!m) {
+		console.warn('rgb()/rgba() only');
+		return `rgb(255, 255, 255)`;
+	}
   let r = Math.max(0, Math.min(255, parseInt(m[1],10) + Math.floor(Math.random()*(2*range+1)) - range));
   let g = Math.max(0, Math.min(255, parseInt(m[2],10) + Math.floor(Math.random()*(2*range+1)) - range));
   let b = Math.max(0, Math.min(255, parseInt(m[3],10) + Math.floor(Math.random()*(2*range+1)) - range));
@@ -11,9 +14,15 @@ function randomizeColor(color, range = 10) {
 
 function getRGB(color) {
   const m = String(color).trim().match(/^\s*rgba?\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})(?:,\s*[\d.]+)?\)\s*$/i);
-  if (!m) throw new Error(`Invalid color: ${color}`);
+	if (!m) {
+		console.warn(`Invalid color: ${color}`);
+		return ([255,255,255]);
+	}
   const rgb = [parseInt(m[1],10), parseInt(m[2],10), parseInt(m[3],10)];
-  if (rgb.some(v => v < 0 || v > 255)) throw new Error(`RGB out of range: ${color}`);
+	if (rgb.some(v => v < 0 || v > 255)) {
+		console.warn(`RGB out of range: ${color}`);
+		return ([255,255,255]);
+	}
   return rgb;
 }
 

@@ -90,9 +90,9 @@ class Cell{
 			if (this.expl) {
 				explodeRadius(this.x * PIXELSIZE, this.y * PIXELSIZE, 5, 10 * PIXELSIZE, 'FIRE');
 				if (!this.u && this.id % 5 === 0) {
-					launchParticules('SMOKE', (this.x - 4) * PIXELSIZE, (this.y - 6) * PIXELSIZE, 8, true);
+					launchCells('SMOKE', (this.x - 4) * PIXELSIZE, (this.y - 6) * PIXELSIZE, 8, 8, true);
 				}
-				if (1) { this.setType('COAL'); this.setToFire(); return; }
+				if (1) { this.setType('HOTCOAL'); this.setToFire(); return; }
 			}
 			if (this.physT !== 'GAS') {
 				const x = this.x;
@@ -110,8 +110,39 @@ class Cell{
 			return 0;
 		}
 	}
+
+	canWakeUp() {
+		if (this.burning || this.frozen || this.cor || this.wet || this.warm)
+			return true;
+		else if (this.updT === 'STATIC' || !wakeFrame)
+			return false;
+		if (this.physT === 'SOLID') {
+			let id = ROWOFF[this.y + 1] + this.x;
+			this.g = cellAtI(id, this);
+			let gl = cellAtI(id - 1, this);
+			let gr = cellAtI(id + 1, this);
+			if (!this.g || !gl || !gr)
+				return true;
+		}
+		else {
+			let up = cellAtI(ROWOFF[this.y - 1] + this.x, this);
+			let down = cellAtI(ROWOFF[this.y + 1] + this.x, this);
+			let l = cellAtI(ROWOFF[this.y] + this.x + 1, this);
+			let r = cellAtI(ROWOFF[this.y] + this.x - 1, this);
+			if (!up || !down || !l || !r)
+				return true;
+		}
+		if (this.isAsleep)
+			return;
+	}
 	update() {
 		if (!this.active) return;
+		if (this.isAsleep) {
+			if (!this.trySetToSleep())
+				this.isAsleep = this.hasTouchedBorder = this.hasTouchedSurface = false;
+			else
+				return;
+		}
 		if (this.selType === 'GRAB') {
 			this.x = clamp(MOUSE.gridX + this.sx, 0, GW - 1);
 			this.y = clamp(MOUSE.gridY + this.sy, 0, GH - 1);
@@ -163,19 +194,33 @@ class Cell{
 }; const p = Cell.prototype;
 
 class CellEmitter{
-	constructor(x, y, type)
+	constructor(x, y, type, capacity = 5000)
 	{
+		this.capacity = 5000;
+		this.cells = [];
 		this.x = x;
 		this.y = y;
 		this.type = type;
-		this.radius = BRUSHSIZE;
+		this.radius = Math.max(BRUSHSIZE, 1);
 	}
 
 	update()
 	{
-		if ((INPUT.keys['x'] || INPUT.keys['Backspace']) && (Math.abs(MOUSE.x - this.x) < PIXELSIZE * 20 && Math.abs(MOUSE.y - this.y) < PIXELSIZE * 20))
+		if ((INPUT.keys['x'] || INPUT.keys['backspace']) && (Math.abs(MOUSE.x - this.x) < PIXELSIZE * 20 && Math.abs(MOUSE.y - this.y) < PIXELSIZE * 20))
 			this.onRemove();
-		else launchParticules(this.type, this.x, this.y, this.radius, true, false);
+		else {
+			let newCells = launchCells(this.type, this.x, this.y, this.radius, this.radius, true, false);
+			if (newCells && newCells.length > 0)
+				this.cells.push(...newCells);
+			if (this.cells.length < this.capacity) return;
+
+			const surplus = this.cells.length - this.capacity;
+			console.log(surplus);
+			for (let i = 0; i < surplus; i++) {
+				this.cells[i].toRemove();
+			}
+			this.cells.splice(0, surplus);
+		}
 	}
 
 	onRemove()
