@@ -61,7 +61,7 @@ p.updateSolidVelocity = function (g) {
 		this.velX *= (1 - XDRAG);
 		if (Math.abs(this.velX) < .01) this.velX = 0;
 	}
-	else if (!g)
+	else if (!g && !this.isProjectile)
 		this.velY += GRAVITY;
 	if (this.type === "GBLADES")
 		this.velX = 0;

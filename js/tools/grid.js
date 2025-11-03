@@ -18,8 +18,6 @@ function initGrid() {
 	buildNeighbors4();
 	buildGridLayer();
 }
-
-
 function getPxlsInRadius(x = MOUSE.x, y = MOUSE.y, radius = BRUSHSIZE, type = null)
 {
 	let pxs = [];

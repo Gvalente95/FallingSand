@@ -1,5 +1,11 @@
 let waterShades = [];
 
+function getWaterColor(y) {
+	if (!y || y === undefined)
+		return waterShades[0].color;
+	return (waterShades[clamp(Math.round(y), 0, GH - 1)].color);
+}
+
 function buildWaterShades() {
     waterShades = new Array(GH);
 
@@ -34,6 +40,8 @@ function showShroomHead(cell, x, y) {
 }
 
 function renderBrush() {
+	if (inPrompt)
+		return;
 	if (!settingBrushSize) {
 		if (isMobile) { if (!MOUSE.pressed && !BRUSHACTION) return;}
 		else if (MOUSE.pressed || !SHOWBRUSH) { return; }
@@ -115,6 +123,11 @@ function drawSnowflake(cell, x, y, color, size) {
 var prevCtx = null;
 function showCell(cell, x, y, alpha, size) {
 	let color = cell.color;
+	if (cell.inWater) {
+		ctx.fillColor = getWaterColor(y);
+		ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, size, size);
+		x += Math.cos((FRAME * .1) + x * 0.3) * 1;
+	}
 	if (cell.type === 'SNOW') {
 		drawSnowflake(cell, x, y, color, size);
 		return;
@@ -146,7 +159,9 @@ function showCell(cell, x, y, alpha, size) {
 		return;
 	}
 	if (alpha != 1) color = `rgba(${cell.rgb}, ${alpha})`;
-	else if (cell.isWater && !cell.frozen) color = waterShades[cell.y].color;
+	else if (cell.isWater && !cell.frozen) {
+		color = getWaterColor(y);
+	}
 	// if (cell.isAsleep)
 	// 	color = "red";
 	if (prevCtx != color) {
@@ -158,17 +173,23 @@ function showCell(cell, x, y, alpha, size) {
 
 function render(fx = null) {
 	prevCtx = null;
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+	if (1)
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+	else {
+		ctx.fillStyle = "#bcc4a1ff"; // background color
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+	}
 	const showSize = PIXELSIZE;
 	const isGridding = (gridMode || isWheeling);
 	if (isGridding)
 		ctx.drawImage(gridLayer, 0, 0);
 	for (let i = 0; i < activeCells.length; i++) {
 		const px = activeCells[i];
-		if (px.type === "PLAYER") continue;
+		if (px.type === "ENTITY") continue;
 		showCell(px, px.x, px.y, 1, showSize);
 	}
+	for (let i = 0; i < entities.length; i++)
+		entities[i].render(showSize);
 	if (PLAYER) PLAYER.render(showSize);
 	if (INPUT.selBox) {
 		ctx.fillStyle = setAlpha(CELL_PROPERTIES[cellKeys[TYPEINDEX]].color, .8);
@@ -192,7 +213,6 @@ function render(fx = null) {
 		k.drawImage(canvas, 0, 0);
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		ctx.filter = fx;
-		console.warn(ctx.filter);
 		ctx.drawImage(t, 0, 0);
 		ctx.filter = "none";
 	}
@@ -205,10 +225,12 @@ function captureScreenshot() {
 	ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 	const showSize = PIXELSIZE;
 	for (let i = 0; i < activeCells.length; i++) {
-	const px = activeCells[i];
-	if (px.type !== "PLAYER")
-		showCell(px, px.x, px.y, 1, showSize);
+		const px = activeCells[i];
+		if (px.type !== "ENTITY")
+			showCell(px, px.x, px.y, 1, showSize);
 	}
 	if (PLAYER)
-	PLAYER.render(showSize);
+		PLAYER.render(showSize);
+	for (let i = 0; i < entities.length; i++)
+		entities[i].render(showSize);
 }

@@ -523,67 +523,73 @@ function initLabelDiv(x, y, text = '', bgrColor = null, color = 'white', parent 
 
 let inPrompt = false;
 let promptDiv = null;
-
 function promptUser(label, defaultValue = "") {
+	switchPause(true);
+	if (isMobile) {
+		// 🟣 use native prompt on mobile
+		inPrompt = true;
+		return new Promise((resolve) => {
+			const val = window.prompt(label, defaultValue);
+			inPrompt = false;
+			switchPause(false);
+			resolve(val && val.trim() ? val.trim() : null);
+		});
+	}
 	inPrompt = true;
 	return new Promise((resolve) => {
-	const overlay = document.createElement("div");
-	overlay.style.position = "fixed";
-	overlay.style.top = 0;
-	overlay.style.left = 0;
-	overlay.style.width = "100vw";
-	overlay.style.height = "100vh";
-	overlay.style.background = "rgba(0,0,0,0.4)";
-	overlay.style.display = "flex";
-	overlay.style.justifyContent = "center";
-	overlay.style.alignItems = "center";
-	overlay.style.zIndex = "9999";
-
-	const box = document.createElement("div");
-	box.style.background = "white";
-	box.style.padding = "10px";
-	box.style.borderRadius = "8px";
-
-	const labelEl = document.createElement("div");
-	labelEl.className = "infoText";
-	labelEl.textContent = label;
-
-	const input = document.createElement("input");
-	input.type = "text";
-	input.value = defaultValue;
-
-	const okBtn = document.createElement("button");
-	okBtn.textContent = "OK";
-	okBtn.className = "infoText";
-	okBtn.onclick = () => cleanup(input.value.trim());
-
-	const cancelBtn = document.createElement("button");
-	cancelBtn.textContent = "Cancel";
-	cancelBtn.className = "infoText";
-	cancelBtn.onclick = () => cleanup(null);
-
-	const cleanup = (val) => {
-		inPrompt = false;
-		window.removeEventListener("keydown", onKey);
-		overlay.remove();
-		resolve(val);
-	};
-
-	const onKey = (e) => {
-		if (e.key === "Enter") cleanup(input.value.trim());
-		else if (e.key === "Escape") cleanup(null);
-	};
-
-	window.addEventListener("keydown", onKey);
-
-	box.append(labelEl, input, okBtn, cancelBtn);
-	overlay.appendChild(box);
-	document.body.appendChild(overlay);
-
-	setTimeout(() => input.focus(), 0);
+		const overlay = document.createElement("div");
+		Object.assign(overlay.style, {
+			position: "fixed",
+			top: 0,
+			left: 0,
+			width: "100vw",
+			height: "100vh",
+			background: "rgba(0,0,0,0.4)",
+			display: "flex",
+			justifyContent: "center",
+			alignItems: "center",
+			zIndex: "9999",
+		});
+		const box = document.createElement("div");
+		Object.assign(box.style, {
+			background: "white",
+			padding: "10px",
+			borderRadius: "8px",
+		});
+		const labelEl = document.createElement("div");
+		labelEl.className = "infoText";
+		labelEl.textContent = label;
+		const input = document.createElement("input");
+		input.type = "text";
+		input.value = defaultValue;
+		const okBtn = document.createElement("button");
+		okBtn.textContent = "OK";
+		okBtn.className = "infoText";
+		okBtn.onclick = () => cleanup(input.value.trim());
+		const cancelBtn = document.createElement("button");
+		cancelBtn.textContent = "Cancel";
+		cancelBtn.className = "infoText";
+		cancelBtn.onclick = () => cleanup(null);
+		const cleanup = (val) => {
+			inPrompt = false;
+			switchPause(false);
+			window.removeEventListener("keydown", onKey);
+			overlay.remove();
+			resolve(val);
+		};
+		const onKey = (e) => {
+			if (e.key === "Enter") cleanup(input.value.trim());
+			else if (e.key === "Escape") cleanup(null);
+		};
+		window.addEventListener("keydown", onKey);
+		box.append(labelEl, input, okBtn, cancelBtn);
+		overlay.appendChild(box);
+		document.body.appendChild(overlay);
+		input.addEventListener("mousedown", () => input.focus(), { once: true });
+		input.addEventListener("touchstart", () => input.focus(), { once: true });
+		setTimeout(() => input.focus(), 0);
 	});
 }
-
 
 let confirmDiv = null;
 function confirmChoice(label, onEnd, color = "rgba(190, 104, 96, 1)") {

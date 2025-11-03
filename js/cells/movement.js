@@ -24,11 +24,16 @@ p.updateMovement = function () {
 	for (let i = 0; i < steps; i++) {
 		curX += xStep; curY += yStep;
 		const realX = Math.round(curX), realY = Math.round(curY);
-		if (realX < 0 || realX >= GW || realY < 0 || realY >= GH) { curX = lastX; curY = lastY; break; }
+		if (realX < 0 || realX >= GW || realY < 0 || realY >= GH) {
+			curX = lastX; curY = lastY;
+			if (this.isProjectile) this.endLifetime();
+			break;
+		}
 
 		const ii = realY * GW + realX;
 		let hit = grid1[ii];
 		if (!(hit && hit !== this && hit.active)) { lastX = curX; lastY = curY; continue; }
+		if (hit && hit.physT === 'SOLID' && this.isProjectile) this.endLifetime();
 		if (hit && hit.physT === 'GAS' && this.type != 'HESTIA') continue;
 		if (hit.physT === 'STEAM' || hit.physT === 'CLOUD') continue;
 		if (this.physT === 'FISH' && hit.physT === 'LIQUID') continue;

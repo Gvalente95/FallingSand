@@ -15,9 +15,10 @@ function _serializeCurrent() {
 	captureScreenshot();
 	return {
 		GW, GH, PIXELSIZE,
-		player: { x: PLAYER.x, y: PLAYER.y, w: PLAYER.w, h: PLAYER.h },
-		cells: activeCells.map(c => ({ type: c.type, x: c.x, y: c.y, clr:c.color })),
-		cellEmitters: cellEmitters.map(c => ({ type: c.type, x: c.x, y: c.y, radius: c.radius, capacity: c.capacity })),
+		player: { x: PLAYER.x, y: PLAYER.y, data: PLAYER.data },
+		entities: entities.map(e => ({ x: e.x, y: e.y, data: e.data, type: e.type })),
+		cells: activeCells.map(c => ({ type: c.type, x: c.x, y: c.y, clr: c.color })),
+		cellEmitters: cellEmitters.map(ce => ({ type: ce.type, x: ce.x, y: ce.y, radius: ce.radius, capacity: ce.capacity })),
 		screenshot: canvas.toDataURL("image/png")
 	};
 }
@@ -103,14 +104,27 @@ async function renameMap(oldName, newName){
 
 function applyMapData(data) {
 	cellEmitters = [];
+	entities = [];
 	PIXELSIZE = data.PIXELSIZE;
 	GW = data.GW;
 	GH = data.GH;
 	initGrid();
 	activeCells.length = 0;
-	PLAYER = new Player(data.player.x, data.player.y, data.player.w, data.player.h);
+	PLAYER = new Player(data.player.x, data.player.y, data.player.data ? data.player.data : getPlayerData());
+	if (data.entities) {
+		for (let i = 0; i < data.entities.length; i++){
+			let e = data.entities[i];
+			let ent = new Mob(e.x, e.y, e.data ? e.data : getMobData(), e.type);
+			entities.push(ent);
+		}
+	}
+	for (let i = 0; i < data.cellEmitters.length; i++){
+		const ce = data.cellEmitters[i];
+		cellEmitters.push(new CellEmitter(ce.x, ce.y, ce.type, ce.capacity));
+	}
 	for (let i = 0; i < data.cells.length; i++){
 		const c = data.cells[i];
+		if (c.type === 'PLAYER') c.type = 'ENTITY';
 		let newC = new Cell(c.x, c.y, c.type);
 		if (c.clr)
 			newC.setColor(c.clr);
@@ -119,7 +133,7 @@ function applyMapData(data) {
 		const ce = data.cellEmitters[i];
 		cellEmitters.push(new CellEmitter(ce.x, ce.y, ce.type, ce.capacity));
 	}
-	if (typeof buildWaterShades === "function") buildWaterShades();
+	buildWaterShades();
 }
 
 const IDB_DB = "WebGameMaps";

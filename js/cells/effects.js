@@ -76,7 +76,7 @@ p.applyCorrosion = function () {
 		if (this.cor <= cell.dns) continue;
 		if (this.type === 'MUSHX') { cell.replace?.('ACID'); continue; }
 		if (!dice(1001 - this.cor + cell.dns)) continue;
-		const res = cell.type === "PLAYER" ? null : cell.replace?.('BUBBLE', this.type);
+		const res = cell.type === "ENTITY" ? null : cell.replace?.('BUBBLE', this.type);
 		const n = res || cell;
 		const curClr =
 			n.baseColor ??

@@ -53,7 +53,15 @@ class Cell{
 		if (!this.active) return 0;
 		if (di === this.i) return 0;
 		const hit = grid1[di];
-		if (hit && hit !== this && hit.active && !(this.type === "PLAYER" && hit.type === "PLAYER")) {
+		if (this.ent && hit) {
+			if (grid1[this.i] === this)
+				grid1[this.i] = null;
+			this.i = di;
+			this.x = di % GW;
+			this.y = (di / GW) | 0;
+			return 1;
+		}
+		else if (hit && hit !== this && hit.active && !(this.ent && hit.ent)) {
 			if (this.physT === 'GAS') { this.toRemove(); return 0; }
 			return this.swap(hit);
 		}
@@ -71,6 +79,10 @@ class Cell{
 		return 1;
 	};
 
+	endLifetime() {
+		this.lt = 0;
+	}
+
 	updateLifeTime(){
 		this.timeAlive = (nowSec - this.startTime);
 		if (this.timeAlive > this.lt && !this.frozen)
@@ -87,6 +99,12 @@ class Cell{
 			}
 			if (this.transformType && (this.type !== 'STEAM' || this.y < 50)) return (this.replace(this.transformType));
 			if (this.type === 'MAGMA') return;
+			// if (this.isProjectile) {
+			// 	this.isProjectile = false;
+			// 	explodeRadius(this.x * PIXELSIZE, (this.y + 2) * PIXELSIZE, 10, 20 * PIXELSIZE, null);
+			// 	this.setType('COAL');
+			// 	return;
+			// }
 			if (this.expl) {
 				explodeRadius(this.x * PIXELSIZE, this.y * PIXELSIZE, 5, 10 * PIXELSIZE, 'FIRE');
 				if (!this.u && this.id % 5 === 0) {
@@ -192,45 +210,3 @@ class Cell{
 		this.i = -1;
 	}
 }; const p = Cell.prototype;
-
-class CellEmitter{
-	constructor(x, y, type, capacity = 5000)
-	{
-		this.capacity = 5000;
-		this.cells = [];
-		this.x = x;
-		this.y = y;
-		this.type = type;
-		this.radius = Math.max(BRUSHSIZE, 1);
-	}
-
-	update()
-	{
-		if ((INPUT.keys['x'] || INPUT.keys['backspace']) && (Math.abs(MOUSE.x - this.x) < PIXELSIZE * 20 && Math.abs(MOUSE.y - this.y) < PIXELSIZE * 20))
-			this.onRemove();
-		else {
-			let newCells = launchCells(this.type, this.x, this.y, this.radius, this.radius, true, false);
-			if (newCells && newCells.length > 0)
-				this.cells.push(...newCells);
-			if (this.cells.length < this.capacity) return;
-
-			const surplus = this.cells.length - this.capacity;
-			console.log(surplus);
-			for (let i = 0; i < surplus; i++) {
-				this.cells[i].toRemove();
-			}
-			this.cells.splice(0, surplus);
-		}
-	}
-
-	onRemove()
-	{
-		let index = cellEmitters.indexOf(this);
-		if (index != -1) cellEmitters.splice(index, 1);
-		// for (const key in this) this[key] = null;
-	}
-}
-
-function spawnEmitterAtMouse() {
-	cellEmitters.push(new CellEmitter(MOUSE.x, MOUSE.y, cellKeys[TYPEINDEX]));	
-}

@@ -1,6 +1,7 @@
 function switchUiPage(newPageIndex) {uiPageIndex = newPageIndex;}
 function setNewType(newIndex)
 {
+	ENTINDEX = -1;
 	let key = cellKeys[newIndex];
 	if (key == 'MAKE') return (createNewType());
 	if (ISGAME) {
@@ -16,6 +17,13 @@ function setNewType(newIndex)
 		b.new = false;}
 	}
 	BRUSHCOLOR = CELL_PROPERTIES[cellKeys[TYPEINDEX]].color;
+}
+
+
+function setEntType(index) {
+	ENTINDEX = index;
+	switchBrushAction(null);
+	uiLayerIndex = 1;
 }
 
 let settingBrushSize = false;
@@ -91,7 +99,7 @@ function replaceCells(scale){
 
 	for (let k=0; k<orig.length; k++){
 		const p = orig[k];
-		if (p.type === "PLAYER") { p.toRemove(); continue; }
+		if (p.type === "ENTITY") { p.toRemove(); continue; }
 		p.velX *= scale; p.velY *= scale;
 		let nx = Math.floor(p.x * scale);
 		let ny = Math.floor(p.y * scale);

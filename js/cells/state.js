@@ -50,7 +50,7 @@ p.setToFire = function(burnType = 'FIRE', duration = 1000 - this.brn)
 p.setWet = function(wetAmount = 100, type = 'WATER') {
 	if (this.physT != 'SOLID') return (0);
 	if (this.type === 'FISH') return (0);
-	if (this.brnpwr) return (0);
+	if (this.brnpwr) { this.brnpwr = 0; return (0);}
 	if (this.wet) { this.wet = wetAmount; this.wetType = type; return (1); }
 	if (type != 'OIL') this.burning = 0;
 	this.wetStart = now;

@@ -61,7 +61,7 @@ p.trySetToSleep = function () {
 
 p.updateType = function () {
 	this.neighbors = null;
-	if (this.physT !== 'LIQUID' || FRAME%100 === 0) {
+	if (this.physT !== 'LIQUID' || FRAME % 100 === 0 || (fps < 30 && this.timeAlive < 5)) {
 		if (this.isBasic && !this.cor && !this.freeze && !this.burning && this.trySetToSleep()) {
 			this.isAsleep = true;
 			return;

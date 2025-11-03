@@ -32,7 +32,6 @@ function initParamHeader(yPos)
 
 let rewButton = null;
 let pauseButton = null;
-
 let brushActionButtons = [];
 function initActionHeader(yPos)
 {
@@ -51,7 +50,7 @@ function initActionHeader(yPos)
 	pauseButton = initButton("Pause", xs * nn++, 0, w, h, clr, switchPause, -1, hdr, false, 'Tab', p + "pause.png", null, clr, "Pause Simulation");
 	brushActionButtons.push(initButton("Cut", xs * nn++, 0, w, h, clr, switchBrushAction, 'CUT', hdr, false, "c", p + "eraser.png", wp + "eraser.png", clr, "Cut tool"));
 	initButton("Fill", xs * nn++, 0, w, h, clr, fillScreen, null, hdr, null, 'f', p + "fill.png",  null, clr, "Fill tool");
-	initButton("Clear", xs * nn++, 0, w, h, clr, resetCells, PIXELSIZE, hdr, null, 'r', p + "broom.png", null, clr, "Clear screen");
+	initButton("Clear", xs * nn++, 0, w, h, clr, resetAll, PIXELSIZE, hdr, null, 'r', p + "broom.png", null, clr, "Clear screen");
 	brushActionButtons.push(initButton("Pick", xs * nn++, 0, w, h, clr, switchBrushAction, 'PICK', hdr, false, "i", p + "eyedropper.png", wp + "eyedropper.png", clr, "Picker tool"));
 	brushActionButtons.push(initButton("Vibrate", xs * nn++, 0, w, h, clr, switchBrushAction, 'VIBRATE', hdr, false, "v", p + "vibrate.png", wp + "vibrate.png", clr, "Vibrate pixels on click"));
 	brushActionButtons.push(initButton("Grab", xs * nn++, 0, w, h, clr, switchBrushAction, 'GRAB', hdr, false, "p", p + "push.png", wp + "push.png", clr, "Grab pixels on click"));
@@ -97,6 +96,18 @@ function initCellPagesHeader(y) {
 			btn.newDiv = newDiv;
 			famButton.buttons.push(btn);
 		}
+		if (name === "ENT") {
+			const data = getEntFormsButtonData();
+			let i = 0;
+            for (const { key, color } of data) {
+                let x = xp++ * buttonSpread;
+				const btn = initButton(key, x, 0, w, h, background, setEntType, i++, elementsHeader, null, null, null, null, color);
+				let newDiv = initLabelDiv(x, CANVH + y + 35, 'new', null, 'rgba(0, 217, 255, 1)');
+				newDiv.style.opacity = '0';
+				btn.newDiv = newDiv;
+                famButton.buttons.push(btn);
+            }
+        }
         if (famButton.buttons.length > 6) {
             const rowContentW = Math.max(10, (xp - 6) * buttonSpread);
             const rowDragW = Math.max(0, rowContentW - CANVW);
@@ -127,19 +138,16 @@ function initUi()
 	updateUi();
 }
 
-let au = null;
-let levels = [];
 function init()
 {
 	INPUT = new InputManager();
 	MOUSE = new Mouse();
 	LD = new LoadData();
 	LD.toggleMenu(false);
-	initCreationRules();
 	au = new AudioManager();
 	initUi();
 	initGrid();
-	PLAYER = new Player(50, GH - 14);
+	PLAYER = new Player(50, GH - 14, getPlayerData());
 }
 
 window.onload = () => { init(); loop(); };

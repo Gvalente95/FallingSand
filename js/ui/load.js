@@ -17,7 +17,7 @@ class LoadData{
 
 	reloadLevel() {
 		if (!PLAYER)
-			PLAYER = new Player(50, GH - 14);
+			PLAYER = new Player(50, GH - 14, getPlayerData());
 		if (this.curMapName)
 			loadMapName(this.curMapName);
 	}
@@ -62,7 +62,7 @@ async function loadMapName(name) {
 	localStorage.setItem(LAST_KEY, name);
 	applyMapData(data);
 	LD.curMapName = name;
-  return data;
+	return data;
 }
 
 function loadMapAtIndex(index){
@@ -73,6 +73,11 @@ function loadMapAtIndex(index){
 }
 
 function loadMapFromButton() {
+	if (isMobile) {
+		loadMapName(LD.container.value);
+		LD.closeMenu();
+		return;
+	}
   confirmChoice("Load " + LD.container.value + "?", async () => {
     await loadMapName(LD.container.value);
 	  LD.closeMenu();

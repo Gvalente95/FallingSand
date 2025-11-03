@@ -79,6 +79,8 @@ class Mouse{
 	mouseup(e) {
 		this.clickedOnPlayer = false;
 		this.pressed = false;
+		if (SELENT)
+			SELENT = null;
 	}
 }
 
@@ -209,7 +211,7 @@ document.addEventListener('touchstart', (e) => {
     if (e.touches.length === 1 && !isTwoFingerTouch) {
         if (now - lastTouchTime < 300) {
             isDoubleTouch = true;
-            delCellsAtMouse();
+            delCellsAtPos();
         }
         lastTouchTime = now;
         simulateMouseEvent(e, 'mousedown');

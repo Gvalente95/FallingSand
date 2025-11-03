@@ -5,7 +5,7 @@ function updateHUD(){
 	if (++hudTick % hudEvery !== 0) return;
 	let topNow = `x${MOUSE.x},y${MOUSE.y}  gx${MOUSE.gridX},gy${MOUSE.gridY}\nBrush Size: ${BRUSHSIZE}\nPx Size: ${PIXELSIZE}\nPxls: ${activeCells.length}\nFrm: ${FRAME} Dt: ${Number(dt).toFixed(2)}s`;
 	if (PLAYER) {
-		let dpx = [`\n\nPLAYER\nx${PLAYER.x} y${PLAYER.y}\nmx${Number(PLAYER.mv[0]).toFixed(3)} my${Number(PLAYER.mv[1]).toFixed(3)}\nwtr:${PLAYER.inWater} grd:${PLAYER.grounded}`];
+		let dpx = [`\n\nPLAYER\nx${PLAYER.x} y${PLAYER.y}\nmx${Number(PLAYER.mv[0]).toFixed(3)} my${Number(PLAYER.mv[1]).toFixed(3)}\nwtr:${PLAYER.inWater} grd:${PLAYER.grounded}\naction:${PLAYER.action}`];
 		topNow += dpx.join('\n');
 	}
 	if (MOUSE.cell && !isMobile) {

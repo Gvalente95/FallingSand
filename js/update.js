@@ -2,7 +2,7 @@ function updateInput()
 {
 	MOUSE.cell = cellAtI(ROWOFF[MOUSE.gridY] + MOUSE.gridX);
 	if (MOUSE.pressed && !isTwoFingerTouch && (!isMobile || !MOUSE.clickedOnPlayer)) {
-		if ((BRUSHACTION === 'CUT') || (INPUT.keys['shift'] && !isWheeling)) delCellsAtMouse();
+		if ((BRUSHACTION === 'CUT') || (INPUT.keys['shift'] && !isWheeling)) delAllAtMouse();
 		else if (BRUSHACTION) {
 			switch (BRUSHACTION) {
 				case 'VIBRATE': vibrateRadius(); break;
@@ -13,7 +13,7 @@ function updateInput()
 		}
 		else launchCells(cellKeys[TYPEINDEX]);
 	}
-	if (INPUT.keys['backspace']) delCellsAtMouse();
+	if (INPUT.keys['backspace']) delAllAtMouse();
 	if (INPUT.keys['x'] && MOUSE.cell) delAllCells(MOUSE.cell.type);
 	INPUT.update();
 }
@@ -57,6 +57,8 @@ function update() {
 	if (!inPause) {
 		updateParticules();
 		if (PLAYER) PLAYER.update();
+		for (let i = 0; i < entities.length; i++)
+			entities[i].update();
 	}
 	flushDestroyedCells();
 }
