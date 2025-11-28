@@ -331,6 +331,7 @@ p.updateShroom = function (curX, curY) {
 		if (up.type === 'WATER' && this.type != 'SHROOM') return;
 		if (up.cor && this.type === 'SHROOM') return;
 		if (up.type === this.type) return;
+		if (up.type === 'ENTITY') return;
 	}
 	if ((!up && this.heigth < this.maxHeight) || (up && up.physT === 'LIQUID')) {
 		if (up)

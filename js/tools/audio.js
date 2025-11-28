@@ -68,7 +68,6 @@ class AudioManager {
 		const newAu = new Audio(sound.src);
 		newAu.volume = volume;
 		newAu.play();
-		console.warn("AUDIO PLAYED - " + sound.src);
 	}
 
 	

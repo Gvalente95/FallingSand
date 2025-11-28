@@ -62,7 +62,7 @@ class Mouse{
 
 	mousedown(x, y) {
 		if (PLAYER && isMobile && !this.clickedOnPlayer) {
-			let rad = 40;
+			let rad = BRUSHSIZE;
 			for (const c of PLAYER.cells) {
 				if (Math.abs(c.x - Math.floor(x / PIXELSIZE)) < rad && Math.abs(c.y - Math.floor(y / PIXELSIZE)) < rad) {
 					this.clickedOnPlayer = true;

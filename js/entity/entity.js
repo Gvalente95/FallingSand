@@ -114,9 +114,11 @@ class Entity {
       return false;
     }
     if (this.y + this.h >= GH - 1) return true;
-    let lc = cellAtI(ROWOFF[this.y + this.h + 1] + this.x, null);
-    let rc = cellAtI(ROWOFF[this.y + this.h + 1] + this.x + this.w, null);
-    return isCollision(lc) || isCollision(rc);
+    for (let x = 0; x < this.w; x++) {
+		let lc = cellAtI(ROWOFF[this.y + this.h + 1] + this.x + x, null);
+		if (lc && isCollision(lc)) return true;
+    }
+    return false;
   }
 
   death() {

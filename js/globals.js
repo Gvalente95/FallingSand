@@ -96,9 +96,9 @@ const physKeys = Object.keys(PHYSTYPES);
 const UPDATE_TYPES = Object.freeze({ STATIC: 'STATIC', DYNAMIC: 'DYNAMIC', ALIVE: 'ALIVE', GEL: 'GEL'});
 
 let CELL_PROPERTIES = {
-['GRASS']:	{ color: 'rgb(86, 223, 36)',	lt: Infinity,	brn: 970,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 15,	spread: 0,	expl: 0, kn: 1, rclr: 5, fin: 0, fout: 0},
+['GRASS']:	{ color: 'rgb(86, 223, 36)',	lt: Infinity,	brn: 950,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 15,	spread: 0,	expl: 0, kn: 1, rclr: 5, fin: 0, fout: 0},
 ['SAND']:	{ color: 'rgb(255, 221, 0)',	lt: Infinity,	brn: 10,	brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 50,	spread: 0,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
-['GLASS']:	{ color: 'rgb(208, 226, 239)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 90,	spread: 0,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
+['GLASS']:	{ color: 'rgb(208, 226, 239)',	lt: Infinity,	brn: 1,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 90,	spread: 0,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
 ['ROCK']:	{ color: 'rgba(45, 46, 37, 1)',		lt: Infinity,	brn: 1,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 95,	spread: 0,	expl: 0, kn: 1, rclr: 5, fin: 0, fout: 0},
 ['DIAMOND']:{ color: 'rgb(102, 203, 221)',	lt: Infinity,	brn: 0,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 1000,	spread: 0,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
 ['COAL']:	{ color: 'rgb(68, 68, 68)',	lt: 10,			brn: 1,		brnpwr: 0,		douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 45,	spread: 2,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
