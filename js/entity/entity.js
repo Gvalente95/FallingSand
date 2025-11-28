@@ -203,6 +203,7 @@ class Entity {
     if (this.inWater && cellAtI(ROWOFF[this.y - 1] + this.x)) return;
     this.action = "jump";
     this.mv[1] = -10;
+    this.y--;
     this.grounded = false;
   }
 
@@ -448,7 +449,8 @@ class Player extends Entity {
     // if (INPUT.y < 0) au.playSound(au)
     if (isMobile && MOUSE.clickedOnPlayer) {
       this.vel[0] = MOUSE.gridX < this.x ? -1 : 1;
-      if (MOUSE.gridY < this.y && (this.grounded || this.inWater)) this.jump();
+      if (this.inWater) this.vel[1] = Math.sign(MOUSE.gridY - this.y);
+      else if (MOUSE.dy < -10 && this.grounded) this.jump();
     }
     super.update();
   }
