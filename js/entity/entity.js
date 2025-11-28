@@ -452,7 +452,7 @@ class Player extends Entity {
     if (isMobile && MOUSE.clickedOnPlayer) {
       this.vel[0] = MOUSE.gridX < this.x ? -1 : 1;
       if (this.inWater) this.vel[1] = Math.sign(MOUSE.gridY - this.y);
-      else if (MOUSE.dy < -10 && this.grounded) this.jump();
+      else if (MOUSE.dy < -20 && this.grounded) this.jump();
     }
     super.update();
   }
