@@ -26,6 +26,8 @@ class Entity {
     this.alive = true;
     this.showSide = "left";
     this.projectiles = [];
+    this.baseHp = 100;
+    this.hp = 100;
     this.hurt = 30;
     this.timeAlive = 0;
     this.initData(data);
@@ -170,16 +172,17 @@ class Entity {
   }
 
   updateCells() {
-    for (let i = 0; i < this.cells.length; i++) {
+    for (let i = this.cells.length - 1; i >= 0; i--) {
       let cell = this.cells[i];
+      if (Math.abs(cell.velX) > 1 || Math.abs(cell.velY) > 1) {
+        cell.hp = 0;
+      }
       if (cell.hp <= 0 || ((cell.type !== "ENTITY" || cell.burning || cell.corrosionType) && cell.hp-- <= 0)) {
         cell.physT = "DYNAMIC";
         this.cells.splice(i, 1);
         this.hurt = 5;
+        this.hp--;
         continue;
-      }
-      if (Math.abs(cell.velX) > 1 || Math.abs(cell.velY) > 1) {
-        cell.hp = 0;
       }
       cell.newX = this.x + cell.relX;
       cell.newY = this.y + cell.relY;
@@ -187,7 +190,7 @@ class Entity {
       let other = cellAtI(cell.di, cell);
       if (!other || other.updT !== "ALIVE") cell.updatePosition(cell.di);
     }
-    if (this.cells.length <= 5) this.death();
+    if (this.cells.length <= 5 || this.hp <= 0) this.death();
   }
 
   place(x, y) {
@@ -295,15 +298,17 @@ class Entity {
   }
 
   renderHpBar(size) {
-    let cutIndex = Math.round((this.cells.length / this.cellsAtStart) * this.w);
-    let y = (this.y - 2) * PIXELSIZE;
-    ctx.fillStyle = "green";
-    ctx.fillRect(this.x * PIXELSIZE, y, size * cutIndex, size * 2);
-    let wh = this.cellsAtStart - this.cells.length;
+    let y = (this.y - 4) * PIXELSIZE;
+    const w = 50;
+    const perc = Math.round((this.hp / this.baseHp) * w);
+    ctx.fillStyle = "red";
+    ctx.fillRect(this.x * PIXELSIZE, y, w, size * 2);
+    let wh = this.hp;
     if (wh) {
-      ctx.fillStyle = "red";
-      ctx.fillRect((this.x + cutIndex) * PIXELSIZE, y, size * (this.w - cutIndex), size * 2);
+      ctx.fillStyle = "green";
+      ctx.fillRect(this.x * PIXELSIZE, y, perc, size * 2);
     }
+    // drawText(ctx, [this.x * PIXELSIZE, (this.y - 10) * PIXELSIZE], this.hp + "/" + this.baseHp, "white", null, 10);
   }
 
   render(size, borderColor = null) {

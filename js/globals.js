@@ -149,7 +149,7 @@ let CELL_PROPERTIES = {
 ['XPLOSIVE']: { color: 'rgba(60, 83, 36, 1)', lt: Infinity, brn: 999, brnpwr: 0, douse: 0, freeze: 0, cor: 0, physT: 'SOLID', updT: 'STATIC', dns: 800, spread: 0, expl: 5, kn: 0, rclr: 0, fin: 0, fout: 0 },
 ['???']:	{ color: 'rgba(109, 42, 96, 1)',	lt: 10,	brn: 10, 	brnpwr: 10, 		douse: 1, freeze: 1, cor: 1, physT: 'SOLID', 	updT: 'DYNAMIC',  dns: 2, 	spread: 20, expl: 2, kn: 0, rclr: 5, fin: 1, fout: 1},
 
-['ENTITY']: { color: 'rgba(177, 136, 136, 1)', lt: Infinity, brn: 980, brnpwr: 0, douse: 0, freeze: 0, cor: 0, physT: 'SOLID', updT: 'STATIC', dns: 2, spread: 0, expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0 },
+['ENTITY']: { color: 'rgba(177, 136, 136, 1)', lt: Infinity, brn: 985, brnpwr: 0, douse: 0, freeze: 0, cor: 0, physT: 'SOLID', updT: 'STATIC', dns: 1, spread: 0, expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0 },
 }; let cellKeys = Object.keys(CELL_PROPERTIES);
 
 const TAGS = [
