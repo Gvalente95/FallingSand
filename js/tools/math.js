@@ -6,3 +6,9 @@ function f_range(min, max) { return (min + Math.random() * (max - min)); }
 function rdir() { return (dice(2) == 0 ? -1 : 1); }
 function getSin(t, freq, amp, phase) {return (Math.sin(t * freq + phase) * amp);}
 const lerp = (a,b,t)=>a+(b-a)*t;
+
+
+function pointInRect(point, pos, size) {
+	return (point[0] >= pos[0] && point[0] <= pos[0] + size[0] &&
+		point[1] >= pos[1] && point[1] <= pos[1] + size[1]);
+}

@@ -61,9 +61,10 @@ class Mouse{
 	}
 
 	mousedown(x, y) {
-		if (PLAYER && isMobile) {
+		if (PLAYER && isMobile && !this.clickedOnPlayer) {
+			let rad = 40;
 			for (const c of PLAYER.cells) {
-				if (c.x === Math.floor(x / PIXELSIZE) && c.y === Math.floor(y / PIXELSIZE)) {
+				if (Math.abs(c.x - Math.floor(x / PIXELSIZE)) < rad && Math.abs(c.y - Math.floor(y / PIXELSIZE)) < rad) {
 					this.clickedOnPlayer = true;
 					break;
 				}
@@ -72,8 +73,9 @@ class Mouse{
 		this.clicked = true;
 		this.pressed = true;
 		this.clickColor = getRandomColor();
+		this.dx = x - this.x;
+		this.dy = y - this.y;
 		this.setPos(x, y);
-		setTimeout(() => { this.clicked = false }, 50);
 	}
 
 	mouseup(e) {
@@ -114,24 +116,26 @@ window.addEventListener('mousemove', (e) => {
 window.addEventListener('keydown', (e) => {
 	if (inPrompt) return;
 	userInput();
+	const k = e.key.toLowerCase();
 	if (e.code === 'Tab') e.preventDefault();
-	else if (e.key === 't') { ISGAME = !ISGAME; updateUi(); }
-	else if (e.key === 'k') switchUiDisplay();
 	else if (e.code === "Escape") {
 		if (LD.active)
 			LD.closeMenu();
 	}
-	else if (e.key === 'h') PLAYER.death();
-	else if (e.key === 'z' && !INPUT.selBox) {
-		INPUT.selBox = [MOUSE.gridX, MOUSE.gridY];
-	}
-	INPUT.lastKey = e.key.toLowerCase();
+	else if (k === 't') { ISGAME = !ISGAME; updateUi(); }
+	else if (k === 'k') switchUiDisplay();
+	else if (k === 'alt') DEBUG = !DEBUG;
+	else if (k === 'm') au.active = !au.active;
+	else if (k === 'h') PLAYER.death();
+	else if ((k === 'z' || k === 'meta') && !INPUT.selBox) {INPUT.selBox = [MOUSE.gridX, MOUSE.gridY];}
+	INPUT.lastKey = k;
 	INPUT.keys[INPUT.lastKey] = true;
 });
 
 window.addEventListener('keyup', (e) => {
 	if (inPrompt) return;
-	if (e.key === 'z') {
+	const k = e.key.toLowerCase();
+	if (k === 'z' || k === 'meta') {
 		const gx0 = Math.min(INPUT.selBox[0], MOUSE.gridX);
 		const gy0 = Math.min(INPUT.selBox[1], MOUSE.gridY);
 		const gw  = Math.abs(INPUT.selBox[0] - MOUSE.gridX) + 1;
@@ -140,10 +144,10 @@ window.addEventListener('keyup', (e) => {
 		const cy  = (gy0 + gh / 2) * PIXELSIZE;
 		const rx  = Math.floor(gw / 2);
 		const ry  = Math.floor(gh / 2);
-		launchCells(cellKeys[TYPEINDEX], cx, cy, rx, ry, false, false);
+		launchCells(cellKeys[TYPEINDEX], cx, cy, rx, ry, false);
 		INPUT.selBox = null;
 	}
-	INPUT.keys[e.key.toLowerCase()] = false;
+	INPUT.keys[k] = false;
 	if (isWheeling && e.key === 'Shift') isWheeling = false;
 });
 

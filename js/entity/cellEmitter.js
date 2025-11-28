@@ -14,7 +14,7 @@ class CellEmitter{
 		if ((INPUT.keys['x'] || INPUT.keys['backspace']) && (Math.abs(MOUSE.x - this.x) < PIXELSIZE * 20 && Math.abs(MOUSE.y - this.y) < PIXELSIZE * 20))
 			this.onRemove();
 		else {
-			let newCells = launchCells(this.type, this.x, this.y, this.radius, this.radius, true, false);
+			let newCells = launchCells(this.type, this.x, this.y, this.radius, this.radius, true, [0, 0]);
 			if (newCells && newCells.length > 0)
 				this.cells.push(...newCells);
 			if (this.cells.length < this.capacity) return;

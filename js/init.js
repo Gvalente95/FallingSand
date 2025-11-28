@@ -62,7 +62,7 @@ function initActionHeader(yPos)
 	initButton("Emitter", xs * nn++, 0, w, h, clr, spawnEmitterAtMouse, null, hdr, null, 'l', p + "emit.png", null, clr, "Create pixel emitter on click");
 	initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, 'n', p + "next.png", null, clr, "Next frame");
 	initButton("Save", xs * nn++, 0, w, h, clr, saveMap, null, hdr, null, "1", p + "save.png", null, clr, "Save Environment");
-	initButton("Load", xs * nn++, 0, w, h, clr, () => {LD.toggleMenu()}, null, hdr, null, "2", p + "load.png", null, clr, "Load Environment");
+	initButton("Load", xs * nn++, 0, w, h, clr, () => { LD.toggleMenu() }, null, hdr, null, "2", p + "load.png", null, clr, "Load Environment");
 	fitHeaderDragWidth(hdr);
 }
 
@@ -123,6 +123,8 @@ function initCellPagesHeader(y) {
     fitHeaderDragWidth(pageHeader);
 }
 
+const auImg = new Image(50, 50); auImg.src = 'ressources/img/WHITE/audio.png';
+const muteImg = new Image(50, 50); muteImg.src = 'ressources/img/WHITE/mute.png';
 function initUi()
 {
 	initActionHeader(0);

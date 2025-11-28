@@ -155,6 +155,9 @@ class Cell{
 	}
 	update() {
 		if (!this.active) return;
+		if (this.type === 'STATICWATER') {
+			this.updateStaticWater();
+		}
 		if (this.isAsleep) {
 			if (!this.trySetToSleep())
 				this.isAsleep = this.hasTouchedBorder = this.hasTouchedSurface = false;

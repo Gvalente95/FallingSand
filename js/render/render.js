@@ -162,8 +162,8 @@ function showCell(cell, x, y, alpha, size) {
 	else if (cell.isWater && !cell.frozen) {
 		color = getWaterColor(y);
 	}
-	// if (cell.isAsleep)
-	// 	color = "red";
+	if (cell.isAsleep && DEBUG)
+		color = "red";
 	if (prevCtx != color) {
 		ctx.fillStyle = color;
 		prevCtx = color;
@@ -216,6 +216,16 @@ function render(fx = null) {
 		ctx.drawImage(t, 0, 0);
 		ctx.filter = "none";
 	}
+
+	const auPos = [20, 50];
+	var auSize = 20;
+	if (pointInRect([MOUSE.x, MOUSE.y], auPos, [20, 20])) {
+		if (MOUSE.clicked) au.active = !au.active;
+		auSize *= 1.4;
+		auPos[0] -= auSize * .1;
+		auPos[1] -= auSize * .2;
+	}
+	ctx.drawImage(au.active ? auImg : muteImg, auPos[0], auPos[1], auSize, auSize);
 }
 
 

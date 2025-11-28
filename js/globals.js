@@ -20,6 +20,7 @@ ENTINDEX = -1;
 MAXREWIND = 30;
 RAINPOW = 50;
 GRIDPX = true;
+DEBUG = false;
 
 SELENT = null;
 //	UI
@@ -107,7 +108,7 @@ let CELL_PROPERTIES = {
 ['MAGMA']:	{ color: 'rgb(198, 64, 2)',	lt: 12,			brn: 0,		brnpwr: 1000,	douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 100,	spread: 0,	expl: 0, kn: 0, rclr: 10, fin: 0, fout: 0},
 ['SNOW']:	{ color: 'rgba(255, 255, 255, 1)',	lt: Infinity,			brn: 1000,		brnpwr: 0,	douse: 0, freeze: 0, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 2,	spread: 0,	expl: 0, kn: 0, rclr: 5, fin: 0, fout: 0},
 ['ICE']:	{ color: 'rgba(66, 180, 205, 1)',	lt: Infinity,	brn: 400,	brnpwr: 0,		douse: 0, freeze: 1, cor: 0, physT: 'SOLID',	updT: 'DYNAMIC', dns: 10,	spread: 2,	expl: 0, kn: 0, rclr: 0, fin: .4, fout: .2},
-['SOLIDWATER']: { color: 'rgba(47, 93, 134, 1)', lt: Infinity, brn: 0, brnpwr: 0, douse: 1, freeze: 0, cor: 0, physT: 'LIQUID', updT: 'STATIC', dns: 2, spread: 20, expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0 },
+['STATICWATER']: { color: 'rgba(47, 93, 134, 1)', lt: Infinity, brn: 0, brnpwr: 0, douse: 1, freeze: 0, cor: 0, physT: 'LIQUID', updT: 'STATIC', dns: 2, spread: 20, expl: 0, kn: 0, rclr: 0, fin: 0, fout: 0 },
 
 ['TNT']: 	{ color: 'rgb(74,104,115)', 	lt: Infinity, 	brn: 999, 	brnpwr: 0, 		douse: 0, freeze: 0, cor: 0, physT: 'SOLID', 	updT: 'DYNAMIC', dns: 50, 	spread: 0, 	expl: 5, kn: 0, rclr: 5, fin: 0, fout: 0},
 ['DYNAMITE']: { color: 'rgb(115, 99, 74)', lt: 5, brn: 999, brnpwr: 0, douse: 0, freeze: 0, cor: 0, physT: 'SOLID', updT: 'DYNAMIC', dns: 50, spread: 0, expl: 5, kn: 0, rclr: 5, fin: 0, fout: 0 },

@@ -10,33 +10,32 @@ function launchCell(type, x, y, clr, vx, vy, isRandomized) {
 }
 
 var randomizeChance = 2;
-function launchCells(type = 'SAND', px = MOUSE.x, py = MOUSE.y, rx = BRUSHSIZE, ry = BRUSHSIZE, isDisc = BRUSHTYPE == BRUSHTYPES.DISC, useMouseDx = true, avx = 0, avy = 0) {
+function launchCells(type = 'SAND', px = MOUSE.x, py = MOUSE.y, rx = BRUSHSIZE, ry = BRUSHSIZE, isDisc = BRUSHTYPE == BRUSHTYPES.DISC, vel = [MOUSE.dx, MOUSE.dy]) {
 	if (type === "ENTITY")
 		return;
 	if (SELENT) {
 		SELENT.place(Math.round((px) / PIXELSIZE - SELENT.w / 2), Math.round(py / PIXELSIZE - SELENT.h / 2));
-		SELENT.mv = [0, 0];
+		SELENT.mv = vel;
 		return;
 	}
 	if (ENTINDEX != -1) {
-		let gx = Math.round(px / PIXELSIZE);
-		let gy = Math.round(py / PIXELSIZE);
 		if (ENTINDEX > 0) {
-			SELENT = new Mob(gx, gy, getEntOfIndex(ENTINDEX), "MOB");
+			SELENT = new Mob(Math.round(px / PIXELSIZE), Math.round(py / PIXELSIZE), getEntOfIndex(ENTINDEX), "MOB");
 			entities.push(SELENT);
-			return;
 		}
-		if (!PLAYER)
-			PLAYER = new Player(gx, gy);
-		SELENT = PLAYER;
+		else {
+			if (!PLAYER)
+				PLAYER = new Player(Math.round(px / PIXELSIZE), Math.round(py / PIXELSIZE));
+			SELENT = PLAYER;
+		}
 		return;
 	}
 	let launchedCells = [];
 	let color = null;
-	if (useMouseDx && CELL_PROPERTIES[type].physT === 'GAS') useMouseDx = false;
+	if (CELL_PROPERTIES[type].physT === 'GAS') vel = [0, 0];
 
-	const addedX = useMouseDx ? (MOUSE.dx / PIXELSIZE) * (CELL_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05) : 0;
-	const addedY = useMouseDx ? (MOUSE.dy / PIXELSIZE) * (CELL_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05) : 0;
+	const addedX = vel[0] ? (vel[0] / PIXELSIZE) * (CELL_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05) : 0;
+	const addedY = vel[1] ? (vel[1] / PIXELSIZE) * (CELL_PROPERTIES[type].physT == PHYSTYPES.LIQUID ? .4 : .05) : 0;
 
 	let isRandomized = CELL_PROPERTIES[type].physT === 'SOLID' && type != 'Rainbow';
 	if (type === 'GBLADE' || type === 'FISH' || type === 'SHROOM' || type === 'MUSHX') isRandomized = false;
@@ -50,7 +49,7 @@ function launchCells(type = 'SAND', px = MOUSE.x, py = MOUSE.y, rx = BRUSHSIZE, 
 	if (rx === 1 && ry === 1) {
 		const ix = clamp(cx, 0, GW - 1);
 		const iy = clamp(cy, 0, GH - 1);
-		const c = launchCell(type, ix, iy, color, addedX + avx, addedY + avy, isRandomized);
+		const c = launchCell(type, ix, iy, color, addedX, addedY, isRandomized);
 		if (c && c.active)
 			launchedCells.push(c);
 		return launchedCells;
@@ -66,7 +65,7 @@ function launchCells(type = 'SAND', px = MOUSE.x, py = MOUSE.y, rx = BRUSHSIZE, 
 			}
 			const ix = clamp(gx, 0, GW - 1);
 			const iy = clamp(gy, 0, GH - 1);
-			const c = launchCell(type, ix, iy, color, addedX + avx, addedY + avy, isRandomized);
+			const c = launchCell(type, ix, iy, color, addedX, addedY, isRandomized);
 			if (c && c.active)
 				launchedCells.push(c);
 		}

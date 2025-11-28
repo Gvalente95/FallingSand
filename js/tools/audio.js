@@ -2,22 +2,25 @@ const audioPath = "ressources/audio/";
 class AudioManager {
 	constructor() {
 		this.lastPlayTime = 0;
-		this.canPlay = false;
 		this.maxQueue = 200;
 		this.active = false;
 		this.playInterval = 0.05;
 		this.audioQueue = [];
-		this.buttonOk = new Audio(audioPath + "buttonOk.mp3");
-		this.gameOn = new Audio(audioPath + "gameOn.mp3");
-		this.dig = new Audio(audioPath + "dig.mp3");
-		this.tuk = new Audio(audioPath + "tuk.mp3");
-		this.click = new Audio(audioPath + "click.mp3");
-		this.clock = new Audio(audioPath + "clock.mp3");
-		this.soundCapture = new Audio(audioPath + "Capture.mp3");
-		this.soundDenied = new Audio(audioPath + "denied.mp3");
-		this.trill = new Audio(audioPath + "trill.mp3");
-		this.musBgr = new Audio(audioPath + "FluorescentCaves.wav");
-		// this.initElementSounds("ressources/audio/Elements");
+		this.buttonOk = new Audio(audioPath + "ui/buttonOk.mp3");
+		this.gameOn = new Audio(audioPath + "ui/gameOn.mp3");
+		this.dig = new Audio(audioPath + "ui/dig.mp3");
+		this.tuk = new Audio(audioPath + "ui/tuk.mp3");
+		this.click = new Audio(audioPath + "ui/click.mp3");
+		this.clock = new Audio(audioPath + "ui/clock.mp3");
+		this.soundCapture = new Audio(audioPath + "ui/Capture.mp3");
+		this.soundDenied = new Audio(audioPath + "ui/denied.mp3");
+		this.trill = new Audio(audioPath + "ui/trill.mp3");
+
+		this.musBgr = new Audio(audioPath + "mus/FluorescentCaves.wav");
+		this.footsteps = new Audio(audioPath + "Footsteps/Grass.wav");
+		this.inWater = new Audio(audioPath + "amb/inWater.wav");
+		this.splash = new Audio(audioPath + "Jumps/splash.wav");
+
 	}
 
 	initElementSounds(basePath)
@@ -47,7 +50,7 @@ class AudioManager {
 	}
 
 	playRandomSound(list, volume = 1) {
-		if (!this.canPlay) return;
+		if (!this.active) return;
 		let index = r_range(0, list.length - 1);
 		const au = new Audio(list[index].src);
 		au.volume = volume;
@@ -56,24 +59,40 @@ class AudioManager {
 	}
 
 	update() {
-		this.canPlay = (this.active && (now - this.lastPlayTime > this.playInterval));
+		this.active = (this.active);
 	}
 
 	playSound(sound, volume = 1) {
-		if (!this.canPlay) return;
+		if (!this.active) return;
 		this.lastPlayTime = now;
 		const newAu = new Audio(sound.src);
 		newAu.volume = volume;
 		newAu.play();
+		console.warn("AUDIO PLAYED - " + sound.src);
 	}
 
-	playLoop(sound, volume) {
-		if (!this.canPlay) return;
+	
+	playLoop(sound, volume, conditionFn) {
+		if (!sound) return;
 		sound.volume = volume;
-		sound.onended = () => {
-			this.playLoop(sound, volume);
-		};
-		sound.play();
+		if (!sound._loopController) {
+			sound._loopController = setInterval(() => {
+				const cond = conditionFn();
+				if (!cond) {
+					if (!sound.paused) {
+						sound.pause(); sound.currentTime = 0;
+					}
+					return;
+				}
+				if (!this.active) return;
+				if (sound.paused) {
+					sound.currentTime = 0; sound.play();
+				}
+				if (sound.ended) {
+					sound.currentTime = 0; sound.play();
+				}
+			}, 30);
+		}
 	}
 
 	playInQueue(original, volume) {

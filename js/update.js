@@ -41,7 +41,7 @@ function updateParticules() {
 	wakeFrame = (FRAME % 100 === 0);
 	if (ISRAINING) {
 		for (let i = 0; i < RAINPOW; i++)
-			launchCells(cellKeys[TYPEINDEX], r_range(1, CANVW - 1), 1, 1, 1, false, false, 0, 0);
+			launchCells(cellKeys[TYPEINDEX], r_range(1, CANVW - 1), 1, 1, 1, false, [0, 0]);
 	}
 	for (let i = 0; i < cellEmitters.length; i++)
 		cellEmitters[i].update();
@@ -60,6 +60,7 @@ function update() {
 		for (let i = 0; i < entities.length; i++)
 			entities[i].update();
 	}
+	MOUSE.dx = MOUSE.dy = 0;
 	flushDestroyedCells();
 }
 
@@ -67,6 +68,7 @@ function loop() {
 	if (!LD.active) {
 		update();
 		render();
+		MOUSE.clicked = false;
 	}
 	requestAnimationFrame(loop);
 }

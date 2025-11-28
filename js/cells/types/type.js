@@ -95,6 +95,13 @@ p.updateType = function () {
 	this.updatePosition(ROWOFF[this.newY] + this.newX);
 };
 
+p.updateStaticWater = function () {
+	if (!fdice(.01)) return;
+	if (this.y < GH - 1 && !grid1[this.i + GW]) {
+		new Cell(this.x, this.y + 1, 'WATER');
+	}
+}
+
 p.setType = function(newType, transformType = null)
 {
 	if (newType === 'TORCH' && dice(2)) {
@@ -105,7 +112,7 @@ p.setType = function(newType, transformType = null)
 	this.parent = null;
 	this.child = null;
 	this.type = newType;
-	this.isWater = this.type == 'WATER' || this.type == 'HYDROGEL';
+	this.isWater = this.type == 'WATER' || this.type == 'HYDROGEL' || this.type === 'STATICWATER';
 	this.isShroom = this.type == 'SHROOM' || this.type == 'MUSHX';
 	this.isAnt = (this.type === 'ANT' || this.type === 'FIREANT');
 	this.inWater = false;

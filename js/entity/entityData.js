@@ -64,9 +64,9 @@ function getSpiderForm() {
 			".....vhhhhhihv....",
 			".....vhhhhhhhv....",
 			"....vvvvvvvvv.....",
-			"....l..r.l.r..l...",
-			"...l..r..l..r..l..",
-			"..l..r...l...r..l.",
+			"....lllrrllrrll...",
+			"...l..rr.l.rr.ll..",
+			"..l..r...l...r.ll.",
 			"..l..r...l...r..l.",
 		],
 		colors: {
