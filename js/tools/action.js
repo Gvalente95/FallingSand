@@ -1,4 +1,4 @@
-function vibrateRadius(cx = MOUSE.x, cy = MOUSE.y, radius = BRUSHSIZE, intensity = 5, isCircle = BRUSHTYPE == "DISC") {
+function vibrateRadius(cx = MOUSE.wx, cy = MOUSE.wy, radius = BRUSHSIZE, intensity = 5, isCircle = BRUSHTYPE == "DISC") {
   const r2 = radius * radius;
   for (let dy = -radius; dy <= radius; dy++) {
     for (let dx = -radius; dx <= radius; dx++) {
@@ -16,8 +16,10 @@ function vibrateRadius(cx = MOUSE.x, cy = MOUSE.y, radius = BRUSHSIZE, intensity
   }
 }
 
-function selectRadius(selType = "GRAB", cx = MOUSE.x, cy = MOUSE.y, radius = BRUSHSIZE, isCircle = BRUSHTYPE == "DISC") {
+function selectRadius(selType = "GRAB", cx = MOUSE.wx, cy = MOUSE.wy, radius = BRUSHSIZE, isCircle = BRUSHTYPE == "DISC") {
   const r2 = radius * radius;
+  const centerGX = Math.floor(cx / PIXELSIZE);
+  const centerGY = Math.floor(cy / PIXELSIZE);
   for (let dy = -radius; dy <= radius; dy++) {
     for (let dx = -radius; dx <= radius; dx++) {
       if (!isCircle || dx * dx + dy * dy <= r2) {
@@ -41,15 +43,15 @@ function selectRadius(selType = "GRAB", cx = MOUSE.x, cy = MOUSE.y, radius = BRU
         p.selType = selType;
         p.color = addColor(p.baseColor, "rgb(0, 0, 0)", 0.4);
         if (grid1[i] === p) grid1[i] = null;
-        p.sx = Math.floor(dx);
-        p.sy = Math.floor(dy);
+        p.sx = gx - centerGX;
+        p.sy = gy - centerGY;
         selCells.push(p);
       }
     }
   }
 }
 
-function explodeRadius(cx = MOUSE.x, cy = MOUSE.y, radius = BRUSHSIZE, intensity = 2, transformType = null, ignoreType = null) {
+function explodeRadius(cx = MOUSE.wx, cy = MOUSE.wy, radius = BRUSHSIZE, intensity = 2, transformType = null, ignoreType = null) {
   const r2 = radius * radius;
   let xPushLimits = [0, intensity];
   let yPushLimits = [0, intensity];

@@ -26,8 +26,9 @@ function showShroomHead(cell, x, y) {
   let startX = x - w / 2;
   let curW = w;
   for (let yy = 0; yy < h; yy++) {
-    let drawX = startX * PIXELSIZE;
-    let drawY = startY * PIXELSIZE;
+    const scr = toScrn([startX * PIXELSIZE, startY * PIXELSIZE]);
+    let drawX = scr[0];
+    let drawY = scr[1];
     ctx.fillStyle = baseColor;
     ctx.fillRect(drawX, drawY, curW * PIXELSIZE, PIXELSIZE);
     startX--;
@@ -46,8 +47,8 @@ function renderBrush() {
     }
     if (MOUSE.x < 0 || MOUSE.x > canvas.width || MOUSE.y < 0 || MOUSE.y > canvas.height) return;
   }
-  let px = settingBrushSize ? CANVW / 2 : MOUSE.gridX * PIXELSIZE;
-  py = settingBrushSize ? CANVH / 2 : MOUSE.gridY * PIXELSIZE;
+  let px = settingBrushSize ? CANVW / 2 : MOUSE.gx * PIXELSIZE;
+  py = settingBrushSize ? CANVH / 2 : MOUSE.gy * PIXELSIZE;
   let rad = BRUSHSIZE * PIXELSIZE;
   let color = BRUSHACTION ? "#ffffff39" : setAlpha(BRUSHCOLOR, 0.2);
   let fillColor = BRUSHACTION ? "rgba(71, 67, 67, 0.31)" : "rgba(0, 0, 0, 0.1)";
@@ -60,6 +61,9 @@ function drawSnowflake(cell, x, y, color, size) {
   ctx.fillStyle = color;
   let rx = x * PIXELSIZE;
   let ry = y * PIXELSIZE;
+  const scr = toScrn([rx, ry]);
+  rx = scr[0];
+  ry = scr[1];
   switch (cell.variant) {
     case 1:
       ctx.fillRect(rx - size, ry, size * 3, size);
@@ -90,12 +94,17 @@ function showCell(cell, x, y, alpha, size) {
   }
   if (cell.inWater) {
     ctx.fillStyle = color;
-    ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, size, size);
+    {
+      const scr = toScrn([x * PIXELSIZE, y * PIXELSIZE]);
+      ctx.fillRect(scr[0], scr[1], size, size);
+    }
     x += Math.cos(FRAME * 0.1 + x * 0.3) * 1;
   }
   if (cell.isProjectile) {
     const back = [cell.x - cell.velX * 1, cell.y - cell.velY * 1];
-    drawLine(ctx, [back[0] * PIXELSIZE, back[1] * PIXELSIZE], [cell.x * PIXELSIZE, cell.y * PIXELSIZE], color, 2);
+    const p1 = toScrn([back[0] * PIXELSIZE, back[1] * PIXELSIZE]);
+    const p2 = toScrn([cell.x * PIXELSIZE, cell.y * PIXELSIZE]);
+    drawLine(ctx, p1, p2, color, 2);
     return;
   }
   if (cell.type === "SNOW") {
@@ -125,7 +134,10 @@ function showCell(cell, x, y, alpha, size) {
   if (cell.type === "CLOUD" || cell.type === "SMOKE") {
     let fAlpha = Math.min(alpha, cell.alpha);
     let clr = setAlpha(cell.baseColor, fAlpha);
-    drawCellCircle(x * PIXELSIZE - cell.size, y * PIXELSIZE - cell.size, cell.size * 2, clr);
+    {
+      const scr = toScrn([x * PIXELSIZE - cell.size, y * PIXELSIZE - cell.size]);
+      drawCellCircle(scr[0], scr[1], cell.size * 2, clr);
+    }
     return;
   }
   //   if (alpha != 1) color = `rgba(${cell.rgb}, ${alpha})`;
@@ -138,7 +150,10 @@ function showCell(cell, x, y, alpha, size) {
     ctx.fillStyle = color;
     prevCtx = color;
   }
-  ctx.fillRect(x * PIXELSIZE, y * PIXELSIZE, size, size);
+  {
+    const scr = toScrn([x * PIXELSIZE, y * PIXELSIZE]);
+    ctx.fillRect(scr[0], scr[1], size, size);
+  }
 }
 
 function applyVignette() {
@@ -148,30 +163,27 @@ function applyVignette() {
   vignetteCanvas.height = canvas.height;
   vignetteCtx.clearRect(0, 0, vignetteCanvas.width, vignetteCanvas.height);
 
-  vignetteCtx.fillStyle = setAlpha("black", OBSCURITY);
+  var vignColor = "rgba(0,0,0,1)";
+  vignetteCtx.fillStyle = setAlpha(vignColor, OBSCURITY);
   vignetteCtx.fillRect(0, 0, vignetteCanvas.width, vignetteCanvas.height);
   vignetteCtx.globalCompositeOperation = "destination-out";
-
-//   if (PLAYER) {
-//     PLAYER.renderFlashlight();
-//   }
 
   for (let i = 0; i < lightSources.length; i++) {
     const l = lightSources[i];
     const rOuter = l.r * 1.8;
-    const rInner = rOuter * 0.15;
-    const rMid1 = rOuter * 0.5;
-    const rMid2 = rOuter * 0.9;
-
-    const g = vignetteCtx.createRadialGradient(l.x, l.y, 0, l.x, l.y, rOuter);
-    g.addColorStop(0, "rgba(0,0,0,1)");
-    g.addColorStop(rInner / rOuter, "rgba(0,0,0,0.85)");
-    g.addColorStop(rMid1 / rOuter, "rgba(0,0,0,0.45)");
-    g.addColorStop(rMid2 / rOuter, "rgba(0,0,0,0.15)");
-    g.addColorStop(1, "rgba(0,0,0,0)");
+    const rInner = rOuter * 0.1;
+    const rMid1 = rOuter * 0.4;
+    const rMid2 = rOuter * 0.85;
+    const scr = toScrn([l.x, l.y]);
+    const g = vignetteCtx.createRadialGradient(scr[0], scr[1], 0, scr[0], scr[1], rOuter);
+    g.addColorStop(0, vignColor); // fully opaque at center (will be removed by destination-out)
+    g.addColorStop(rInner / rOuter, setAlpha(vignColor, 0.85));
+    g.addColorStop(rMid1 / rOuter, setAlpha(vignColor, 0.7));
+    g.addColorStop(rMid2 / rOuter, setAlpha(vignColor, 0.3));
+    g.addColorStop(1, "rgba(0,0,0,0)"); // fully transparent at edge
     vignetteCtx.fillStyle = g;
     vignetteCtx.beginPath();
-    vignetteCtx.arc(l.x, l.y, rOuter, 0, Math.PI * 2);
+    vignetteCtx.arc(scr[0], scr[1], rOuter, 0, Math.PI * 2);
     vignetteCtx.fill();
   }
   vignetteCtx.globalCompositeOperation = "source-over";
@@ -192,16 +204,24 @@ function drawFx(fx) {
   ctx.filter = "none";
 }
 
+const bgrClr = "rgba(94, 127, 154, 1)";
+var groundLevel;
 function render(fx = null) {
-  prevCtx = null;
-  if (1) ctx.clearRect(0, 0, canvas.width, canvas.height);
-  else {
-    ctx.fillStyle = "#bcc4a1ff"; // background color
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
+  const offY = -CAM.scroll[1];
+  groundLevel = canvas.height + offY;
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  const groundStop = clamp(groundLevel / canvas.height, 0, 1);
+  gradient.addColorStop(Math.max(0, groundStop - 0.001), bgrClr);
+  gradient.addColorStop(Math.min(1, groundStop + 0.001), "rgba(85, 71, 32, 1)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
   const showSize = PIXELSIZE;
   const isGridding = gridMode || isWheeling;
-  if (isGridding) ctx.drawImage(gridLayer, 0, 0);
+  if (isGridding) {
+    const scr = toScrn([0, 0]);
+    ctx.drawImage(gridLayer, scr[0], scr[1]);
+  }
   lightSources.length = 0;
   for (let i = 0; i < activeCells.length; i++) {
     const px = activeCells[i];
@@ -217,27 +237,39 @@ function render(fx = null) {
   }
   for (let i = 0; i < entities.length; i++) entities[i].render(showSize);
   if (PLAYER) {
+    const PLR_CENTER = [(PLAYER.x + PLAYER.w / 2) * PIXELSIZE, (PLAYER.y + PLAYER.h / 2) * PIXELSIZE];
+    CAM.center(PLR_CENTER, 0.2);
     PLAYER.render(showSize);
     if (OBSCURITY > 0) {
       lightSources.push({
-        x: PLAYER.x * PIXELSIZE + PIXELSIZE * 0.5,
-        y: PLAYER.y * PIXELSIZE + PIXELSIZE * 0.5,
+        x: PLR_CENTER[0] + PIXELSIZE * 0.5,
+        y: PLR_CENTER[1] + PIXELSIZE * 0.5,
         r: 100,
       });
     }
   }
   applyVignette();
 
+  // Re-render flashlight on top of vignette
+  if (PLAYER && OBSCURITY > 0) {
+    PLAYER.drawFlashRays();
+  }
+
   if (INPUT.selBox) {
     ctx.fillStyle = setAlpha(CELL_PROPERTIES[cellKeys[TYPEINDEX]].color, 0.8);
-    const x = Math.min(INPUT.selBox[0], MOUSE.gridX) * PIXELSIZE;
-    const y = Math.min(INPUT.selBox[1], MOUSE.gridY) * PIXELSIZE;
-    const w = Math.abs(INPUT.selBox[0] - MOUSE.gridX) * PIXELSIZE;
-    const h = Math.abs(INPUT.selBox[1] - MOUSE.gridY) * PIXELSIZE;
+    let x = Math.min(INPUT.selBox[0], MOUSE.gx) * PIXELSIZE;
+    let y = Math.min(INPUT.selBox[1], MOUSE.gy) * PIXELSIZE;
+    const w = Math.abs(INPUT.selBox[0] - MOUSE.gx) * PIXELSIZE;
+    const h = Math.abs(INPUT.selBox[1] - MOUSE.gy) * PIXELSIZE;
+    const scr = toScrn([x, y]);
+    x = scr[0];
+    y = scr[1];
     ctx.fillRect(x, y, w, h);
   }
   if (SEL_LINE_START) {
-    drawLine(ctx, SEL_LINE_START, [MOUSE.x, MOUSE.y], BRUSHCOLOR, PIXELSIZE * BRUSHSIZE * 2);
+    const p1 = toScrn(SEL_LINE_START);
+    const p2 = [MOUSE.x, MOUSE.y]; // already screen coords
+    drawLine(ctx, p1, p2, BRUSHCOLOR, PIXELSIZE * BRUSHSIZE * 2);
   }
   renderBrush();
   FRAME++;

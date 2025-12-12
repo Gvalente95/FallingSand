@@ -12,7 +12,7 @@ function launchCell(type, x, y, clr, vx, vy, isRandomized, lt = null) {
 }
 
 var randomizeChance = 2;
-function launchCells(type = "SAND", px = MOUSE.x, py = MOUSE.y, rx = BRUSHSIZE, ry = BRUSHSIZE, isDisc = BRUSHTYPE == BRUSHTYPES.DISC, vel = [MOUSE.dx, MOUSE.dy], lt = null) {
+function launchCells(type = "SAND", px = MOUSE.wx, py = MOUSE.wy, rx = BRUSHSIZE, ry = BRUSHSIZE, isDisc = BRUSHTYPE == BRUSHTYPES.DISC, vel = [MOUSE.dx, MOUSE.dy], lt = null) {
   if (type === "ENTITY") return;
   if (SELENT && MOUSE.pressed) {
     SELENT.place(Math.round(px / PIXELSIZE - SELENT.w / 2), Math.round(py / PIXELSIZE - SELENT.h / 2));

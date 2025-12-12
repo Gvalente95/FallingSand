@@ -17,7 +17,9 @@ function isCollision(cell, ent) {
 }
 
 function addTmpPannel(ent, info, color = "red", size, dur = 450) {
-  const div = initLabelDiv((ent.x + ent.w / 2 + r_range(-5, 5)) * PIXELSIZE, (ent.y - 10) * PIXELSIZE, info, null, color);
+  var x = (ent.x + ent.w / 2 + r_range(-5, 5)) * PIXELSIZE;
+  var y = (ent.y - 10) * PIXELSIZE;
+  const div = initLabelDiv(sx(x), sy(y), info, null, color);
   div.style.fontSize = size + "px";
   div.classList.add("dmgPannel");
   div.getBoundingClientRect();
@@ -134,8 +136,8 @@ class Entity {
       if (px && px.ent !== this && px.ent !== targetEnt && (px.physT === "SOLID" || px.physT === "STATIC")) {
         return 0;
       }
-      ctx.fillStyle = "red";
-      ctx.fillRect(x, y, 1, 1);
+      //   ctx.fillStyle = "red";
+      //   ctx.fillRect(x, y, 1, 1);
       x += stepX;
       y += stepY;
     }
@@ -450,12 +452,14 @@ class Entity {
   static renderBar(pos, curValue, maxValue, fillColor = "green", label = null) {
     const w = 50;
     const h = 6;
-    const perc = Math.round((curValue / maxValue) * w);
-    ctx.fillStyle = fillColor ? setAlpha(fillColor, 0.2) : "red";
+    const perc = curValue / maxValue; // 0 to 1
+    var clr = addColor("red", "green", perc);
+    const filledW = Math.round(perc * w);
+    ctx.fillStyle = fillColor;
     ctx.fillRect(pos[0], pos[1], w, h);
     if (curValue) {
-      ctx.fillStyle = fillColor;
-      ctx.fillRect(pos[0], pos[1], perc, h);
+      ctx.fillStyle = clr;
+      ctx.fillRect(pos[0], pos[1], filledW, h);
     }
     if (label) {
       drawText(ctx, [pos[0] - 10, pos[1] - 6], label, "white", null, 7);
@@ -464,18 +468,18 @@ class Entity {
 
   renderHpBar() {
     if (!this.alive) return;
-    if (this.hp !== this.baseHp) Entity.renderBar(canvToWindow(this.x, this.y - 4), this.hp, this.baseHp, "green");
+    if (this.hp !== this.baseHp || 1) Entity.renderBar(toScrn(canvToWindow(this.x, this.y - 4)), this.hp, this.baseHp, "green");
     if (this.jetCur < this.jetMax) {
       const clr = "purple";
       var pos;
       if (this === PLAYER) pos = [CANVW - 100, 100];
-      else pos = canvToWindow(this.x, this.y - 6);
+      else pos = toScrn(canvToWindow(this.x, this.y - 6));
       Entity.renderBar(pos, this.jetCur, this.jetMax, clr);
     }
   }
 
   render(size, borderColor = null) {
-    if (this === PLAYER && !this.inWater) this.dir = MOUSE.gridX < this.x ? "left" : "right";
+    if (this === PLAYER && !this.inWater) this.dir = MOUSE.wgx < this.x ? "left" : "right";
 
     const OFF = 1;
 
@@ -595,7 +599,11 @@ class Mob extends Entity {
     const dy0 = Math.sin(angle);
     const baseH = [px + dx0 * 20, py + dy0 * 20];
     const endH = [px + dx0 * 30, py + dy0 * 30];
-    drawStripedLine(baseH, endH, "rgba(26, 126, 78, 1)", "white");
+    {
+      const sBase = toScrn(baseH);
+      const sEnd = toScrn(endH);
+      drawStripedLine(sBase, sEnd, "rgba(26, 126, 78, 1)", "white");
+    }
     var lh = [(this.x + 4) * PIXELSIZE, (this.y + 6) * PIXELSIZE];
     var rh = [(this.x + this.w - 4) * PIXELSIZE, (this.y + 7) * PIXELSIZE];
     if (this.dir === "left") {
@@ -603,8 +611,18 @@ class Mob extends Entity {
       lh = rh;
       rh = tmp;
     }
-    drawTriangle(ctx, rh, [rh[0], rh[1] + 3], baseH, "rgba(128, 30, 30, 1)", 2);
-    drawTriangle(ctx, lh, [lh[0], lh[1] + 5], baseH, "rgba(71, 30, 128, 1)", 2);
+    {
+      const sRH = toScrn(rh);
+      const sRH2 = toScrn([rh[0], rh[1] + 3]);
+      const sBase = toScrn(baseH);
+      drawTriangle(ctx, sRH, sRH2, sBase, "rgba(128, 30, 30, 1)", 2);
+    }
+    {
+      const sLH = toScrn(lh);
+      const sLH2 = toScrn([lh[0], lh[1] + 5]);
+      const sBase = toScrn(baseH);
+      drawTriangle(ctx, sLH, sLH2, sBase, "rgba(71, 30, 128, 1)", 2);
+    }
     this.handP = [baseH[0] / PIXELSIZE, baseH[1] / PIXELSIZE];
   }
 
@@ -617,6 +635,8 @@ class Mob extends Entity {
 class Player extends Entity {
   constructor(x, y, data) {
     super(x, y, data, "PLAYER");
+    this.flashPoints = [];
+    this.endH = null;
     // au.playLoop(au.footsteps, 0.1, () => this.action === "walk");
     au.playLoop(au.inWater, 0.5, () => this.inWater, 1);
     au.playLoop(au.splash, 0.5, () => this.splashing);
@@ -632,12 +652,25 @@ class Player extends Entity {
       }, 500);
   }
 
+  drawFlashRays() {
+    ctx.fillStyle = setAlpha("rgba(204, 194, 149, 1)", OBSCURITY / 4);
+    ctx.beginPath();
+    const sEnd = toScrn(this.endH);
+    ctx.moveTo(sEnd[0], sEnd[1]);
+    for (let i = 0; i < this.flashPoints.length; i++) {
+      const sp = toScrn(this.flashPoints[i]);
+      ctx.lineTo(sp[0], sp[1]);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+
   renderFlashlight() {
     let px = (this.x + this.w / 2) * PIXELSIZE;
     let py = (this.y + this.h / 2) * PIXELSIZE;
 
-    const tx = MOUSE.x;
-    const ty = MOUSE.y;
+    const tx = wx(MOUSE.x);
+    const ty = wy(MOUSE.y);
     const angle = Math.atan2(ty - py, tx - px);
     const ww = 40;
     const step = Math.PI / 360;
@@ -645,9 +678,13 @@ class Player extends Entity {
     const dy0 = Math.sin(angle);
     const baseH = [px + dx0 * 20, py + dy0 * 20];
     const endH = [px + dx0 * 30, py + dy0 * 30];
-    drawStripedLine(baseH, endH, "rgba(26, 126, 78, 1)", "white");
+    {
+      const sBase = toScrn(baseH);
+      const sEnd = toScrn(endH);
+      drawStripedLine(sBase, sEnd, "rgba(26, 126, 78, 1)", "white");
+    }
 
-    if (INPUT.keys[" "] && !this.isAttacking) this.throwProj([endH[0] / PIXELSIZE, endH[1] / PIXELSIZE], [MOUSE.gridX, MOUSE.gridY]);
+    if (INPUT.keys[" "] && !this.isAttacking) this.throwProj([endH[0] / PIXELSIZE, endH[1] / PIXELSIZE], [MOUSE.wgx, MOUSE.wgy]);
     if (this !== PLAYER) return;
     var lh = [(this.x + 4) * PIXELSIZE, (this.y + 6) * PIXELSIZE];
     var rh = [(this.x + this.w - 4) * PIXELSIZE, (this.y + 7) * PIXELSIZE];
@@ -656,8 +693,18 @@ class Player extends Entity {
       lh = rh;
       rh = tmp;
     }
-    drawTriangle(ctx, rh, [rh[0], rh[1] + 3], baseH, "rgba(128, 30, 30, 1)", 2);
-    drawTriangle(ctx, lh, [lh[0], lh[1] + 5], baseH, "rgba(71, 30, 128, 1)", 2);
+    {
+      const sRH = toScrn(rh);
+      const sRH2 = toScrn([rh[0], rh[1] + 3]);
+      const sBase = toScrn(baseH);
+      drawTriangle(ctx, sRH, sRH2, sBase, "rgba(128, 30, 30, 1)", 2);
+    }
+    {
+      const sLH = toScrn(lh);
+      const sLH2 = toScrn([lh[0], lh[1] + 5]);
+      const sBase = toScrn(baseH);
+      drawTriangle(ctx, sLH, sLH2, sBase, "rgba(71, 30, 128, 1)", 2);
+    }
 
     if (this.inWater) return;
     const points = [];
@@ -686,11 +733,12 @@ class Player extends Entity {
             if (enc > 20) break;
           }
           if (enc >= maxEnc || (enc > 8 && steps < 50)) break;
-          lightSources.push({
-            x: cell.x * PIXELSIZE + PIXELSIZE * 0.5,
-            y: cell.y * PIXELSIZE + PIXELSIZE * 0.5,
-            r: 4,
-          });
+          if (cell.physT !== "GAS" && cell.type !== "JET")
+            lightSources.push({
+              x: cell.x * PIXELSIZE + PIXELSIZE * 0.5,
+              y: cell.y * PIXELSIZE + PIXELSIZE * 0.5,
+              r: 4,
+            });
         } else {
           if (enc > 80) break;
           enc = 0;
@@ -711,15 +759,8 @@ class Player extends Entity {
       }
       points.push([lastX, lastY]);
     }
-
-    ctx.fillStyle = setAlpha("rgba(204, 194, 149, 1)", OBSCURITY / 4);
-    ctx.beginPath();
-    ctx.moveTo(endH[0], endH[1]);
-    for (let i = 0; i < points.length; i++) {
-      ctx.lineTo(points[i][0], points[i][1]);
-    }
-    ctx.closePath();
-    ctx.fill();
+    this.flashPoints = points;
+    this.endH = endH;
   }
 
   update() {
@@ -727,10 +768,9 @@ class Player extends Entity {
     if (!this.alive) return;
     this.speed = this.baseSpeed * (INPUT.shift || this.inWater ? 2 : 1);
     this.vel = [INPUT.x, INPUT.y * 0.5];
-    // if (INPUT.y < 0) au.playSound(au)
     if (isMobile && MOUSE.clickedOnPlayer) {
-      this.vel[0] = MOUSE.gridX < this.x ? -1 : 1;
-      if (this.inWater) this.vel[1] = Math.sign(MOUSE.gridY - this.y);
+      this.vel[0] = MOUSE.gx < this.x ? -1 : 1;
+      if (this.inWater) this.vel[1] = Math.sign(MOUSE.gy - this.y);
       else if (MOUSE.dy < -20 && this.grounded) this.jump();
     }
     super.update();
@@ -774,8 +814,11 @@ class Collectible extends Entity {
   render(size) {
     super.render(size);
     if (PLAYER && Math.hypot(this.x - PLAYER.x, this.y - PLAYER.y) < PIXELSIZE * 20) {
-      const x = (this.x + this.w / 2) * PIXELSIZE;
-      const y = (this.y - 10) * PIXELSIZE;
+      let x = (this.x + this.w / 2) * PIXELSIZE;
+      let y = (this.y - 10) * PIXELSIZE;
+      const scr = toScrn([x, y]);
+      x = scr[0];
+      y = scr[1];
       drawText(ctx, [x, y], `${this.label}`, "white", null, 10);
     }
   }

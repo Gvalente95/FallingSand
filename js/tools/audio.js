@@ -59,7 +59,7 @@ class AudioManager {
 	}
 
 	update() {
-		this.active = (this.active);
+		this.active = !isMobile;
 	}
 
 	playSound(sound, volume = 1) {
@@ -73,7 +73,6 @@ class AudioManager {
 	
 	playLoop(sound, volume, conditionFn, fade = 5) {
 		if (!sound) return;
-
 		if (!sound._fade) sound._fade = { v: volume, target: volume };
 
 		if (!sound._loopController) {

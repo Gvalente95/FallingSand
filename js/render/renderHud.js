@@ -27,7 +27,7 @@ let hudEvery = 4,
 
 function updateHUD() {
   if (++hudTick % hudEvery !== 0) return;
-  let topNow = `x${MOUSE.x},y${MOUSE.y}  gx${MOUSE.gridX},gy${MOUSE.gridY}\nBrush Size: ${BRUSHSIZE}\nPx Size: ${PIXELSIZE}\nPxls: ${activeCells.length}\nFrm: ${FRAME} Dt: ${Number(dt).toFixed(2)}s`;
+  let topNow = `x${MOUSE.x},y${MOUSE.y}  gx${MOUSE.gx},gy${MOUSE.gy}\nBrush Size: ${BRUSHSIZE}\nPx Size: ${PIXELSIZE}\nPxls: ${activeCells.length}\nFrm: ${FRAME} Dt: ${Number(dt).toFixed(2)}s`;
   if (PLAYER) {
     const e = PLAYER;
     var dpx = [];

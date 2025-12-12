@@ -2,6 +2,7 @@
 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 INPUT = null;
 MOUSE = null;
+CAM = null;
 
 // PARAMS
 SWIMSPEED = 2;

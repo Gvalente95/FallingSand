@@ -32,10 +32,16 @@ class Mouse {
   constructor() {
     this.x = 0;
     this.y = 0;
+    this.wx = 0;
+    this.wy = 0;
+    this.sx = 0;
+    this.sy = 0;
     this.dx = 0;
     this.dy = 0;
-    this.gridX = 0;
-    this.gridY = 0;
+    this.gx = 0;
+    this.gy = 0;
+    this.wgx = 0;
+    this.wgy = 0;
     this.clicked = false;
     this.pressed = false;
     this.cell = null;
@@ -46,10 +52,16 @@ class Mouse {
   setPos(x, y) {
     this.x = x;
     this.y = y;
-    let gridX = Math.floor(x / PIXELSIZE);
-    let gridY = Math.floor(y / PIXELSIZE);
-    this.gridX = clamp(gridX, 0, GW - 1);
-    this.gridY = clamp(gridY, 0, GH - 1);
+    this.sx = sx(this.x);
+    this.sy = sy(this.y);
+    this.wx = wx(this.x);
+    this.wy = wy(this.y);
+    let gx = Math.floor(x / PIXELSIZE);
+    let gy = Math.floor(y / PIXELSIZE);
+    this.gx = clamp(gx, 0, GW - 1);
+    this.gy = clamp(gy, 0, GH - 1);
+    this.wgx = clamp(Math.floor(this.wx / PIXELSIZE), 0, GW - 1);
+    this.wgy = clamp(Math.floor(this.wy / PIXELSIZE), 0, GH - 1);
   }
 
   mousemove(x, y) {
@@ -146,7 +158,7 @@ window.addEventListener("keydown", (e) => {
   else if (k === "m") au.active = !au.active;
   else if (k === "h") PLAYER.death();
   else if ((k === "z" || k === "meta") && !INPUT.selBox) {
-    INPUT.selBox = [MOUSE.gridX, MOUSE.gridY];
+    INPUT.selBox = [MOUSE.gx, MOUSE.gy];
   }
   INPUT.lastKey = k;
   INPUT.keys[INPUT.lastKey] = true;
@@ -156,10 +168,10 @@ window.addEventListener("keyup", (e) => {
   if (inPrompt) return;
   const k = e.key.toLowerCase();
   if ((k === "z" || k === "meta") && INPUT.selBox) {
-    const gx0 = Math.min(INPUT.selBox[0], MOUSE.gridX);
-    const gy0 = Math.min(INPUT.selBox[1], MOUSE.gridY);
-    const gw = Math.abs(INPUT.selBox[0] - MOUSE.gridX) + 1;
-    const gh = Math.abs(INPUT.selBox[1] - MOUSE.gridY) + 1;
+    const gx0 = Math.min(INPUT.selBox[0], MOUSE.gx);
+    const gy0 = Math.min(INPUT.selBox[1], MOUSE.gy);
+    const gw = Math.abs(INPUT.selBox[0] - MOUSE.gx) + 1;
+    const gh = Math.abs(INPUT.selBox[1] - MOUSE.gy) + 1;
     const cx = (gx0 + gw / 2) * PIXELSIZE;
     const cy = (gy0 + gh / 2) * PIXELSIZE;
     const rx = Math.floor(gw / 2);

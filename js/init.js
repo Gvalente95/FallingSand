@@ -168,6 +168,7 @@ function init() {
   MOUSE = new Mouse();
   LD = new LoadData();
   LD.toggleMenu(false);
+  CAM = new Camera();
   au = new AudioManager();
   initUi();
   initGrid();

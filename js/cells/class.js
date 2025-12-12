@@ -177,8 +177,8 @@ class Cell {
       }
     }
     if (this.selType === "GRAB") {
-      this.x = clamp(MOUSE.gridX + this.sx, 0, GW - 1);
-      this.y = clamp(MOUSE.gridY + this.sy, 0, GH - 1);
+      this.x = clamp(MOUSE.wgx + this.sx, 0, GW - 1);
+      this.y = clamp(MOUSE.wgy + this.sy, 0, GH - 1);
       return;
     }
     this.updateState();
