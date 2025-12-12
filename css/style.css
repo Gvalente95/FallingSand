@@ -1,32 +1,32 @@
 body {
-    margin: 0;
-    min-height: 100vh;
-    position: relative;
-    overflow: auto;
-	background-color: rgb(23, 2, 24);
+  margin: 0;
+  min-height: 100vh;
+  position: relative;
+  overflow: auto;
+  background-color: rgb(23, 2, 24);
 }
 
 .button {
-	position: absolute;
-	width: 60;
-	height: 40;
-	background: var(--btn-bg, linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 50%), linear-gradient(180deg, #ff4d4d, #c31212));
-	color: #ffffff;
-	text-align: center;
-	font-family: 'MyPixelFont', monospace;
-	font-size: 12px;
-	letter-spacing: .5px;
-	text-shadow: 1px 1px 0 #000, 0px 0px 0 #000, 2px 0px 0 #000, 0px 2px 0 #000;
-	cursor: pointer;
-	z-index: 1000;
-	box-sizing: border-box;
-	user-select: none;
-	/* border: 2px solid #000; */
-	/* box-shadow:
+  position: absolute;
+  width: 60;
+  height: 40;
+  background: var(--btn-bg, linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 50%), linear-gradient(180deg, #ff4d4d, #c31212));
+  color: #ffffff;
+  text-align: center;
+  font-family: "MyPixelFont", monospace;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0 #000, 0px 0px 0 #000, 2px 0px 0 #000, 0px 2px 0 #000;
+  cursor: pointer;
+  z-index: 1000;
+  box-sizing: border-box;
+  user-select: none;
+  /* border: 2px solid #000; */
+  /* box-shadow:
 	0 3px 0 #5a0000,
 	inset 0 0 0 2px rgba(255,255,255,.08),
 	inset 0 -6px 10px rgba(0,0,0,.25); */
-	transition: transform .06s ease, box-shadow .06s ease, filter .15s ease, background .15s ease;
+  transition: transform 0.06s ease, box-shadow 0.06s ease, filter 0.15s ease, background 0.15s ease;
 }
 
 .button:hover {
@@ -35,86 +35,83 @@ body {
 
 .button:active {
   transform: translateY(2px);
-  box-shadow:
-    0 1px 0 #5a0000,
-    inset 0 0 0 2px rgba(0,0,0,.35),
-    inset 0 -3px 6px rgba(0,0,0,.4);
+  box-shadow: 0 1px 0 #5a0000, inset 0 0 0 2px rgba(0, 0, 0, 0.35), inset 0 -3px 6px rgba(0, 0, 0, 0.4);
 }
 
 .button .dark-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, .15);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-    border-radius: inherit;
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  border-radius: inherit;
 }
 
 .button.open .dark-overlay {
-    opacity: 1;
+  opacity: 1;
 }
 
-.button.activeButton{
-	border: 4px solid rgba(255, 255, 255, 1);
-	color: rgba(255, 255, 255, 1);
+.button.activeButton {
+  border: 4px solid rgba(255, 255, 255, 1);
+  color: rgba(255, 255, 255, 1);
 }
 
-.button.clicked{
-	transform: scale(1);
-    transition: transform 0.3s ease-in-out;
-	border-color: rgb(145, 145, 145)
+.button.clicked {
+  transform: scale(1);
+  transition: transform 0.3s ease-in-out;
+  border-color: rgb(145, 145, 145);
 }
 
 .uiHeader {
-	background-color: rgba(0, 0, 0, 1);
-	position: absolute;
-	height: 5%;
-	width: 100%;
-}
-
-.button:hover{
-	z-index: 5000;
-	transform: scale(1);
-}
-
-@font-face {
-  font-family: 'MyPixelFont';
-  src: url('Minecraftia-Regular.ttf') format('truetype');
-  font-display: swap;
-}
-
-.infoText{
-	color:white;
-	text-align: left;
-	font-family: 'MyPixelFont', monospace;
-	/* image-rendering: pixelated;
-	font-smooth: never;
-	-webkit-font-smoothing: none;
-	-moz-osx-font-smoothing: grayscale; */
-	font-size: 14px;
-	text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-    line-height: 22px;
-    z-index: 1000;
-	user-select: none;
+  background-color: rgba(0, 0, 0, 1);
+  position: absolute;
+  height: 5%;
+  width: 100%;
 }
 
 .button:hover {
-    background-color: darkred; /* Visual feedback on hover */
+  z-index: 5000;
+  transform: scale(1);
+}
+
+@font-face {
+  font-family: "MyPixelFont";
+  src: url("Minecraftia-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
+.infoText {
+  color: white;
+  text-align: left;
+  font-family: "MyPixelFont", monospace;
+  /* image-rendering: pixelated;
+	font-smooth: never;
+	-webkit-font-smoothing: none;
+	-moz-osx-font-smoothing: grayscale; */
+  font-size: 14px;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  line-height: 22px;
+  z-index: 1000;
+  user-select: none;
+}
+
+.button:hover {
+  background-color: darkred; /* Visual feedback on hover */
 }
 
 .buttonBadge {
-	position: absolute;
-	top: 0px;
-	right: 0px;
-	padding: 2px 6px;
-	border: 1px solid #000;
-	background: rgba(0,0,0,.75);
-	color: #fff;
-	font-Family: 'MyPixelFont', monospace;
-	font-Size: 9px;
-	line-Height: 1;
-	pointer-Events: none;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  padding: 2px 6px;
+  border: 1px solid #000;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-family: "MyPixelFont", monospace;
+  font-size: 9px;
+  line-height: 1;
+  pointer-events: none;
 }
 
 #input[type="range"] {
@@ -125,4 +122,9 @@ body {
   outline: none;
   cursor: grab;
   transition: background 0.3s;
+}
+
+.dmgPannel {
+  transition: transform 0.4s linear, opacity 0.4s linear;
+  opacity: 1;
 }

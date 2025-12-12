@@ -282,7 +282,7 @@ function initButton(label, x, y, w, h, color, onChange, value = null, parent = d
  			if (e.code === keyToggle || e.key == keyToggle || e.key.toLowerCase() == keyToggle) {activate();}
 		});
 		if (!isMobile) {
-			div.badge = initLabelDiv(x + w - 10, canvas.height + 5, formatKeyLabel(keyToggle), null, 'rgba(203, 185, 211, 1)');
+			div.badge = initLabelDiv(x + w - 8, canvas.height + 8 + (parent ? parseFloat(parent.style.top) : 0), formatKeyLabel(keyToggle), null, 'rgba(203, 185, 211, 1)');
 			div.badge.style.fontSize = '12px';
 			div.badge.style.pointerEvents = "none";
 			div.style.paddingTop = '10px';

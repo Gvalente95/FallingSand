@@ -17,7 +17,7 @@ class LoadData{
 
 	reloadLevel() {
 		if (!PLAYER)
-			PLAYER = new Player(50, GH - 14, getPlayerData());
+			PLAYER = new Player(50, GH - 14, getEntOfType('PLAYER'));
 		if (this.curMapName)
 			loadMapName(this.curMapName);
 	}

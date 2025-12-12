@@ -1,86 +1,91 @@
-function updateUi()
-{
-	for (let i = 0; i < uiPagesButtons.length; i++) {
-		let cb = uiPagesButtons[i];
-		let isOpen = uiPageIndex == i;
-		cb.style.backgroundColor = setAlpha(cb.baseClr, isOpen ? uiLayerIndex == 0 ? .6 : .4 : 0.2);
-		for (const b of cb.buttons) { b.newDiv.style.opacity = '0'; if (b.isSwitch) continue; b.style.display = isOpen ? 'block' : 'none'; }
-		for (const s of cb.sliders) s.style.display = isOpen ? 'block' : 'none';
-	}
-	let notKnColor = 'rgba(0,0,0,1)';
-	let uiButtons = uiPagesButtons[uiPageIndex].buttons;
-	for (let i = 0; i < uiButtons.length; i++) {
-		let b = uiButtons[i];
-		let isOpen = typeButton && b.label == typeButton.label;
-		if (ISGAME) {
-			let isKnown = CELL_PROPERTIES[b.label].kn;
-			if (!isKnown) {
-				b.style.backgroundColor = notKnColor;
-				b.textContent = '';
-				b.style.background = `url("ressources/img/WHITE/lock.png") center/contain no-repeat`;
-				continue;
-			}
-		}
-		if (b.newDiv) b.newDiv.style.opacity = (b.new && ISGAME ? '1' : '0');
-		b.style.background = `${b.style.backgroundColor}`;
-		b.textContent = b.label.substring(0, 5);
-		b.style.backgroundColor = setAlpha(b.baseClr, isOpen ? uiLayerIndex == 1 ? 1 : .6 : 0.3);
-	}
+function updateUi() {
+  for (let i = 0; i < uiPagesButtons.length; i++) {
+    let cb = uiPagesButtons[i];
+    let isOpen = uiPageIndex == i;
+    cb.style.backgroundColor = setAlpha(addColor(cb.baseClr, 'rgba(211, 208, 36, 1)', .5), isOpen ? (uiLayerIndex == 0 ? 0.6 : 0.4) : 0.2);
+    for (const b of cb.buttons) {
+      b.newDiv.style.opacity = "0";
+      if (b.isSwitch) continue;
+      b.style.display = isOpen ? "block" : "none";
+    }
+    for (const s of cb.sliders) s.style.display = isOpen ? "block" : "none";
+  }
+  let notKnColor = "rgba(0,0,0,1)";
+  let uiButtons = uiPagesButtons[uiPageIndex].buttons;
+  for (let i = 0; i < uiButtons.length; i++) {
+    let b = uiButtons[i];
+    let isOpen = typeButton && b.label == typeButton.label;
+    if (ISGAME) {
+      let isKnown = CELL_PROPERTIES[b.label].kn;
+      if (!isKnown) {
+        b.style.backgroundColor = notKnColor;
+        b.textContent = "";
+        b.style.background = `url("ressources/img/WHITE/lock.png") center/contain no-repeat`;
+        continue;
+      }
+    }
+    if (b.newDiv) b.newDiv.style.opacity = b.new && ISGAME ? "1" : "0";
+    b.style.background = `${b.style.backgroundColor}`;
+    b.textContent = b.label.substring(0, 5);
+    b.style.backgroundColor = setAlpha(addColor(b.baseClr, "rgba(7, 142, 215, 1)", .5), isOpen ? (uiLayerIndex == 1 ? 1 : 0.6) : 0.3);
+  }
 }
 
-function getCurButtonTypeIndex()
-{
-	let found = -1;
-	for (let i = 0; i < uiPagesButtons[uiPageIndex].buttons.length; i++)
-	{
-		let b = uiPagesButtons[uiPageIndex].buttons[i];
-		if (b.label == 'MAKE') { return (i);}
-		if (ISGAME && !CELL_PROPERTIES[b.label].kn) continue;
-		if (found == -1) found = i;
-		if (b.label == cellKeys[TYPEINDEX]) return (i);
-	}
-	return (found);
+function getCurButtonTypeIndex() {
+  let found = -1;
+  for (let i = 0; i < uiPagesButtons[uiPageIndex].buttons.length; i++) {
+    let b = uiPagesButtons[uiPageIndex].buttons[i];
+    if (b.label == "MAKE") {
+      return i;
+    }
+    if (ISGAME && !CELL_PROPERTIES[b.label].kn) continue;
+    if (found == -1) found = i;
+    if (b.label == cellKeys[TYPEINDEX]) return i;
+  }
+  return found;
 }
-
 
 function getScrollTypeIndex(curI, scrollDir) {
-	let lastFound = -1;
-	let firstFound = -1;
+  let lastFound = -1;
+  let firstFound = -1;
 
-	for (let i = 0; i < uiPagesButtons[uiPageIndex].buttons.length; i++)
-	{
-		let b = uiPagesButtons[uiPageIndex].buttons[i];
-		if (ISGAME && !CELL_PROPERTIES[b.label].kn) continue;
-		if (b.label == 'MAKE' || (i > curI && scrollDir > 0)) { return (i); }
-		if (i == curI && scrollDir < 0 && lastFound != -1) return (lastFound);
-		if (i != curI) lastFound = i;
-		if (firstFound == -1) firstFound = i;
-	}
-	if (scrollDir > 0) return (firstFound);
-	return (lastFound);
+  for (let i = 0; i < uiPagesButtons[uiPageIndex].buttons.length; i++) {
+    let b = uiPagesButtons[uiPageIndex].buttons[i];
+    if (ISGAME && !CELL_PROPERTIES[b.label].kn) continue;
+    if (b.label == "MAKE" || (i > curI && scrollDir > 0)) {
+      return i;
+    }
+    if (i == curI && scrollDir < 0 && lastFound != -1) return lastFound;
+    if (i != curI) lastFound = i;
+    if (firstFound == -1) firstFound = i;
+  }
+  if (scrollDir > 0) return firstFound;
+  return lastFound;
 }
 
 function navigateUi(inpoutxScroll, inputyScroll) {
-	if (inputyScroll) {
-		uiLayerIndex = inputyScroll > 0 ? 1 : 0;
-		let curIndex = uiLayerIndex == 0 ? uiPageIndex : getCurButtonTypeIndex();
-		if (curIndex == -1) { uiLayerIndex = 0; return; }
-		if (uiLayerIndex == 0) switchUiPage(curIndex);
-		else { setNewType(uiPagesButtons[uiPageIndex].buttons[curIndex].value); }
-	}
-	else if (inpoutxScroll) {
-		let buttons = uiLayerIndex == 0 ? uiPagesButtons : uiPagesButtons[uiPageIndex].buttons;
-		let max = buttons.length;
-		let curIndex = uiLayerIndex == 0 ? uiPageIndex : getCurButtonTypeIndex();
-		let newIndex = uiLayerIndex == 0 ? ((curIndex + inpoutxScroll) % max) : getScrollTypeIndex(curIndex, inpoutxScroll);
-		if (newIndex < 0) newIndex = max - 1;
-		if (uiLayerIndex == 0) {
-			switchUiPage(newIndex);
-			// setNewType(uiPagesButtons[uiPageIndex].buttons[0].value);
-			// uiLayerIndex = 0;
-		}
-		else
-			setNewType(uiPagesButtons[uiPageIndex].buttons[newIndex].value);
-	}
-	updateUi();	
+  if (inputyScroll) {
+    uiLayerIndex = inputyScroll > 0 ? 1 : 0;
+    let curIndex = uiLayerIndex == 0 ? uiPageIndex : getCurButtonTypeIndex();
+    if (curIndex == -1) {
+      uiLayerIndex = 0;
+      return;
+    }
+    if (uiLayerIndex == 0) switchUiPage(curIndex);
+    else {
+      setNewType(uiPagesButtons[uiPageIndex].buttons[curIndex].value);
+    }
+  } else if (inpoutxScroll) {
+    let buttons = uiLayerIndex == 0 ? uiPagesButtons : uiPagesButtons[uiPageIndex].buttons;
+    let max = buttons.length;
+    let curIndex = uiLayerIndex == 0 ? uiPageIndex : getCurButtonTypeIndex();
+    let newIndex = uiLayerIndex == 0 ? (curIndex + inpoutxScroll) % max : getScrollTypeIndex(curIndex, inpoutxScroll);
+    if (newIndex < 0) newIndex = max - 1;
+    if (uiLayerIndex == 0) {
+      switchUiPage(newIndex);
+      // setNewType(uiPagesButtons[uiPageIndex].buttons[0].value);
+      // uiLayerIndex = 0;
+    } else setNewType(uiPagesButtons[uiPageIndex].buttons[newIndex].value);
+  }
+  updateUi();
 }

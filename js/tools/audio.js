@@ -3,7 +3,7 @@ class AudioManager {
 	constructor() {
 		this.lastPlayTime = 0;
 		this.maxQueue = 200;
-		this.active = false;
+		this.active = true;
 		this.playInterval = 0.05;
 		this.audioQueue = [];
 		this.buttonOk = new Audio(audioPath + "ui/buttonOk.mp3");
@@ -20,7 +20,7 @@ class AudioManager {
 		this.footsteps = new Audio(audioPath + "Footsteps/Grass.wav");
 		this.inWater = new Audio(audioPath + "amb/inWater.wav");
 		this.splash = new Audio(audioPath + "Jumps/splash.wav");
-
+		this.fallingSand = new Audio(audioPath + "fallingSand.wav");
 	}
 
 	initElementSounds(basePath)
@@ -71,28 +71,51 @@ class AudioManager {
 	}
 
 	
-	playLoop(sound, volume, conditionFn) {
+	playLoop(sound, volume, conditionFn, fade = 5) {
 		if (!sound) return;
-		sound.volume = volume;
+
+		if (!sound._fade) sound._fade = { v: volume, target: volume };
+
 		if (!sound._loopController) {
 			sound._loopController = setInterval(() => {
 				const cond = conditionFn();
-				if (!cond) {
-					if (!sound.paused) {
-						sound.pause(); sound.currentTime = 0;
-					}
-					return;
-				}
+
 				if (!this.active) return;
-				if (sound.paused) {
-					sound.currentTime = 0; sound.play();
-				}
-				if (sound.ended) {
-					sound.currentTime = 0; sound.play();
+
+				if (fade === 1) {
+					sound._fade.target = cond ? volume : 0;
+					sound._fade.v += (sound._fade.target - sound._fade.v) * 0.03;
+					sound.volume = Math.max(0, Math.min(volume, sound._fade.v));
+
+					if (cond && sound.paused) {
+						sound.currentTime = 0;
+						sound.play();
+					}
+
+					if (!cond && sound.volume < 0.01) {
+						sound.pause();
+						sound.currentTime = 0;
+					}
+				} else {
+					sound.volume = volume;
+
+					if (!cond) {
+						if (!sound.paused) {
+							sound.pause();
+							sound.currentTime = 0;
+						}
+						return;
+					}
+
+					if (sound.paused || sound.ended) {
+						sound.currentTime = 0;
+						sound.play();
+					}
 				}
 			}, 30);
 		}
 	}
+
 
 	playInQueue(original, volume) {
 		if (!original)

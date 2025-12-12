@@ -1,4 +1,30 @@
 
+p.updateFly = function (curX, curY) {
+	this.updatePosition(ROWOFF[curY] + curX);
+
+	const spd = 0.5;
+	const margin = 40;
+	let fx = f_range(-spd, spd);
+	let fy = f_range(-spd, spd);
+
+	if (curX < margin) fx += (margin - curX) * 0.02;
+	else if (curX > GW - margin) fx -= (curX - (GW - margin)) * 0.02;
+
+	if (curY < margin) fy += (margin - curY) * 0.02;
+	else if (curY > GH - margin) fy -= (curY - (GH - margin)) * 0.02;
+
+	this.velX += fx;
+	this.velY += fy;
+
+	if (!this.isSlowingDown && fdice(2)) this.isSlowingDown = true;
+	if (this.isSlowingDown) {
+		this.velX *= .9;
+		this.velY *= .9;
+		if (fdice(5)) this.isSlowingDown = false;
+	}
+}
+
+
 p.updateAlien = function (curX, curY) {
 	if (this.parent || (FRAME % (this.growSpeed)) != 0) return;
 	if (curX >= GW) curX = GW - 1;
@@ -391,7 +417,10 @@ p.updateTree = function (newX, newY) {
 		}
 		this.growerSet = true;
 	}
-	if (!this.isGrower) { return;}
+	if (!this.isGrower) { return; }
+	if (this.child && this.child.type !== this.type) {
+		this.killFamily();
+	}
 	if (this.timeAlive < .1 && this.cut > TREEPERFRAME) { this.cut = 0; return;}
 	if (this.heigth > this.maxHeight || this.y <= 15) { stopHead(this, true); return;}
 	if (this.parent) return;

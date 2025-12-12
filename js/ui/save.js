@@ -110,7 +110,7 @@ function applyMapData(data) {
 	GH = data.GH;
 	initGrid();
 	activeCells.length = 0;
-	PLAYER = new Player(data.player.x, data.player.y, data.player.data ? data.player.data : getPlayerData());
+	PLAYER = new Player(data.player.x, data.player.y, data.player.data ? data.player.data : getEntOfType('PLAYER'));
 	if (data.entities) {
 		for (let i = 0; i < data.entities.length; i++){
 			let e = data.entities[i];

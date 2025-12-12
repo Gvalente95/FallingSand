@@ -29,17 +29,14 @@ let showStripes = false;
 function drawLine(ctx, start, end, color = "white", width = PIXELSIZE, handleSize = 0, checkPos = false, hasStripes = false) {
   ctx.strokeStyle = color;
   ctx.lineWidth = width;
-  if (hasStripes && showStripes) drawStripedLine(start, end, color);
-  else {
-    ctx.beginPath();
-    ctx.moveTo(start[0], start[1]);
-    ctx.lineTo(end[0], end[1]);
-    ctx.stroke();
-  }
+  ctx.beginPath();
+  ctx.moveTo(start[0], start[1]);
+  ctx.lineTo(end[0], end[1]);
+  ctx.stroke();
   if (handleSize > 0) drawCircle2(ctx, end, handleSize * _scale);
 }
 
-function drawStripedLine(p0, p1, color) {
+function drawStripedLine(p0, p1, color1, color2 = "rgba(0, 0, 0, 0)") {
   const dx = p1[0] - p0[0];
   const dy = p1[1] - p0[1];
   const len = Math.hypot(dx, dy);
@@ -48,7 +45,7 @@ function drawStripedLine(p0, p1, color) {
   const speed = 3;
   const ux = dx / len;
   const uy = dy / len;
-  let offset = (_frame * speed) % (stripe * 2);
+  let offset = (FRAME * speed) % (stripe * 2);
   if (len <= stripe) offset = 0;
   let curX = p0[0] + ux * offset;
   let curY = p0[1] + uy * offset;
@@ -59,8 +56,8 @@ function drawStripedLine(p0, p1, color) {
     remaining = len;
     offset = 0;
   }
+  ctx.lineWidth = 5;
   const steps = Math.ceil(remaining / stripe);
-  const alternateClr = setAlpha(color, 0.2);
   for (let s = 0; s < steps; s++) {
     const segLen = Math.min(stripe, remaining - s * stripe);
     const nextX = curX + ux * segLen;
@@ -68,7 +65,7 @@ function drawStripedLine(p0, p1, color) {
     ctx.beginPath();
     ctx.moveTo(curX, curY);
     ctx.lineTo(nextX, nextY);
-    ctx.strokeStyle = s % 2 === 0 ? color : alternateClr;
+    ctx.strokeStyle = s % 2 === 0 ? color1 : color2;
     ctx.stroke();
     curX = nextX;
     curY = nextY;
@@ -228,4 +225,72 @@ function drawText(ctx, pos, text, color = "white", backgroundColor = null, size 
     ctx.fillText(cursor, cursorX, pos[1]);
   }
   return w;
+}
+
+function sameSide(px, py, ax, ay, bx, by, cx, cy) {
+  const cross1 = (bx - ax) * (py - ay) - (by - ay) * (px - ax);
+  const cross2 = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+  return cross1 * cross2 >= 0;
+}
+
+function pointInTriangle(px, py, ax, ay, bx, by, cx, cy) {
+  return sameSide(px, py, ax, ay, bx, by, cx, cy) && sameSide(px, py, bx, by, cx, cy, ax, ay) && sameSide(px, py, cx, cy, ax, ay, bx, by);
+}
+
+function drawTriangle(ctx, p0, p1, p2, color = "white", width = 2) {
+  ctx.beginPath();
+  ctx.moveTo(p0[0], p0[1]);
+  ctx.lineTo(p1[0], p1[1]);
+  ctx.lineTo(p2[0], p2[1]);
+  ctx.closePath();
+
+  ctx.fillStyle = color;
+  ctx.fill();
+
+  ctx.lineWidth = width;
+  ctx.strokeStyle = color;
+  ctx.stroke();
+}
+
+function drawRect(x, y, width, height, color, strokeColor, lineWidth) {
+  ctx.lineWidth = lineWidth || 1;
+
+  if (color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, width, height);
+    if (strokeColor) {
+      ctx.strokeStyle = strokeColor;
+      ctx.strokeRect(x, y, width, height);
+    }
+  } else if (strokeColor) {
+    ctx.strokeStyle = strokeColor;
+    ctx.strokeRect(x, y, width, height);
+  }
+}
+
+function drawCellCircle(x, y, radius, color = "rgba(255,255,255,1)") {
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(radius)) {
+    console.warn("drawCellCircle invalid params:", x, y, radius);
+    return;
+  }
+  const grad = ctx.createRadialGradient(x, y, radius * 0.6, x, y, radius);
+  grad.addColorStop(0, color);
+  grad.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, 2 * Math.PI);
+  ctx.fillStyle = grad;
+  ctx.fill();
+}
+
+function drawCircle(x, y, radius, color, strokeColor, lineWidth) {
+  ctx.beginPath();
+  ctx.arc(x, y, radius * 4, 0, 2 * Math.PI);
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = lineWidth;
+  if (color) {
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+  ctx.stroke();
+  ctx.closePath();
 }
