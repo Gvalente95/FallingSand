@@ -6,8 +6,26 @@ class Camera {
     this.maxX = limit[0];
     this.minY = -limit[1];
     this.maxY = limit[1];
+    this.target = null;
   }
 
+  update() {
+    if (this.target) this.centerTarget(this.target, 0.2);
+  }
+
+  setTarget(newTarget) {
+    this.target = newTarget;
+    this.centerTarget();
+  }
+
+  centerTarget(target = this.target, speed = 1) {
+    if (!target) {
+      this.center([canvas.width / 2, canvas.height / 2], speed);
+      return;
+    }
+    const taget_center = [(target.x + target.w / 2) * PIXELSIZE, (target.y + target.h / 2) * PIXELSIZE];
+    this.center(taget_center, speed);
+  }
   center(pos, speed = 1) {
     const targetX = pos[0] - canvas.width / 2;
     const targetY = pos[1] - canvas.height / 2;

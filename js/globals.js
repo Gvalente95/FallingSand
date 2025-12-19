@@ -61,7 +61,7 @@ const FLOCK = { r: 10, sep: 1.2, ali: 0.8, coh: 0.35, maxSpd: 1.8, maxAcc: 0.15 
 SEL_LINE_START = null;
 
 //	CANVAS
-OBSCURITY = 0.5;
+OBSCURITY = 0;
 let waterShades = [];
 const lightSources = [];
 var prevCtx = null;

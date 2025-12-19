@@ -468,7 +468,7 @@ class Entity {
 
   renderHpBar() {
     if (!this.alive) return;
-    if (this.hp !== this.baseHp || 1) Entity.renderBar(toScrn(canvToWindow(this.x, this.y - 4)), this.hp, this.baseHp, "green");
+    if (this.hp !== this.baseHp) Entity.renderBar(toScrn(canvToWindow(this.x, this.y - 4)), this.hp, this.baseHp, "green");
     if (this.jetCur < this.jetMax) {
       const clr = "purple";
       var pos;

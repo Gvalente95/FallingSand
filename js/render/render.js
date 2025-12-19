@@ -204,7 +204,7 @@ function drawFx(fx) {
   ctx.filter = "none";
 }
 
-const bgrClr = "rgba(94, 127, 154, 1)";
+const bgrClr = "rgba(75, 107, 133, 1)";
 var groundLevel;
 function render(fx = null) {
   const offY = -CAM.scroll[1];
@@ -236,15 +236,15 @@ function render(fx = null) {
     }
   }
   for (let i = 0; i < entities.length; i++) entities[i].render(showSize);
+  CAM.update();
   if (PLAYER) {
-    const PLR_CENTER = [(PLAYER.x + PLAYER.w / 2) * PIXELSIZE, (PLAYER.y + PLAYER.h / 2) * PIXELSIZE];
-    CAM.center(PLR_CENTER, 0.2);
     PLAYER.render(showSize);
     if (OBSCURITY > 0) {
+      const PLR_CENTER = [(PLAYER.x + PLAYER.w / 2) * PIXELSIZE, (PLAYER.y + PLAYER.h / 2) * PIXELSIZE];
       lightSources.push({
         x: PLR_CENTER[0] + PIXELSIZE * 0.5,
         y: PLR_CENTER[1] + PIXELSIZE * 0.5,
-        r: 100,
+        r: 20,
       });
     }
   }
