@@ -647,7 +647,7 @@ for (const k in CELL_PROPERTIES) {
   p.tagMask = tagMaskOf(p.tags);
 }
 
-ISGAME = true;
+ISGAME = false;
 if (!ISGAME) discoverAll();
 
 function discoverAll() {
