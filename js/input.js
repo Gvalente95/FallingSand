@@ -193,7 +193,6 @@ window.addEventListener("keyup", (e) => {
     const steps = Math.floor(len / stepSize);
     let curX = x0;
     let curY = y0;
-    const isV = Math.abs(dx) < Math.abs(dy);
     for (let s = 0; s <= steps; s++) {
       curX = x0 + dirX * s * stepSize;
       curY = y0 + dirY * s * stepSize;
@@ -207,7 +206,7 @@ window.addEventListener("keyup", (e) => {
 
 window.addEventListener("resize", () => {
   CANVW = window.innerWidth;
-  CANVH = window.innerHeight - 180;
+  CANVH = calculateCanvasHeight();
   canvas.width = CANVW;
   canvas.height = CANVH;
   GW = Math.floor(CANVW / PIXELSIZE);
@@ -286,7 +285,7 @@ document.addEventListener(
       lastY = (touch1.clientY + touch2.clientY) / 2;
     }
   },
-  { passive: false }
+  { passive: false },
 );
 
 document.addEventListener(
@@ -306,7 +305,7 @@ document.addEventListener(
       lastY = currentY;
     }
   },
-  { passive: false }
+  { passive: false },
 );
 
 document.addEventListener(
@@ -324,7 +323,7 @@ document.addEventListener(
       lastY = null;
     }
   },
-  { passive: false }
+  { passive: false },
 );
 
 let inputTimeout = null;

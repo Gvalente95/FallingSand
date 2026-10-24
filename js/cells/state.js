@@ -4,7 +4,10 @@ p.updateBurn = function () {
     this.burning = 0;
   }
   if (--this.burning <= 0) {
-    if (this.ent) return;
+    if (this.ent) {
+      this.burning = 0;
+      return;
+    }
     if (this.expl) {
       return (this.lt = r_range(1, 20));
     }

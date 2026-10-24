@@ -26,14 +26,13 @@ p.updateSteam = function(newX, newY){
 		for (let x = -depth; x < depth; x++){
 			for (let y = -depth; y < 0; y++){
 				let gx = cx + x * spacing, gy = cy + y * spacing;
-				let cell = cellAtI[ROWOFF[gy] + gx];
-				if (cell) continue;
+				if (isOutOfBorder(gx, gy) || cellAtI(ROWOFF[gy] + gx)) continue;
 				new Cell(cx + x * spacing, cy + y * spacing, 'CLOUD');
 			}
 		}
 	}
 	let newI = ROWOFF[newY] + newX;
-	if (cellAtI[newI]) return;
+	if (cellAtI(newI)) return;
 	else this.updatePosition(newI);
 }
 

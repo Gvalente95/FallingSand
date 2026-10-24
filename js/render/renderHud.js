@@ -181,3 +181,9 @@ function drawRing(ctx, x, y, radius, thickness, colors) {
     ctx.stroke();
   }
 }
+
+function calculateCanvasHeight() {
+  let H = window.innerHeight;
+  if (1) H -= actionBtnH + paramH + btnH * 2 + uiYmargin * 6;
+  return H;
+}

@@ -64,8 +64,44 @@ function initActionHeader(yPos) {
   initButton("Emitter", xs * nn++, 0, w, h, clr, spawnEmitterAtMouse, null, hdr, null, "e", p + "emit.png", null, clr, "Create pixel emitter on click");
   initButton("Next", xs * nn++, 0, w, h, clr, goToNextFrame, null, hdr, null, "n", p + "next.png", null, clr, "Next frame");
   initButton("Save", xs * nn++, 0, w, h, clr, saveMap, null, hdr, null, "u", p + "save.png", null, clr, "Save Environment");
-  initButton("Camera", xs * nn++, 0, w, h, clr, () => {CAM.setTarget(CAM.target ? null : PLAYER)}, null, hdr, null, "j", p + "cam.png", null, clr, "Follow Player");
-  initButton("Load",xs * nn++,0,w,h,clr,() => {LD.toggleMenu();},null,hdr,null,"l",p + "load.png",null,clr, "Load Environment");
+  initButton(
+    "Camera",
+    xs * nn++,
+    0,
+    w,
+    h,
+    clr,
+    () => {
+      CAM.setTarget(CAM.target ? null : PLAYER);
+    },
+    null,
+    hdr,
+    null,
+    "j",
+    p + "cam.png",
+    null,
+    clr,
+    "Follow Player",
+  );
+  initButton(
+    "Load",
+    xs * nn++,
+    0,
+    w,
+    h,
+    clr,
+    () => {
+      LD.toggleMenu();
+    },
+    null,
+    hdr,
+    null,
+    "l",
+    p + "load.png",
+    null,
+    clr,
+    "Load Environment",
+  );
   fitHeaderDragWidth(hdr);
 }
 
@@ -146,7 +182,7 @@ function initUi() {
   updateUi();
 }
 
-function init() {
+async function init() {
   INPUT = new InputManager();
   MOUSE = new Mouse();
   LD = new LoadData();

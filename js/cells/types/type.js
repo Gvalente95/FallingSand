@@ -18,6 +18,8 @@ const UPDATE_HANDLERS = {
 };
 
 p.getNeighborCells = function () {
+  if (!this.neighbors) this.neighbors = [];
+  else this.neighbors.length = 0;
   this.lu = this.y > 0 && this.x > 0 ? grid1[this.i - GW - 1] : null;
   this.u = this.y > 0 ? grid1[this.i - GW] : null;
   this.ru = this.y > 0 && this.x < GW - 1 ? grid1[this.i - GW + 1] : null;
@@ -28,7 +30,7 @@ p.getNeighborCells = function () {
   this.rd = this.y < GH - 1 && this.x < GW - 1 ? grid1[this.i + GW + 1] : null;
 
   this.neighborCount = 0;
-  this.neighbors = [];
+  if (!this.neighbors) this.neighbors = [];
   if (this.lu) this.neighbors.push(this.lu);
   if (this.u) this.neighbors.push(this.u);
   if (this.ru) this.neighbors.push(this.ru);
@@ -53,13 +55,13 @@ p.trySetToSleep = function () {
   } else {
     if (!this.hasTouchedBorder) return false;
     if (!(this.y >= GH - 1 || this.x <= 0 || grid1[this.i + GW - 1])) return false;
-    if (!(this.y >= GH - 1 || this.x >= GW - 1 || grid1[this.i + GW - 1])) return false;
+    if (!(this.y >= GH - 1 || this.x >= GW - 1 || grid1[this.i + GW + 1])) return false;
     return this.y >= GH - 1 || grid1[this.i + GW];
   }
 };
 
 p.updateType = function () {
-  this.neighbors = null;
+  if (this.neighbors) this.neighbors.length = 0;
   if (this.physT !== "LIQUID" || FRAME % 100 === 0 || (fps < 30 && this.timeAlive < 5)) {
     if (this.isBasic && this.lt === Infinity && !this.cor && !this.freeze && !this.burning && this.trySetToSleep()) {
       this.isAsleep = true;
